@@ -26,7 +26,7 @@ export const Post: FC<PostProps> =
      }) => {
     return (
         <div>
-            <div>User123</div>
+            <div>User1234</div>
             <h4>{title}</h4>
             <div>{text}</div>
             <div>{likes}/{dislikes}</div>
