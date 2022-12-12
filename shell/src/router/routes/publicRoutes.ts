@@ -1,6 +1,7 @@
 import { FC } from 'react'
-import App from '../../App'
-import { Auth } from '../../views/authentication/Auth'
+import { App } from '../../App'
+// @ts-ignore
+import WritePost from "post/WritePost"
 
 export interface IRoute {
     path: string
@@ -10,6 +11,6 @@ export interface IRoute {
 
 export const routePublic: IRoute[] = [
     { path: '/', element: App, auth: true },
-    { path: '/auth', element: Auth, auth: false },
+    { path: '/write', element: WritePost, auth: false },
     { path: '*', element: App, auth: true },
 ]

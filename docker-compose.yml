@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  shell:
+    build: shell
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - '/app/node_modules'
+    restart: always
+    container_name: shell
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "post"
+  post:
+    build: post
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - '/app/node_modules'
+    restart: always
+    container_name: post
+    ports:
+      - "3001:3001"
