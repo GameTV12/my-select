@@ -1,31 +1,34 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react-swc'
 import federation from "@originjs/vite-plugin-federation";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-      vue(),
-      federation({
-        name: 'front-user',
-        filename: 'remoteEntry.js',
-        // Modules to expose
-        exposes: {
-          './Hello': './src/components/HelloWorld.vue',
-        },
-        shared: ['vue']
-      })
+    react(),
+    federation({
+      name: 'front_user',
+      filename: 'remoteEntry.js',
+      // Modules to expose
+      exposes: {
+        './RegisterPage': './src/pages/RegisterPage'
+      },
+      shared: ['react', 'react-dom']
+    })
   ],
-    build: {
-        minify: false,
-        target: ["chrome89", "edge89", "firefox89", "safari15"]
-    },
-    server: {
-        host: "127.0.0.1",
-        port: 3001
-    },
-    preview: {
-        host: "127.0.0.1",
-        port: 3001,
-    },
+  server: {
+    host: "127.0.0.1",
+    port: 3005
+  },
+  preview: {
+    host: "127.0.0.1",
+    port: 3005,
+  },
+  cacheDir: "node_modules/.cacheDir",
+  build: {
+    modulePreload: false,
+    target: 'esnext',
+    minify: false,
+    cssCodeSplit: false
+  }
 })

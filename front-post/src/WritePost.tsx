@@ -13,13 +13,20 @@ import {
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
-import {useRef, useState} from "react"
+import {ChangeEvent, useRef, useState} from "react"
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import {AspectRatio} from "@mui/icons-material";
-import ModalDelete from "./components/ModalDelete";
-import {Simulate} from "react-dom/test-utils";
-import dragStart = Simulate.dragStart;
+import ModalDelete from "./components/ModalDelete"
+
+interface registrationDataInterface {
+    title: string
+    text: string
+    photos?: File[]
+    video?: File
+    commentsAllowed: boolean
+    variantsAllowed?: boolean
+    variants?: string[]
+}
 
 const CustomFormControl = styled(FormControl)(() => ({
     marginTop: '10px',
@@ -45,15 +52,28 @@ const CustomFormGroup = styled(FormGroup)(() => ({
 
 export const WritePost = () => {
     const [variants, setVariants] = useState<string[]>(["", ""])
-    const [files, setFiles] = useState<File[]>([])
-    const filesRef = useRef<HTMLInputElement>(null)
-    const [modal, setModal] = useState<boolean>(false)
-    const [fileForDeleting, setFileForDeleting] = useState<File | null>(null)
-    const [draggablePhoto, setDraggablePhoto] = useState<File | null>(null);
+    const [photos, setPhotos] = useState<File[]>([])
+    const photosRef = useRef<HTMLInputElement>(null)
+    const [photoModal, setPhotoModal] = useState<boolean>(false)
+    const [photoForDeleting, setPhotoForDeleting] = useState<File | null>(null)
+    const [draggablePhoto, setDraggablePhoto] = useState<File | null>(null)
+    const [formData, setFormData] = useState<registrationDataInterface>({title: '', text: '', commentsAllowed: true, variantsAllowed: true});
+
+    const [video, setVideo] = useState<File | null>(null)
+    const videoRef = useRef<HTMLInputElement>(null)
+
+
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
         e.preventDefault()
-        console.log(variants)
+        if (variants.filter(x => x != '').length > 0) {
+            formData.variants = variants.filter(x => x != '')
+            formData.variantsAllowed = true
+        }
+        if (photos.length > 0) formData.photos = photos
+        if (video) formData.video = video
+
+        console.log(formData)
     }
 
     const handleDragOverFiles = (e: React.DragEvent): void => {
@@ -61,11 +81,10 @@ export const WritePost = () => {
     }
 
     const dragStartHandlerPhoto = (e: React.DragEvent, photo: File): void => {
-        console.log('drag', photo)
         setDraggablePhoto(photo)
     }
 
-    const dragEndHandlerPhoto = (e: React.DragEvent): void => {
+    const dragEndHandlerFile = (e: React.DragEvent): void => {
         const target = e.target as HTMLElement
 
         if (target) {
@@ -74,7 +93,7 @@ export const WritePost = () => {
         }
     }
 
-    const dragOverHandlerPhoto = (e: React.DragEvent): void => {
+    const dragOverHandlerFile = (e: React.DragEvent): void => {
         e.preventDefault()
 
         const target = e.target as HTMLElement
@@ -94,22 +113,26 @@ export const WritePost = () => {
             target.style.transform = 'translateX(0px)'
         }
 
-        const dropIndex = files.indexOf(thisPhoto)
+        const dropIndex = photos.indexOf(thisPhoto)
 
 
 
         if (draggablePhoto) {
-            const draggableIndex = files.indexOf(draggablePhoto)
+            const draggableIndex = photos.indexOf(draggablePhoto)
             if (draggableIndex > dropIndex) {
-                setFiles([...files.slice(0, dropIndex+1), draggablePhoto, ...files.slice(dropIndex+1, draggableIndex), ...files.slice(draggableIndex+1)])
+                setPhotos([...photos.slice(0, dropIndex+1), draggablePhoto, ...photos.slice(dropIndex+1, draggableIndex), ...photos.slice(draggableIndex+1)])
             }
             else if (draggableIndex < dropIndex) {
-                setFiles([...files.slice(0, draggableIndex), ...files.slice(draggableIndex+1, dropIndex + 1), draggablePhoto, ...files.slice(dropIndex+1)])
+                setPhotos([...photos.slice(0, draggableIndex), ...photos.slice(draggableIndex+1, dropIndex + 1), draggablePhoto, ...photos.slice(dropIndex+1)])
             }
             setDraggablePhoto(null)
         }
         else {
-            setFiles([...files.slice(0, dropIndex+1), ...Array.from(e.dataTransfer.files), ...files.slice(dropIndex+1)])
+            const dropFiles: File[] = Array.from(e.dataTransfer.files).map((item) => {
+                let newFile: File = new File([item], URL.createObjectURL(item), {type: item.type, lastModified: item.lastModified})
+                return newFile
+            })
+            setPhotos([...photos.slice(0, dropIndex+1), ...dropFiles, ...photos.slice(dropIndex+1)])
         }
 
 
@@ -117,42 +140,71 @@ export const WritePost = () => {
         console.log('drop', thisPhoto)
     }
 
-    const openFileExplorer = (): void => {
-        if (filesRef.current != null) {
-            filesRef.current.click()
+    const openPhotoExplorer = (e: React.SyntheticEvent): void => {
+        if (photosRef.current != null) {
+            photosRef.current.click()
         }
     }
 
-    const handleExplorerFiles = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const openVideoExplorer = (e: React.SyntheticEvent): void => {
+        if (videoRef.current != null) {
+            videoRef.current.click()
+        }
+    }
+
+    const handleExplorerPhotos = (e: React.ChangeEvent<HTMLInputElement>): void => {
         e.preventDefault()
         const filesFromExplorer: File[] = []
         if (e.target.files != null){
             for (const file of e.target.files) {
-                filesFromExplorer.push(file)
-                console.log(file)
+                filesFromExplorer.push(file as File)
             }
+            const dropFiles: File[] = filesFromExplorer.map((item) => {
+                let newFile: File = new File([item], URL.createObjectURL(item), {type: item.type, lastModified: item.lastModified})
+                return newFile
+            })
+            setPhotos(oldArray => [...oldArray, ...dropFiles])
         }
-        setFiles(oldArray => [...oldArray, ...filesFromExplorer])
     }
 
-    const handleDropFiles = (e: React.DragEvent): void => {
+    const handleExplorerVideo = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        e.preventDefault()
+        if (e.target.files != null) setVideo(e.target.files[0])
+    }
+
+    const handleDropPhotos = (e: React.DragEvent): void => {
+        if (!draggablePhoto) {
+            e.preventDefault()
+            e.stopPropagation()
+            const dropFiles: File[] = Array.from(e.dataTransfer.files).map((item) => {
+                let newFile: File = new File([item], URL.createObjectURL(item), {type: item.type, lastModified: item.lastModified})
+                return newFile
+            })
+            setPhotos(oldArray => [...oldArray, ...dropFiles])
+        }
+    }
+
+    const handleDropVideos = (e: React.DragEvent): void => {
         e.preventDefault()
         e.stopPropagation()
-        setFiles(oldArray => [...oldArray, ...Array.from(e.dataTransfer.files)])
+        setVideo(e.dataTransfer.files[0])
     }
 
     const clearPhotosHandler = (): void => {
-        console.log(files)
-        setFiles([])
+        setPhotos([])
+    }
+
+    const clearVideosHandler = (): void => {
+        setVideo(null)
     }
 
     const deletePhoto = (file: File): void => {
-        setFiles(files.filter(x => x.name != file.name))
+        setPhotos(photos.filter(x => x.name != file.name))
     }
     
     const callModalWindow = (file: File) => {
-        setFileForDeleting(file)
-        setModal(true)
+        setPhotoForDeleting(file)
+        setPhotoModal(true)
     }
 
     return (
@@ -166,16 +218,22 @@ export const WritePost = () => {
                         <FormLabel htmlFor={"title"}>
                             Title
                         </FormLabel>
-                        <TextField id={"title"} name={"title"} type={"text"} placeholder={"Enter a title"} required
-                                   fullWidth/>
+                        <TextField
+                            id={"title"}
+                            name={"title"}
+                            type={"text"}
+                            placeholder={"Enter a title"}
+                            required
+                            fullWidth
+                        />
                     </CustomFormControl>
                     <CustomFormControl fullWidth>
                         <FormLabel htmlFor={"text"}>
                             Text
                         </FormLabel>
                         <TextField id={"text"} name={"text"} type={"text"} placeholder={"Enter a text"} multiline
-                                   rows={7}
-                                   maxRows={25} required fullWidth/>
+                                   rows={12}
+                                   maxRows={50} required fullWidth/>
                     </CustomFormControl>
                     <CustomFormGroup>
                         <FormLabel>
@@ -193,17 +251,24 @@ export const WritePost = () => {
                                 color: "rgba(0, 0, 0, 0.5)",
                                 mb: '10px',
                             }}
-                            onDrop={handleDropFiles}
+                            onDrop={handleDropPhotos}
                             onDragOver={handleDragOverFiles}
                         >
                             <input type="file"
                                    multiple
                                    hidden
-                                   ref={filesRef}
-                                   onChange={(e: any) => setFiles(e.target.files)}
+                                   accept="image/*"
+                                   ref={photosRef}
+                                   onChange={handleExplorerPhotos}
                             />
-                            {files.length==0 ?
-                                <>Upload photos&nbsp;<AddPhotoAlternateIcon/></> :
+                            {photos.length==0 ?
+                                <Grid container sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    px: 1,
+                                }}>Upload photos&nbsp;<AddPhotoAlternateIcon/></Grid>
+                                :
                                 <Grid container sx={{
                                     display: 'flex',
                                     alignItems: 'start',
@@ -211,27 +276,26 @@ export const WritePost = () => {
                                     px: 1,
                                 }}
                                     xs={12} sm={12} md={12} lg={12} xl={12}
-                                >{
-                                    files.map((item) =>
-                                        <Grid onClick={() => callModalWindow(item)}
-                                              sx={{ py: 1, pr: 2, ratio: 4/3, cursor: 'grab' }}
+                                >{photos.map((item) =>
+                                    (<Grid onClick={() => callModalWindow(item)}
+                                              sx={{ py: 1, pr: 2, cursor: 'grab' }}
                                               key={item.name} item xs={6} sm={6} md={4} lg={2} xl={2}
                                               draggable={true}
                                               onDragStart={(e: any) => dragStartHandlerPhoto(e, item)} // we've taken the photo
-                                              onDragLeave={dragEndHandlerPhoto} // we've leaved this photo and gone to another photo
-                                              onDragEnd={dragEndHandlerPhoto} // we've released the photo
-                                              onDragOver={dragOverHandlerPhoto} // we are over another object
+                                              onDragLeave={dragEndHandlerFile} // we've leaved this photo and gone to another photo
+                                              onDragEnd={dragEndHandlerFile} // we've released the photo
+                                              onDragOver={dragOverHandlerFile} // we are over another object
                                               onDrop={(e: any) => dropHandlerPhoto(e, item)}
                                         >
-                                        <img src={URL.createObjectURL(item)} width={'100%'} alt={item.name}/>
-                                    </Grid>)
-                                }</Grid>
+                                        <Box component={"img"} src={item.name} sx={{ aspectRatio: '4/3', objectFit: 'cover' }} width={'100%'} alt={item.name}/>
+                                    </Grid>))}
+                                </Grid>
                             }
                         </Box>
                         <FormControl fullWidth>
                             <ButtonGroup variant="contained" fullWidth>
                                 <Button color={"error"} onClick={clearPhotosHandler}>Clear photos</Button>
-                                <Button color={"info"} onClick={openFileExplorer}>Add new photos</Button>
+                                <Button color={"info"} onClick={openPhotoExplorer}>Add new photos</Button>
                             </ButtonGroup>
                         </FormControl>
                     </CustomFormGroup>
@@ -243,31 +307,69 @@ export const WritePost = () => {
                             sx={{
                                 border: '2px rgba(0, 0, 0, 0.25) dashed',
                                 borderRadius: '10px',
-                                height: '150px',
+                                minHeight: '200px',
                                 textAlign: 'center',
                                 display: 'flex',
-                                alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: '24px',
-                                color: "rgba(0, 0, 0, 0.5)"
+                                color: "rgba(0, 0, 0, 0.5)",
+                                mb: '10px',
                             }}
+                            onDrop={handleDropVideos}
+                            onDragOver={handleDragOverFiles}
                         >
-                            Upload a video&nbsp;<UploadFileIcon/>
-                            <input
-                                type="file"
-                                hidden
+                            <input type="file"
+                                   hidden
+                                   accept="video/*"
+                                   ref={videoRef}
+                                   onChange={handleExplorerVideo}
                             />
+
+                                <Grid container sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    px: 1,
+                                }}>
+                                    {!video ?
+                                    <>Upload a video&nbsp;<UploadFileIcon/></>
+                                    :
+                                    <Grid onClick={() => callModalWindow(video)}
+                                           sx={{ py: 1, pr: 2, cursor: 'grab' }}
+                                    >
+                                        {/*<video*/}
+                                        {/*    autoPlay*/}
+                                        {/*    loop*/}
+                                        {/*    muted*/}
+                                        {/*>*/}
+                                        {/*    <source*/}
+                                        {/*        src={video.name}*/}
+                                        {/*        type="video/mp4"*/}
+                                        {/*    />*/}
+                                        {/*</video>*/}
+                                    </Grid>
+                                    }
+                                </Grid>
+
                         </Box>
+                        <FormControl fullWidth>
+                            <ButtonGroup variant="contained" fullWidth>
+                                <Button color={"error"} onClick={clearVideosHandler}>Clear the video</Button>
+                                <Button color={"info"} onClick={openVideoExplorer}>Change a video</Button>
+                            </ButtonGroup>
+                        </FormControl>
                     </CustomFormGroup>
                     <FormGroup>
-                        <FormControlLabel control={<Checkbox defaultChecked/>} label="People can add comments to post"/>
+                        <FormControlLabel
+                            control={<Checkbox defaultChecked id={"commentsAllowed"} value={formData.commentsAllowed} onChange={() => setFormData({...formData, commentsAllowed: !formData.commentsAllowed })} />}
+                            label="People can add comments to post"/>
                     </FormGroup>
                     <CustomFormGroup>
                         <FormLabel>
                             Poll
                         </FormLabel>
                         <FormControlLabel
-                            control={<Checkbox id={"poll"} disabled={variants.length <= 1} defaultChecked/>}
+                            control={<Checkbox id={"variantsAllowed"} disabled={variants.length <= 1} onChange={(e) => setFormData({...formData, variantsAllowed: !formData.variantsAllowed })} defaultChecked/>}
                             label="People can add variants"/>
 
                         {variants.map((item, index) => (
@@ -316,7 +418,7 @@ export const WritePost = () => {
                     </FormControl>
                 </form>
             </Grid>
-            {fileForDeleting ? <ModalDelete show={modal} showModal={()=>setModal(prevState => !prevState)} file={fileForDeleting} deleteFile={deletePhoto} /> : ''}
+            {photoForDeleting ? <ModalDelete show={photoModal} showModal={()=>setPhotoModal(prevState => !prevState)} file={photoForDeleting} deleteFile={deletePhoto} /> : ''}
 
         </Grid>
 
