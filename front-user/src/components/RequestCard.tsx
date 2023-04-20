@@ -1,13 +1,13 @@
 import React, {FC} from 'react';
 import {
-    Avatar,
+    Avatar, Box, Button,
     Card,
     CardActions,
     CardContent,
     CardHeader,
     CardMedia,
     Collapse,
-    IconButton, IconButtonProps,
+    IconButton, IconButtonProps, Link,
     Typography
 } from "@mui/material";
 import {red} from "@mui/material/colors"
@@ -47,11 +47,11 @@ const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, date, 
     };
 
     return (
-        <Card>
+        <Card sx={{ m: 1 }}>
             <CardHeader
                 avatar={
-                    <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                        R
+                    <Avatar aria-label="recipe">
+                        <Box component={"img"} src={image} sx={{ objectFit: 'cover' }} minWidth={'100%'} minHeight={'100%'}/>
                     </Avatar>
                 }
                 action={
@@ -67,14 +67,18 @@ const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, date, 
                     </IconButton>
                 }
                 title={nickname}
-                subheader={date}
+                subheader={<Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{linkNickname}</Link>}
             />
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>
                     <Typography>
                         {description}
                     </Typography>
-
+                        <Box sx={{ display: 'flex', justifyContent: 'space-evenly', mt: 1 }}>
+                            <Button variant="contained" color={"success"} sx={{ px: 4 }} onClick={() => {
+                                handleExpandClick(); makeDecision(id, true)}}>Accept</Button>
+                            <Button variant="contained" color={"error"} sx={{ px: 4 }} onClick={() => { handleExpandClick(); makeDecision(id, false)}}>Decline</Button>
+                        </Box>
                 </CardContent>
             </Collapse>
         </Card>

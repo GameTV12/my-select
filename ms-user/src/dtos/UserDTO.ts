@@ -2,24 +2,24 @@ import {UserI} from "../models/userModel";
 
 module.exports = class UserDTO {
     id: string
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    linkNickname: string;
-    email: string;
-    password: string;
-    phone: string;
-    role: string;
-    banned: boolean;
-    photo?: string;
-    secondEmail?: string;
-    dateOfBirth: Date;
-    IP: string;
-    country: string;
-    createdAt: Date;
-    updatedAt: Date;
-    isActivated: boolean;
-    activationLink?: string;
+    firstName: string
+    lastName: string
+    nickname: string
+    linkNickname: string
+    email: string
+    password: string
+    phone: string
+    role: string
+    banned: boolean
+    photo?: string
+    secondEmail?: string
+    dateOfBirth: Date
+    IP: string
+    country: string
+    createdAt: Date
+    updatedAt: Date
+    isActivated: boolean
+    activationLink?: string
 
     constructor(model: any) {
         this.id = model._id

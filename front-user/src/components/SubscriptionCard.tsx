@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
 import {
-    Avatar, Box, Button, Grid,
+    Avatar, Box, Button, Grid, Link,
     ListItem,
     ListItemAvatar,
     ListItemText
@@ -26,7 +26,7 @@ const SubscriptionCard: FC<SubscriptionCard> = ({id, nickname, linkNickname, ima
             </ListItemAvatar>
             <ListItemText
                 primary={nickname}
-                secondary={linkNickname}
+                secondary={<Link href={"https://leetcode.com/"} target={"_blank"} underline="none">linkNickname</Link>}
             />
             <Grid item xs={6} sm={6} md={6} lg={6} xl={6} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div><strong>Followers: </strong><i>{followers}</i></div>
