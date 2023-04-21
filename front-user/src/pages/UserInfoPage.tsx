@@ -13,11 +13,14 @@ import {
     TableRow,
     Toolbar,
     Typography
-} from "@mui/material";
-import SubscriptionCard from "../components/SubscriptionCard";
+} from "@mui/material"
 import ModeratorRequestModal from "../components/ModeratorRequestModal";
 import DeleteModal from "../components/DeleteModal";
 import LogoutModal from "../components/LogoutModal";
+import {Line} from "react-chartjs-2"
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { Chart } from 'react-chartjs-2'
+ChartJS.register(...registerables)
 
 interface User {
     id: string
@@ -61,6 +64,22 @@ const UserInfoPage = () => {
     const [openModalModeratorRequest, setOpenModalModeratorRequest] = React.useState<boolean>(false)
     const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false)
     const [openModalLogout, setOpenModalLogout] = React.useState<boolean>(false)
+    const [chartSubscriberData, setChartSubscriberData] = useState({
+        labels: mockSubscribers.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth()+1}.${new Date(data.time).getFullYear()}`)),
+        datasets: [{
+            label: "Number of subscribers",
+            data: mockSubscribers.map((data) => data.subscribers),
+
+        }],
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                },
+            }
+        }
+    })
+
 
     const anchorRef = React.useRef<HTMLButtonElement>(null);
 
@@ -233,6 +252,10 @@ const UserInfoPage = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Box sx={{ mt: 2 }}>
+                    <Typography variant={"h5"} align={"center"}>Subscribers of <em>{mockUser.nickname}</em></Typography>
+                    <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
+                </Box>
             </Grid>
         </Grid>
     );

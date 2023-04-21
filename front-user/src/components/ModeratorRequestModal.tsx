@@ -1,6 +1,5 @@
-import React, {useState} from 'react';
-import {Box, Button, FormControl, FormLabel, Modal, ModalProps, TextField, Typography} from "@mui/material";
-import {text} from "stream/consumers";
+import React, {useState} from 'react'
+import {Box, Button, FormControl, FormLabel, Modal, ModalProps, TextField, Typography} from "@mui/material"
 
 export type ModeratorRequest = {
     user: string
