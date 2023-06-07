@@ -69,7 +69,9 @@ const UserInfoPage = () => {
         datasets: [{
             label: "Number of subscribers",
             data: mockSubscribers.map((data) => data.subscribers),
-
+        }, {
+            label: "Number of verified subscribers",
+            data: mockSubscribers.map((data) => Math.ceil(data.subscribers * 0.8)),
         }],
         options: {
             plugins: {
