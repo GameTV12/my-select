@@ -1,8 +1,8 @@
+import CommentList from "./pages/CommentList";
+
 export function App() {
    return (
-        <>
-            sadf
-        </>
+       <CommentList />
    )
 }
 

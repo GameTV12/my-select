@@ -5,6 +5,7 @@ import { VueInReact, VueWrapper } from 'vuera'
 import "./index.css";
 import Header from "./router/routerComponents/Header";
 import {Box} from "@mui/material";
+import {Suspense} from "react";
 // @ts-ignore
 const WritePost = React.lazy(() => import('front_post/WritePost'))
 // @ts-ignore
@@ -16,7 +17,9 @@ export const App = () => {
     return (
         <Box>
             <Header />
-            <WritePost />
+            <Suspense fallback={<div>Loading...</div>}>
+                <WritePost />
+            </Suspense>
         </Box>
     )
 }

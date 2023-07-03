@@ -17,6 +17,7 @@ const style = {
 
 const LogoutModal = ({open, onClose}: ModalProps) => {
 
+
     return (
         <Modal
             open={open}
@@ -32,7 +33,7 @@ const LogoutModal = ({open, onClose}: ModalProps) => {
                 <form>
                     <FormControl fullWidth sx={{ my: 1 }}>
                         <ButtonGroup variant="contained" fullWidth>
-                            <Button color={"success"} onClick={(e) => onClose}>Continue</Button>
+                            {onClose && <Button color={"success"} onClick={(e) => onClose(e, "backdropClick")}>Continue</Button>}
                             <Button color={"error"} type={"submit"}>Log Out</Button>
                         </ButtonGroup>
                     </FormControl>

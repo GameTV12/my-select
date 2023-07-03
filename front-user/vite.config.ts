@@ -13,6 +13,9 @@ export default defineConfig({
       exposes: {
         './RegisterPage': './src/pages/RegisterPage'
       },
+      remotes: {
+        front_comment: "http://localhost:3006/assets/remoteEntry.js",
+      },
       shared: ['react', 'react-dom']
     })
   ],

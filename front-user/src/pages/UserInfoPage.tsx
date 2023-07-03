@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {mockSubscribers} from "../mockData/mockSubscribers";
+import React, {useMemo, useRef, useState} from 'react';
+import {mockRealSubscribers, mockSubscribers} from "../mockData/mockSubscribers";
 import {
     Avatar,
     Box, ClickAwayListener,
@@ -18,9 +18,17 @@ import ModeratorRequestModal from "../components/ModeratorRequestModal";
 import DeleteModal from "../components/DeleteModal";
 import LogoutModal from "../components/LogoutModal";
 import {Line} from "react-chartjs-2"
-import { Chart as ChartJS, registerables } from 'chart.js';
-import { Chart } from 'react-chartjs-2'
+import {Chart as ChartJS, ChartEvent, registerables} from 'chart.js';
+import {Chart} from 'react-chartjs-2'
+
 ChartJS.register(...registerables)
+import 'chartjs-plugin-annotation'
+import LineChart from "../components/LineChart";
+import Tab from '@mui/material/Tab';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import SingleComment from "../components/SingleComment";
 
 interface User {
     id: string
@@ -45,7 +53,7 @@ const mockUser = {
     id: '123',
     firstName: 'Dave',
     lastName: 'Smith',
-    nickname: 'Davepro999, who loves Fortnite',
+    nickname: 'Davepro999, who loves Fortnite!',
     linkNickname: 'davepro999official',
     image: 'https://sun9-34.userapi.com/impf/c622320/v622320607/4e1d6/1a-awkhClos.jpg?size=225x225&quality=96&sign=c175c8c775a36c0b9721b5bd319b0155&type=album',
     dateOfBirth: new Date('1998-09-03').getTime(),
@@ -58,35 +66,48 @@ const mockUser = {
 }
 
 const UserInfoPage = () => {
-    console.log(mockSubscribers)
 
-    const [openAddMenu, setOpenAddMenu] = React.useState<boolean>(false)
-    const [openModalModeratorRequest, setOpenModalModeratorRequest] = React.useState<boolean>(false)
-    const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false)
-    const [openModalLogout, setOpenModalLogout] = React.useState<boolean>(false)
+    const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
+    const [openModalModeratorRequest, setOpenModalModeratorRequest] = useState<boolean>(false)
+    const [openModalDelete, setOpenModalDelete] = useState<boolean>(false)
+    const [openModalLogout, setOpenModalLogout] = useState<boolean>(false)
+    const [tabPosition, setTabPosition] = useState<string>('1');
     const [chartSubscriberData, setChartSubscriberData] = useState({
-        labels: mockSubscribers.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth()+1}.${new Date(data.time).getFullYear()}`)),
+        labels: mockSubscribers.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth() + 1}.${new Date(data.time).getFullYear()}`)),
+        type: "line",
         datasets: [{
-            label: "Number of subscribers",
+            label: "Subscribers",
             data: mockSubscribers.map((data) => data.subscribers),
+            backgroundColor: 'blue',
         }, {
-            label: "Number of verified subscribers",
-            data: mockSubscribers.map((data) => Math.ceil(data.subscribers * 0.8)),
+            label: "Verified subscribers",
+            data: mockRealSubscribers.map((data) => data.subscribers),
+            backgroundColor: 'lightgreen',
         }],
         options: {
-            plugins: {
-                legend: {
-                    display: false
-                },
-            }
-        }
+            responsive: true,
+            interaction: {
+                intersect: false,
+                mode: "index"
+            },
+        },
     })
+    const chart = useMemo(() => {
+        // @ts-ignore
+        return <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
+    }, [mockSubscribers, mockRealSubscribers])
 
+    // // @ts-ignore
+    // const chart = <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
 
-    const anchorRef = React.useRef<HTMLButtonElement>(null);
+    const anchorRef = useRef<HTMLButtonElement>(null);
 
     const handleAddMenuToggle = () => {
         setOpenAddMenu((prevOpen) => !prevOpen);
+    }
+
+    const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+        setTabPosition(newValue)
     }
 
     const handleAddMenuClose = (event: Event | React.SyntheticEvent) => {
@@ -134,35 +155,42 @@ const UserInfoPage = () => {
         }
     }
 
+    // @ts-ignore
     return (
         <Grid container justifyContent="center" sx={{mt: '20px', mb: '10px'}}>
             <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
                 <TableContainer component={Paper}>
                     <Toolbar
                         sx={{
-                            pl: { sm: 2 },
-                            pr: { xs: 1, sm: 1 },
+                            pl: {sm: 2},
+                            pr: {xs: 1, sm: 1},
                             height: '50px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between'
                         }}
                     >
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Avatar>
-                                        <Box component={"img"} src={mockUser.image} sx={{ objectFit: 'cover' }} minWidth={'100%'} minHeight={'100%'}/>
-                                    </Avatar>
-                                    <Typography sx={{ px: 2 }}>{mockUser.nickname} (<i><Link target={"_blank"} underline="none" href={"https://leetcode.com/"}>{mockUser.linkNickname}</Link></i>)</Typography>
-                                </Box>
-                                <IconButton aria-label="settings"
-                                            ref={anchorRef}
-                                            id="composition-button"
-                                            aria-controls={openAddMenu ? 'composition-menu' : undefined}
-                                            aria-expanded={openAddMenu ? 'true' : undefined}
-                                            aria-haspopup="true"
-                                            onClick={handleAddMenuToggle}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                                </IconButton>
+                        <Box sx={{display: 'flex', alignItems: 'center'}}>
+                            <Avatar>
+                                <Box component={"img"} src={mockUser.image} sx={{objectFit: 'cover'}} minWidth={'100%'}
+                                     minHeight={'100%'}/>
+                            </Avatar>
+                            <Typography sx={{px: 2}}>{mockUser.nickname} (<i><Link target={"_blank"} underline="none"
+                                                                                   href={"https://leetcode.com/"}>{mockUser.linkNickname}</Link></i>)</Typography>
+                        </Box>
+                        <IconButton aria-label="settings"
+                                    ref={anchorRef}
+                                    id="composition-button"
+                                    aria-controls={openAddMenu ? 'composition-menu' : undefined}
+                                    aria-expanded={openAddMenu ? 'true' : undefined}
+                                    aria-haspopup="true"
+                                    onClick={handleAddMenuToggle}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                                <path d="M0 0h24v24H0z" fill="none"/>
+                                <path
+                                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </IconButton>
                         <Popper
                             open={openAddMenu}
                             anchorEl={anchorRef.current}
@@ -171,7 +199,7 @@ const UserInfoPage = () => {
                             transition
                             disablePortal
                         >
-                            {({ TransitionProps, placement }) => (
+                            {({TransitionProps, placement}) => (
                                 <Grow
                                     {...TransitionProps}
                                     style={{
@@ -188,9 +216,12 @@ const UserInfoPage = () => {
                                                 onKeyDown={handleListKeyDown}
                                             >
                                                 <MenuItem onClick={handleAddMenuClose}>Edit the profile</MenuItem>
-                                                <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator request</MenuItem>
-                                                <MenuItem onClick={handleOpenModalDelete} sx={{ color: 'error.main' }}>Delete the account</MenuItem>
-                                                <MenuItem onClick={handleOpenModalLogout} sx={{ color: 'text.secondary' }}>Logout</MenuItem>
+                                                <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator
+                                                    request</MenuItem>
+                                                <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
+                                                    the account</MenuItem>
+                                                <MenuItem onClick={handleOpenModalLogout}
+                                                          sx={{color: 'text.secondary'}}>Logout</MenuItem>
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>
@@ -198,7 +229,8 @@ const UserInfoPage = () => {
                             )}
                         </Popper>
                         <DeleteModal open={openModalDelete} onClose={handleCloseModalDelete} children={<></>}/>
-                        <ModeratorRequestModal open={openModalModeratorRequest} onClose={handleCloseModalModeratorRequest} children={<></>}/>
+                        <ModeratorRequestModal open={openModalModeratorRequest}
+                                               onClose={handleCloseModalModeratorRequest} children={<></>}/>
                         <LogoutModal open={openModalLogout} onClose={handleCloseModalLogout} children={<></>}/>
                     </Toolbar>
                     <Table aria-label="simple table">
@@ -231,7 +263,7 @@ const UserInfoPage = () => {
                                 <TableCell component="th" scope="row">
                                     <strong>Birthdate</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.dateOfBirth).getDate()}.{new Date(mockUser.dateOfBirth).getMonth()+1}.{new Date(mockUser.dateOfBirth).getFullYear()}</TableCell>
+                                <TableCell>{new Date(mockUser.dateOfBirth).getDate()}.{new Date(mockUser.dateOfBirth).getMonth() + 1}.{new Date(mockUser.dateOfBirth).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
@@ -243,20 +275,34 @@ const UserInfoPage = () => {
                                 <TableCell component="th" scope="row">
                                     <strong>User since</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.createdAt).getDate()}.{new Date(mockUser.createdAt).getMonth()+1}.{new Date(mockUser.createdAt).getFullYear()}</TableCell>
+                                <TableCell>{new Date(mockUser.createdAt).getDate()}.{new Date(mockUser.createdAt).getMonth() + 1}.{new Date(mockUser.createdAt).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Activated</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.isActivated ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)' }</TableCell>
+                                <TableCell>{mockUser.isActivated ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)'}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant={"h5"} align={"center"}>Subscribers of <em>{mockUser.nickname}</em></Typography>
-                    <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
+                <Box sx={{width: '100%', typography: 'body1', mt: 2}}>
+                    <TabContext value={tabPosition}>
+                        <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
+                            <TabList onChange={handleTabChange} aria-label="lab API tabs example">
+                                <Tab label="Subscribers statistics" value="1"/>
+                                <Tab label="Comments" value="2"/>
+                            </TabList>
+                        </Box>
+                        <TabPanel value="1">
+                            <Box>
+                                <Typography variant={"h5"} align={"center"}>Subscribers
+                                    of <em>{mockUser.nickname}</em></Typography>
+                                {chart}
+                            </Box>
+                        </TabPanel>
+                        <TabPanel value="2"><SingleComment /></TabPanel>
+                    </TabContext>
                 </Box>
             </Grid>
         </Grid>

@@ -5,7 +5,7 @@ import federation from "@originjs/vite-plugin-federation";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-      react(),
+    react(),
     federation({
       name: 'front_post',
       filename: 'remoteEntry.js',
@@ -30,5 +30,5 @@ export default defineConfig({
     target: 'esnext',
     minify: false,
     cssCodeSplit: false
-  }
+  },
 })
