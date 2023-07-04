@@ -38,13 +38,13 @@ export const allComments: CommentType[] = [
         linkNickname: "gametvcity",
         userId: "USER-1235",
         image: "poimzcvu",
-        replyTo: "POLC-1202-KLDB",
-        replyText: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
+        repliedTo: "POLC-1202-KLDB",
+        repliedText: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        replyNickname: "GameTV",
+        repliedNickname: "GameTV",
         text: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
@@ -61,13 +61,13 @@ export const allComments: CommentType[] = [
         linkNickname: "gametvcity",
         userId: "USER-4454",
         image: "poimzcvu",
-        replyTo: "CIII-NSPE-CTIO",
-        replyText: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
+        repliedTo: "CIII-NSPE-CTIO",
+        repliedText: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        replyNickname: "ForcePro99",
+        repliedNickname: "ForcePro99",
         text: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
@@ -84,19 +84,19 @@ export const allComments: CommentType[] = [
         linkNickname: "gametvcity",
         userId: "USER-9235",
         image: "poimzcvu",
-        replyTo: "POLC-1202-KLDB",
-        replyText: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
+        repliedTo: "POLC-1202-KLDB",
+        repliedText: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        replyNickname: "GameTV",
+        repliedNickname: "GameTV",
         text: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        time: 1687396201842,
+        time: 1687396001842,
         likes: 123,
         dislikes: 456,
         status: LikeStatus.NONE

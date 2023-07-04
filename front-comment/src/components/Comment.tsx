@@ -22,8 +22,9 @@ import Tooltip from "@mui/material/Tooltip"
 import FlagIcon from '@mui/icons-material/Flag'
 import ReplyIcon from '@mui/icons-material/Reply'
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation'
-import DeleteCommentModal from "./DeleteCommentModal";
-import ReportCommentModal from "./ReportCommentModal";
+import DeleteCommentModal from "./DeleteCommentModal"
+import ReportCommentModal from "./ReportCommentModal"
+import EditIcon from '@mui/icons-material/Edit'
 
 export type CommentType = {
     id: string
@@ -32,14 +33,16 @@ export type CommentType = {
     userId: string
     image: string
     text: string
-    replyTo?: string
-    replyText?: string
-    replyNickname?: string
+    repliedTo?: string
+    repliedText?: string
+    repliedNickname?: string
     time: number
     likes: number
     dislikes: number
     status: LikeStatus
     deleteComment?: (commentId: string) => void
+    replyComment?: (commentId: string) => void
+    editComment?: (commentId: string) => void
 }
 
 export enum LikeStatus {
@@ -55,14 +58,16 @@ const Comment: FC<CommentType> = ({
                                       userId,
                                       image,
                                       text,
-                                      replyTo,
-                                      replyText,
-                                      replyNickname,
+                                      repliedTo,
+                                      repliedText,
+                                      repliedNickname,
                                       time,
                                       status,
                                       likes,
                                       dislikes,
-                                      deleteComment
+                                      deleteComment,
+                                      replyComment,
+                                      editComment
                                   }: CommentType) => {
     const [likesNumber, setLikesNumber] = useState<number>(likes)
     const [dislikesNumber, setDislikesNumber] = useState<number>(dislikes)
@@ -135,16 +140,17 @@ const Comment: FC<CommentType> = ({
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
                         <Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{nickname}</Link>
-                        <em>&nbsp;{new Date(time).getDate()}.{new Date(time).getMonth() + 1}.{new Date(time).getFullYear()} {new Date(time).getHours()}:{new Date(time).getMinutes()}</em>
+                        <em>&nbsp;{new Date(time).getDate()}.{new Date(time).getMonth() + 1}.{new Date(time).getFullYear()} {String(new Date(time).getHours()).padStart(2, '0')}:{String(new Date(time).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>
-                        {/*<IconButton onClick={handleReportModalClickOpen}><FlagIcon /></IconButton>*/}
-                        <IconButton onClick={handleDeleteModalClickOpen}><CancelPresentationIcon /></IconButton>
+                        <Tooltip title={"Report"}><IconButton onClick={handleReportModalClickOpen}><FlagIcon /></IconButton></Tooltip>
+                        <Tooltip title={"Delete"}><IconButton onClick={handleDeleteModalClickOpen}><CancelPresentationIcon/></IconButton></Tooltip>
+                        {editComment && <Tooltip title={"Edit comment"}><IconButton onClick={() => editComment(id)}><EditIcon/></IconButton></Tooltip>}
                     </Box>
                 </Box>}
                 secondary={
                     <>
-                        {replyTo &&
+                        {repliedTo &&
                             <Box>
                                 <Typography
                                     component="div"
@@ -153,7 +159,7 @@ const Comment: FC<CommentType> = ({
                                     align="justify"
                                     sx={{display: "flex", alignItems: "center"}}
                                 >
-                                    <ReplyIcon/>&nbsp;{replyNickname}
+                                    <ReplyIcon/>&nbsp;{repliedNickname}
                                 </Typography>
                                 <Typography
                                     component="div"
@@ -162,7 +168,6 @@ const Comment: FC<CommentType> = ({
                                     align="justify"
                                     sx={{
                                         whiteSpace: 'pre-line',
-                                        textIndent: '10px',
                                         mb: 1,
                                         fontStyle: 'oblique',
                                         WebkitLineClamp: 2,
@@ -172,7 +177,7 @@ const Comment: FC<CommentType> = ({
                                         WebkitBoxOrient: "vertical",
                                     }}
                                 >
-                                    {replyText}
+                                    {repliedText}
                                 </Typography>
                             </Box>
                         }
@@ -181,7 +186,7 @@ const Comment: FC<CommentType> = ({
                             variant="body2"
                             color="text.primary"
                             align="justify"
-                            sx={{whiteSpace: 'pre-line', textIndent: '10px', mt: 0.5}}
+                            sx={{whiteSpace: 'pre-line', mt: 0.5}}
                         >
                             {text}
                         </Typography>
@@ -218,24 +223,26 @@ const Comment: FC<CommentType> = ({
                                     justifyContent: 'flex-end',
                                     alignItems: 'center',
                                 }}>
-                                    <Typography
+                                    {replyComment && <Typography
                                         component="span"
                                         variant="body2"
                                         color="text.primary"
                                         sx={{
                                             cursor: 'pointer'
                                         }}
+                                        onClick={() => replyComment(id)}
                                     >
                                         Reply
-                                    </Typography>
+                                    </Typography>}
                                 </ListItem>
                             </Grid>
                         </Grid>
                     </>
                 }
             />
-            {deleteComment && <DeleteCommentModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id} deleteComment={deleteComment}/>}
-            <ReportCommentModal open={reportModal} onClose={handleReportModalClose} user={userId} />
+            {deleteComment && <DeleteCommentModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
+                                                  deleteComment={deleteComment}/>}
+            <ReportCommentModal open={reportModal} onClose={handleReportModalClose} user={userId}/>
         </ListItem>
     );
 };

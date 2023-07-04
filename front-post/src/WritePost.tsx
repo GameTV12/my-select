@@ -18,7 +18,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import ModalDelete from "./components/ModalDelete"
 
-interface registrationDataInterface {
+export interface PostData {
     title: string
     text: string
     photos?: File[]
@@ -26,6 +26,10 @@ interface registrationDataInterface {
     commentsAllowed: boolean
     variantsAllowed?: boolean
     variants?: string[]
+    createdAt: Date
+    updatedAt: Date
+    likes: 0
+    dislikes: 0
 }
 
 const CustomFormControl = styled(FormControl)(() => ({
@@ -57,7 +61,7 @@ export const WritePost = () => {
     const [photoModal, setPhotoModal] = useState<boolean>(false)
     const [photoForDeleting, setPhotoForDeleting] = useState<File | null>(null)
     const [draggablePhoto, setDraggablePhoto] = useState<File | null>(null)
-    const [formData, setFormData] = useState<registrationDataInterface>({title: '', text: '', commentsAllowed: true, variantsAllowed: true});
+    const [formData, setFormData] = useState<PostData>({title: '', text: '', commentsAllowed: true, variantsAllowed: true});
 
     const [video, setVideo] = useState<File | null>(null)
     const videoRef = useRef<HTMLInputElement>(null)

@@ -28,7 +28,7 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import SingleComment from "../components/SingleComment";
+import ListComment from "../components/ListComment";
 
 interface User {
     id: string
@@ -301,7 +301,7 @@ const UserInfoPage = () => {
                                 {chart}
                             </Box>
                         </TabPanel>
-                        <TabPanel value="2"><SingleComment /></TabPanel>
+                        <TabPanel value="2"><ListComment /></TabPanel>
                     </TabContext>
                 </Box>
             </Grid>

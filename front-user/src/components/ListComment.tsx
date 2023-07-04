@@ -8,7 +8,7 @@ import SouthIcon from '@mui/icons-material/South'
 import NorthIcon from '@mui/icons-material/North'
 // @ts-ignore
 const Comment = React.lazy(() => import('front_comment/Comment'))
-export const SingleComment = () => {
+export const ListComment = () => {
     const [commentList, setCommentList] = useState(allComments);
 
     function deleteComment(commentId: string) {
@@ -17,14 +17,14 @@ export const SingleComment = () => {
 
     return (
         <List sx={{bgcolor: 'background.paper'}}>
-            {commentList.map((comment) => {
+            {commentList.sort((item1, item2) => item2.time - item1.time).map((comment) => {
                 return (<Suspense fallback={<div>Loading...</div>}>
                     <Comment key={comment.id} id={comment.id} nickname={comment.nickname}
                              linkNickname={comment.linkNickname}
                              image={comment.image} text={comment.text} time={comment.time} status={comment.status}
                              userId={comment.userId}
-                             replyTo={comment.replyTo} replyText={comment.replyText}
-                             replyNickname={comment.replyNickname} deleteComment={deleteComment}
+                             repliedTo={comment.repliedTo} repliedText={comment.repliedText}
+                             repliedNickname={comment.repliedNickname} deleteComment={deleteComment}
                              likes={comment.likes} dislikes={comment.dislikes}/>
                 </Suspense>)
             })}
@@ -32,4 +32,4 @@ export const SingleComment = () => {
     );
 };
 
-export default SingleComment;
+export default ListComment;
