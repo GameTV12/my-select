@@ -16,9 +16,12 @@ import RemoveIcon from '@mui/icons-material/Remove'
 import {ChangeEvent, useRef, useState} from "react"
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import ModalDelete from "./components/ModalDelete"
+import ModalDelete from "./ModalDelete"
 
-export interface PostData {
+export interface CreatePostData {
+    userId: string
+    nickname: string
+    linkNickname: string
     title: string
     text: string
     photos?: File[]
@@ -26,10 +29,6 @@ export interface PostData {
     commentsAllowed: boolean
     variantsAllowed?: boolean
     variants?: string[]
-    createdAt: Date
-    updatedAt: Date
-    likes: 0
-    dislikes: 0
 }
 
 const CustomFormControl = styled(FormControl)(() => ({
@@ -61,7 +60,7 @@ export const WritePost = () => {
     const [photoModal, setPhotoModal] = useState<boolean>(false)
     const [photoForDeleting, setPhotoForDeleting] = useState<File | null>(null)
     const [draggablePhoto, setDraggablePhoto] = useState<File | null>(null)
-    const [formData, setFormData] = useState<PostData>({title: '', text: '', commentsAllowed: true, variantsAllowed: true});
+    const [formData, setFormData] = useState<CreatePostData>({userId: 'DOTA-2TRA-DEGG', nickname: 'Langer', linkNickname: 'langerpro11', title: '', text: '', commentsAllowed: true, variantsAllowed: true});
 
     const [video, setVideo] = useState<File | null>(null)
     const videoRef = useRef<HTMLInputElement>(null)

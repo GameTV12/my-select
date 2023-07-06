@@ -1,11 +1,10 @@
-import {WritePost} from "./WritePost";
-import Post from "./components/Post";
+import {WritePost} from "./components/createPost/WritePost"
+import PostList from "./pages/PostList"
 
 export const App = () => {
     return (
         <>
-            <WritePost/>
-            <Post/>
+            <PostList/>
         </>
     );
 }

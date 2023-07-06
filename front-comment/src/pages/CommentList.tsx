@@ -120,7 +120,6 @@ const CommentList = () => {
         const thisComment: CommentType | undefined = commentList.find(item => item.id == commentId)
         if (!thisComment) return
         setRepliedComment(thisComment)
-        console.log(8)
     }
 
     function clearReply(){
