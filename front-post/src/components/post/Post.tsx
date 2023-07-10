@@ -18,7 +18,15 @@ import CommentIcon from '@mui/icons-material/Comment'
 import ReportPostModal from "./ReportPostModal";
 import DeletePostModal from "./DeletePostModal";
 import ImageBlock from "./ImageBlock";
+import ReactPlayer from "react-player";
+import YouTube from "react-youtube";
+import PollBlock from "./PollBlock";
 
+export interface Variant {
+    id: string
+    title: string
+    votes: number
+}
 export interface PostData {
     id: string
     userId: string
@@ -31,7 +39,8 @@ export interface PostData {
     video?: string
     commentsAllowed: boolean
     variantsAllowed?: boolean
-    variants?: string[]
+    variants?: Variant[]
+    isVoted?: boolean
     createdAt: number
     updatedAt: number
     likes: number
@@ -59,6 +68,7 @@ const Post = ({
                   commentsAllowed,
                   variantsAllowed,
                   variants,
+                  isVoted,
                   createdAt,
                   updatedAt,
                   likes,
@@ -130,7 +140,7 @@ const Post = ({
 
 
     return (
-        <ListItem alignItems="flex-start" sx={{boxShadow: 1, mb: 4, p: 3, pr: 4, pt: 2}}>
+        <ListItem alignItems="flex-start" sx={{boxShadow: 5, mb: 4, p: 3, pr: 4, pt: 2}}>
             <ListItemAvatar>
                 <Avatar alt="Remy Sharp" src={userPhoto}/>
             </ListItemAvatar>
@@ -158,11 +168,13 @@ const Post = ({
                             variant="body2"
                             color="text.primary"
                             align="justify"
-                            sx={{whiteSpace: 'pre-line', mt: 0.5, textIndent: 10 }}
+                            sx={{whiteSpace: 'pre-line', mt: 0.5, textIndent: 10}}
                         >
                             {text}
                         </Typography>
-                        {photos && <ImageBlock images={photos} />}
+                        {photos && <Box sx={{mt: 2}}><ImageBlock images={photos}/></Box>}
+                        {video && <Box sx={{mt: 2}}><YouTube videoId={video} opts={{ width: '100%' }}/></Box>}
+                        {variants && <Box sx={{mt: 2}}><PollBlock variants={variants} isVoted={isVoted}/></Box>}
                         <Grid container sx={{
                             p: 1,
                             bgcolor: 'background.paper',

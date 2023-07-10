@@ -58,7 +58,7 @@ export const allPosts: PostData[] = [
         "photos": [
             "https://cdn.vox-cdn.com/thumbor/5d_RtADj8ncnVqh-afV3mU-XQv0=/0x0:1600x1067/1200x900/filters:focal(672x406:928x662)/cdn.vox-cdn.com/uploads/chorus_image/image/57698831/51951042270_78ea1e8590_h.7.jpg"
         ],
-        "video": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+        "video": "jNQXAC9IVRw",
         "likes": 5,
         "dislikes": 2,
         "status": LikeStatus.NONE,
@@ -75,7 +75,7 @@ export const allPosts: PostData[] = [
         "userPhoto": "https://e0.pxfuel.com/wallpapers/962/509/desktop-wallpaper-steam-avatars-deadpool-dump-album-on-imgur-cool-cool-profile.jpg",
         "title": "Id mauris",
         "text": "Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.",
-        "video": "https://www.youtube.com/watch?v=GnodscC2p-A",
+        "video": "GnodscC2p-A",
         "photos": ["https://d25-a.sdn.cz/d_25/c_img_gS_BD/QJuBjdE.png"],
         "likes": 9,
         "dislikes": 15,
@@ -113,13 +113,21 @@ export const allPosts: PostData[] = [
         "status": LikeStatus.LIKED,
         "variantsAllowed": true,
         "variants": [
-            "Option 1",
-            "Option 2",
-            "Option 3",
-            "Option 4",
-            "Option 5",
-            "Option 6"
+            {title: "Option 1", votes: 150, id: '1'},
+            {title: "Option 2", votes: 1324, id: '2'},
+            {title: "Option 3", votes: 89, id: '3'},
+            {title: "Option 4", votes: 934, id: '4'},
+            {title: "Option 5", votes: 333, id: '5'},
+            {title: "Option 6", votes: 707, id: '6'},
+            {title: "Option 7", votes: 562, id: '7'},
+            {title: "Option 8", votes: 146, id: '8'},
+            {title: "Option 9", votes: 2903, id: '9'},
+            {title: "Option 10", votes: 65, id: '10'},
+            {title: "Option 11", votes: 1809, id: '11'},
+            {title: "Option 12", votes: 901, id: '12'},
+            {title: "Option 13", votes: 46, id: '13'},
         ],
+        isVoted: false,
         "createdAt": 1670833298000,
         "updatedAt": 1686869079000
     },
@@ -152,9 +160,10 @@ export const allPosts: PostData[] = [
         "status": LikeStatus.DISLIKED,
         "variantsAllowed": true,
         "variants": [
-            "Option 1",
-            "Option 2"
+            {title: "Option 1", votes: 39, id: '1'},
+            {title: "Option 2", votes: 65, id: '2'},
         ],
+        isVoted: true,
         "createdAt": 1660851437000,
         "updatedAt": 1661449851000
     },
@@ -196,7 +205,6 @@ export const allPosts: PostData[] = [
         "userPhoto": "https://i.pinimg.com/736x/92/39/4b/92394bcac94b9c0d6416ecf8c744d39f.jpg",
         "title": "eleifend",
         "text": "Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.\n\nQuisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros.\n\nVestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat.\n\nIn congue. Etiam justo. Etiam pretium iaculis justo.",
-        "video": "ru.mail.Keylex",
         "commentsAllowed": true,
         "likes": 1590,
         "dislikes": 297,
@@ -244,16 +252,17 @@ export const allPosts: PostData[] = [
             "https://b829919.smushcdn.com/829919/wp-content/uploads/2010/05/03/kick-ass_2010_blikacka_r-750x430.jpg?lossy=1&strip=0&webp=1",
             "https://res.cloudinary.com/amc-theatres/image/upload/c_fill,fl_lossy,q_auto,w_900/v1/amc-marketing/AMC_Scene_FilmStill_Incredibles_You_pepbuw"
         ],
-        "video": "https://www.youtube.com/watch?v=48h57PspBec",
+        "video": "48h57PspBec",
         "commentsAllowed": true,
         "likes": 9358,
         "dislikes": 890,
         "status": LikeStatus.LIKED,
         "variantsAllowed": false,
         "variants": [
-            "Option 1",
-            "Option 2"
+            {title: "Option 1", votes: 1800, id: '1'},
+            {title: "Option 2", votes: 1404, id: '2'},
         ],
+        isVoted: false,
         "createdAt": 1666024252000,
         "updatedAt": 1685739209000
     }

@@ -19,8 +19,10 @@ const PostList = () => {
                                      linkNickname={post.linkNickname}
                                      userPhoto={post.userPhoto} text={post.text} createdAt={post.createdAt}
                                      status={post.status} updatedAt={post.updatedAt}
-                                     userId={post.userId} photos={post.photos}
-                                     likes={post.likes} dislikes={post.dislikes} commentsAllowed={post.commentsAllowed} title={post.title} deletePost={deletePost}/>
+                                     userId={post.userId} photos={post.photos} video={post.video}
+                                     likes={post.likes} dislikes={post.dislikes} commentsAllowed={post.commentsAllowed}
+                                     title={post.title} variants={post.variants} isVoted={post.isVoted}
+                                     deletePost={deletePost}/>
                     })}
                 </List>
             </Grid>
