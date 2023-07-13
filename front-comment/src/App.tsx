@@ -1,8 +1,8 @@
-import CommentList from "./pages/CommentList";
+import PostCommentList from "./pages/PostCommentList";
 
 export function App() {
    return (
-       <CommentList />
+       <PostCommentList />
    )
 }
 

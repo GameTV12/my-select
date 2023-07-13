@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {allPosts} from "../mockData/mockPosts";
-import Post, {PostData} from "../components/post/Post";
+import Post, {PostData} from "../components/post/Post"
 import {Grid, List} from "@mui/material";
 
 const PostList = () => {
@@ -22,6 +22,7 @@ const PostList = () => {
                                      userId={post.userId} photos={post.photos} video={post.video}
                                      likes={post.likes} dislikes={post.dislikes} commentsAllowed={post.commentsAllowed}
                                      title={post.title} variants={post.variants} isVoted={post.isVoted}
+                                     variantsAllowed={post.variantsAllowed}
                                      deletePost={deletePost}/>
                     })}
                 </List>

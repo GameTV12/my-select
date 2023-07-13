@@ -3,30 +3,31 @@ import {
     Avatar,
     Box, Grid,
     IconButton, ImageList, ImageListItem, LinearProgress,
-    Link,
     ListItem,
     ListItemAvatar,
     ListItemText,
     Tooltip,
     Typography
-} from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit'
+} from "@mui/material"
 import FlagIcon from '@mui/icons-material/Flag'
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation'
 import ReactionComponent from "./ReactionComponent"
 import CommentIcon from '@mui/icons-material/Comment'
-import ReportPostModal from "./ReportPostModal";
-import DeletePostModal from "./DeletePostModal";
-import ImageBlock from "./ImageBlock";
-import ReactPlayer from "react-player";
-import YouTube from "react-youtube";
-import PollBlock from "./PollBlock";
+import ReportPostModal from "./ReportPostModal"
+import DeletePostModal from "./DeletePostModal"
+import ImageBlock from "./ImageBlock"
+import YouTube from "react-youtube"
+import PollBlock from "./PollBlock"
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import AddNewVariantModal, {VariantMessage} from "./AddNewVariantModal"
+import {Link} from "react-router-dom"
 
 export interface Variant {
     id: string
     title: string
     votes: number
 }
+
 export interface PostData {
     id: string
     userId: string
@@ -46,6 +47,7 @@ export interface PostData {
     likes: number
     dislikes: number
     status: LikeStatus
+    fullPost?: boolean
     deletePost?: (postId: string) => void
 }
 
@@ -74,6 +76,7 @@ const Post = ({
                   likes,
                   dislikes,
                   status,
+                  fullPost,
                   deletePost
               }: PostData) => {
     const [likesNumber, setLikesNumber] = useState<number>(likes)
@@ -83,6 +86,9 @@ const Post = ({
     const [progressNumber, setProgressNumber] = useState(0)
     const [deleteModal, setDeleteModal] = useState<boolean>(false)
     const [reportModal, setReportModal] = useState<boolean>(false)
+    const [variantList, setVariantList] = useState<Variant[]>(variants ? variants : [])
+    const [votedStatus, setVotedStatus] = useState<boolean | undefined>(isVoted!=undefined ? isVoted : undefined)
+    const [variantModal, setVariantModal] = useState(false)
 
     useEffect(() => {
         if (likesNumber + dislikesNumber) setProgressNumber(100 * likesNumber / (likesNumber + dislikesNumber))
@@ -138,6 +144,31 @@ const Post = ({
         setReportModal(false)
     }
 
+    function handleAddNewVariantModalClickOpen() {
+        setVariantModal(true)
+    }
+
+    function handleAddNewVariantModalClose() {
+        setVariantModal(false)
+    }
+
+    function addNewVariant({id, text}: VariantMessage) {
+        setVotedStatus(true)
+        setVariantList(prevState => ([...prevState, {id: id, title: text, votes: 1}]))
+    }
+
+    function voteForVariant(variantId: string) {
+        if (variants != undefined) {
+            const newList = variantList.map(variant => {
+                if (variant.id == variantId) {
+                    return {title: variant.title, votes: variant.votes+1, id: variant.id}
+                }
+                return variant
+            })
+            setVariantList(newList)
+            setVotedStatus(true)
+        }
+    }
 
     return (
         <ListItem alignItems="flex-start" sx={{boxShadow: 5, mb: 4, p: 3, pr: 4, pt: 2}}>
@@ -147,7 +178,7 @@ const Post = ({
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
-                        <Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{nickname}</Link>
+                        <Link to={"https://leetcode.com/"} target={"_blank"} style={{ "display": "none" }}>{nickname}</Link>
                         <em>&nbsp;{new Date(createdAt).getDate()}.{new Date(createdAt).getMonth() + 1}.{new Date(createdAt).getFullYear()} {String(new Date(createdAt).getHours()).padStart(2, '0')}:{String(new Date(createdAt).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>
@@ -156,6 +187,7 @@ const Post = ({
                         {deletePost && <Tooltip title={"Delete"}><IconButton
                             onClick={handleDeleteModalClickOpen}><CancelPresentationIcon/></IconButton></Tooltip>
                         }
+                        {variants != undefined && votedStatus != undefined && !votedStatus && variantsAllowed && <Tooltip title={"Add a new variant"}><IconButton onClick={handleAddNewVariantModalClickOpen}><AddBoxIcon /></IconButton></Tooltip>}
                     </Box>
                 </Box>}
                 secondary={
@@ -173,8 +205,8 @@ const Post = ({
                             {text}
                         </Typography>
                         {photos && <Box sx={{mt: 2}}><ImageBlock images={photos}/></Box>}
-                        {video && <Box sx={{mt: 2}}><YouTube videoId={video} opts={{ width: '100%' }}/></Box>}
-                        {variants && <Box sx={{mt: 2}}><PollBlock variants={variants} isVoted={isVoted}/></Box>}
+                        {video && <Box sx={{mt: 2}}><YouTube videoId={video} opts={{width: '100%'}}/></Box>}
+                        {variants && <Box sx={{mt: 2}}><PollBlock postId={id} fullPost={fullPost} variants={variantList} isVoted={votedStatus} voteForVariant={votedStatus==false ? voteForVariant : (variantId: string)=> false }/></Box>}
                         <Grid container sx={{
                             p: 1,
                             bgcolor: 'background.paper',
@@ -215,7 +247,7 @@ const Post = ({
                                         py: 2
                                     }}
                                 >
-                                    <CommentIcon/>
+                                    <Link to={`/posts/${id}/comments`}><CommentIcon /></Link>
                                 </Typography>
                             </Grid>
                             }
@@ -226,6 +258,7 @@ const Post = ({
             {deletePost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                             deletePost={deletePost}/>}
             <ReportPostModal open={reportModal} onClose={handleReportModalClose} user={userId}/>
+            <AddNewVariantModal open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
         </ListItem>
     );
 };

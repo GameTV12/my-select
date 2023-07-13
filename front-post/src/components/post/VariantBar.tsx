@@ -1,9 +1,11 @@
 import React from 'react';
-import {Box, styled} from "@mui/material";
+import {styled} from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import {Navigate, useNavigate} from "react-router-dom";
 
 interface VariantProps {
     id: string,
+    postId: string,
     title: string,
     numberOfVotes: string
     percentage: number
@@ -31,13 +33,14 @@ const CustomFilled = styled('div')({
     color: 'white'
 })
 
-const VariantBar = ({id, title, numberOfVotes, percentage, voteForVariant}: VariantProps) => {
+const VariantBar = ({id, postId, title, numberOfVotes, percentage, voteForVariant}: VariantProps) => {
+    const navigate = useNavigate()
 
     return (
         <Tooltip title={numberOfVotes}>
             <CustomProgressBar>
                 <CustomFilled sx={{
-                    width: voteForVariant==undefined ? 0 : percentage, cursor: 'pointer' }} onClick={voteForVariant!=undefined ? () => voteForVariant(id) : () => false}><div>{title} {voteForVariant!=undefined && <>({percentage}%)</>}</div></CustomFilled>
+                    width: voteForVariant!=undefined ? 0 : `${percentage}%`, cursor: 'pointer' }} onClick={voteForVariant!=undefined ? () => voteForVariant(id) : () => navigate(`/posts/${postId}/${id}/comments`) }><div>{title} {voteForVariant==undefined && <>({percentage}%)</>}</div></CustomFilled>
             </CustomProgressBar>
         </Tooltip>
     );

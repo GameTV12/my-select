@@ -22,6 +22,8 @@ import dayjs from "dayjs"
 import SendIcon from '@mui/icons-material/Send'
 import ReplyIcon from "@mui/icons-material/Reply"
 import CloseIcon from '@mui/icons-material/Close'
+import {Navigate, useParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 
 type FilterParams = {
     sortingArgs: number[]
@@ -29,7 +31,11 @@ type FilterParams = {
     endDate?: dayjs.Dayjs
 }
 
-const CommentList = () => {
+const VariantCommentList = () => {
+    const { id, variantId } = useParams()
+    console.log('variantId - ' + variantId)
+
+
     const newComment: CommentType = {
         id: "HELL-OWOR-LD12",
         nickname: "David 999",
@@ -193,9 +199,11 @@ const CommentList = () => {
                     <Grid container justifyContent="center" sx={{p: 0, position: "sticky", boxShadow: 0}}>
                         <Grid item xs={12} sm={2} md={1} lg={1} xl={1}
                               sx={{display: "flex", justifyContent: "flex-start", alignItems: "center", p: 2}}>
-                            <IconButton>
-                                <KeyboardBackspaceIcon/>
-                            </IconButton>
+                            <Link to={`/posts/${id}`}>
+                                <IconButton>
+                                    <KeyboardBackspaceIcon/>
+                                </IconButton>
+                            </Link>
                         </Grid>
                         <Grid item xs={12} sm={10} md={4} lg={4} xl={4}
                               sx={{display: "flex", justifyContent: "center", alignItems: "center", p: 1}}>
@@ -334,4 +342,4 @@ const CommentList = () => {
     )
 }
 
-export default CommentList;
+export default VariantCommentList;

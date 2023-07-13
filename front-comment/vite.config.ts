@@ -11,9 +11,10 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       // Modules to expose
       exposes: {
-        './Comment': './src/components/Comment'
+        './PostCommentList': './src/pages/PostCommentList',
+        './VariantCommentList': './src/pages/VariantCommentList'
       },
-      shared: ['react', 'react-dom']
+      shared: ['react', 'react-dom', 'react-router-dom']
     })
   ],
   server: {

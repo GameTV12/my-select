@@ -7,7 +7,7 @@ import Header from "./router/routerComponents/Header";
 import {Box} from "@mui/material";
 import {Suspense} from "react";
 // @ts-ignore
-const WritePost = React.lazy(() => import('front_post/WritePost'))
+const PostList = React.lazy(() => import('front_post/PostList'))
 // @ts-ignore
 // import Hello from "front_registration/Hello"
 
@@ -18,7 +18,7 @@ export const App = () => {
         <Box>
             <Header />
             <Suspense fallback={<div>Loading...</div>}>
-                <WritePost />
+                asf
             </Suspense>
         </Box>
     )

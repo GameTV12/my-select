@@ -29,6 +29,7 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import ListComment from "../components/ListComment";
+import {useParams} from "react-router-dom";
 
 interface User {
     id: string
@@ -66,6 +67,8 @@ const mockUser = {
 }
 
 const UserInfoPage = () => {
+    const { id } = useParams()
+    console.log(id)
 
     const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
     const [openModalModeratorRequest, setOpenModalModeratorRequest] = useState<boolean>(false)

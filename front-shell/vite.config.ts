@@ -11,10 +11,11 @@ export default defineConfig({
       federation({
         name: 'front_shell',
         remotes: {
-            front_registration: "http://localhost:3001/assets/remoteEntry.js",
+            front_user: "http://localhost:3005/assets/remoteEntry.js",
             front_post: "http://localhost:3002/assets/remoteEntry.js",
+            front_comment: "http://localhost:3006/assets/remoteEntry.js"
         },
-        shared: ['react', 'react-dom', 'vue']
+        shared: ['react', 'react-dom', 'react-router-dom']
       })
   ],
     server: {

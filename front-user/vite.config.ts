@@ -11,12 +11,15 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       // Modules to expose
       exposes: {
-        './RegisterPage': './src/pages/RegisterPage'
+        './RegisterPage': './src/pages/RegisterPage',
+        './UserInfoPage': './src/pages/UserInfoPage',
+        './RequestList': './src/pages/RequestList',
+        './SubscriptionList': './src/pages/SubscriptionList',
       },
       remotes: {
         front_comment: "http://localhost:3006/assets/remoteEntry.js",
       },
-      shared: ['react', 'react-dom']
+      shared: ['react', 'react-dom', 'react-router-dom']
     })
   ],
   server: {

@@ -257,10 +257,10 @@ export const allPosts: PostData[] = [
         "likes": 9358,
         "dislikes": 890,
         "status": LikeStatus.LIKED,
-        "variantsAllowed": false,
+        "variantsAllowed": true,
         "variants": [
-            {title: "Option 1", votes: 1800, id: '1'},
-            {title: "Option 2", votes: 1404, id: '2'},
+            {title: "Option 1", votes: 0, id: '1'},
+            {title: "Option 2", votes: 0, id: '2'},
         ],
         isVoted: false,
         "createdAt": 1666024252000,

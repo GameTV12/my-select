@@ -11,9 +11,11 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       // Modules to expose
       exposes: {
-        './WritePost': './src/WritePost'
+        './PostList': './src/pages/PostList',
+        './SinglePost': './src/pages/SinglePost',
+        './WritePost': './src/components/createPost/WritePost'
       },
-      shared: ['react', 'react-dom']
+      shared: ['react', 'react-dom', 'react-router-dom']
     })
   ],
   server: {

@@ -46,6 +46,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {createTheme} from "@mui/material/styles";
 import {Grid} from "@mui/material";
+import {Link} from "react-router-dom"
 
 const mainTheme = createTheme({
     palette: {
@@ -138,7 +139,7 @@ export default function Header() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem sx={{fontWeight: 'bold'}}>User123</MenuItem>
+            <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User123</MenuItem></Link>
             <MenuItem onClick={handleMenuClose}>Business account1</MenuItem>
             <MenuItem onClick={handleMenuClose}>Business account2</MenuItem>
             <MenuItem onClick={handleMenuClose} sx={{fontWeight: 'bold'}}>Logout&nbsp;<LogoutIcon
@@ -214,7 +215,7 @@ export default function Header() {
                                 component="div"
                                 sx={{display: {xs: 'none', sm: 'inline-block', fontWeight: 'bold'}}}
                             >
-                                MYSELECT
+                                <Link to={'/'} style={{ textDecoration: 'none', color: '#000' }}>MYSELECT</Link>
                             </Typography>
 
 
@@ -242,7 +243,7 @@ export default function Header() {
                                 component="div"
                                 sx={{display: {xs: 'none', sm: 'inline-block'}, color: 'red'}}
                             >
-                                Write a post
+                                <Link to={'/posts/create'} style={{ textDecoration: 'none', color: 'inherit' }}>Write a post</Link>
                             </Typography>
                             <Box sx={{display: {xs: 'none', md: 'flex'}}}>
                                 <IconButton size="large" aria-label="show 4 new mails" color="inherit">
