@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String      @id @default(uuid()) @db.Uuid
+  nickname           String
+  linkNickname       String      @unique
+  password           String
+  photo              String
+  email              String      @unique
+  firstName          String
+  lastName           String?
+  phone              String      @unique
+  firstVerification  Boolean     @default(true)
+  role               String      @default("USER")
+  secondVerification Boolean     @default(false)
+  birthday           DateTime
+  visible            Boolean     @default(true)
+  unlockTime         DateTime?
+  hashedRt           String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  Followers          Followers[] @relation("Followers")
+  Following          Followers[] @relation("Following")
+  Requests           Request[]   @relation("Requests")
+  Decisions          Request[]   @relation("Decisions")
+  Report             Report[]    @relation("Reports")
+  Reported           Report[]    @relation("Goals")
+}
+
+model Followers {
+  followingUser User   @relation("Followers", fields: [following], references: [id])
+  following     String
+  followerUser  User   @relation("Following", fields: [follower], references: [id])
+  follower      String
+
+  @@id([follower, following])
+}
+
+model Request {
+  id      String @id @default(uuid()) @db.Uuid
+  user    User   @relation("Requests", fields: [userId], references: [id])
+  userId  String
+  text    String
+  status  String @default("WAITING")
+  court   User   @relation("Decisions", fields: [courtId], references: [id])
+  courtId String
+}
+
+model Report {
+  id             String @id @default(uuid()) @db.Uuid
+  sender         User   @relation("Reports", fields: [senderId], references: [id])
+  senderId       String
+  text           String
+  reportedUser   User   @relation("Goals", fields: [reportedUserId], references: [id])
+  reportedUserId String
+}

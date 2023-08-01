@@ -1,0 +1,40 @@
+{
+  "name": "myselect",
+  "version": "1.0",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "prisma:dev:deploy": "prisma migrate deploy",
+    "prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
+    "docker:rm": "docker compose rm -s -f -v",
+    "docker:up": "docker compose up",
+    "docker:restart": "(npm run docker:rm) && (npm run docker:up)",
+    "db:dev:rm": "docker compose rm dev-db -s -f -v",
+    "db:dev:up": "docker compose up dev-db -d",
+    "db:dev:restart": "(npm run db:dev:rm) && (npm run db:dev:up) && (npm run sleep) && (npm run prisma:dev:deploy)",
+    "db:test:rm": "docker compose rm test-db -s -f -v",
+    "db:test:up": "docker compose up test-db -d",
+    "db:test:restart": "(npm run db:test:rm) && (npm run db:test:up) && (npm run sleep) && (npm run prisma:test:deploy)",
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "sleep": "node -e \"setTimeout(()=>{},2000)\"",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "pretest:e2e": "npm run db:test:restart",
+    "test:e2e": "dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json",
+    "backend:all": "concurrently \"cd backend && cd ms-post && npm run start:dev\" \"cd backend && cd ms-user && npm run start:dev\" \"cd backend && cd ms-api-gateway && npm run start:dev\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
