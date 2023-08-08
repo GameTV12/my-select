@@ -14,28 +14,29 @@ model ShortUser {
   id           String     @unique
   linkNickname String     @unique
   nickname     String
+  visible      Boolean
   Comment      Comment[]
   Reaction     Reaction[]
 }
 
 model Reaction {
-  id        String    @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid())
   user      ShortUser @relation(fields: [userId], references: [id])
   userId    String
   type      String
   startTime DateTime  @default(now())
   endTime   DateTime  @updatedAt
   comment   Comment   @relation(fields: [commentId], references: [id])
-  commentId String    @db.Uuid
+  commentId String
 }
 
 model Comment {
-  id        String     @id @default(uuid()) @db.Uuid
+  id        String     @id @default(uuid())
   user      ShortUser  @relation(fields: [userId], references: [id])
   userId    String
   text      String
   visible   Boolean    @default(true)
-  type      String
+  type      Type
   reply     Comment    @relation("Replies", fields: [replyTo], references: [id])
   variantId String?
   postId    String?
@@ -43,5 +44,10 @@ model Comment {
   updatedAt DateTime   @updatedAt
   Reaction  Reaction[]
   Comment   Comment[]  @relation("Replies")
-  replyTo   String     @db.Uuid
+  replyTo   String
+}
+
+enum Type {
+  POST
+  COMMENT
 }

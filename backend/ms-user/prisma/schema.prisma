@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id                 String      @id @default(uuid()) @db.Uuid
+  id                 String      @id @default(uuid())
   nickname           String
   linkNickname       String      @unique
   password           String
@@ -21,12 +21,10 @@ model User {
   lastName           String?
   phone              String      @unique
   firstVerification  Boolean     @default(true)
-  role               String      @default("USER")
+  role               UserRole    @default(DEFAULT_USER)
   secondVerification Boolean     @default(false)
   birthday           DateTime
-  visible            Boolean     @default(true)
   unlockTime         DateTime?
-  hashedRt           String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   Followers          Followers[] @relation("Followers")
@@ -35,6 +33,13 @@ model User {
   Decisions          Request[]   @relation("Decisions")
   Report             Report[]    @relation("Reports")
   Reported           Report[]    @relation("Goals")
+}
+
+enum UserRole {
+  DEFAULT_USER
+  ADMIN
+  MODERATOR
+  BANNED_USER
 }
 
 model Followers {
@@ -47,17 +52,23 @@ model Followers {
 }
 
 model Request {
-  id      String @id @default(uuid()) @db.Uuid
+  id      String @id @default(uuid())
   user    User   @relation("Requests", fields: [userId], references: [id])
   userId  String
   text    String
-  status  String @default("WAITING")
+  status  Status @default(WAITING)
   court   User   @relation("Decisions", fields: [courtId], references: [id])
   courtId String
 }
 
+enum Status {
+  WAITING
+  ACCEPTED
+  DENIED
+}
+
 model Report {
-  id             String @id @default(uuid()) @db.Uuid
+  id             String @id @default(uuid())
   sender         User   @relation("Reports", fields: [senderId], references: [id])
   senderId       String
   text           String

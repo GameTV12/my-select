@@ -1,7 +1,5 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {PostCreatedEvent} from "./events/post-created.event";
-import {ClientKafka} from "@nestjs/microservices";
-import {GetUserDto} from "./dtos/get-user.dto";
+import { Injectable } from '@nestjs/common';
+import { PostCreatedEvent } from './events/post-created.event';
 
 @Injectable()
 export class AppService {
@@ -12,9 +10,9 @@ export class AppService {
   }
 
   handlePostCreated(postCreatedEvent: PostCreatedEvent) {
-      console.log(postCreatedEvent)
-      console.log(postCreatedEvent.createPostDto)
-      console.log(postCreatedEvent.postId)
-      return { answer: postCreatedEvent, secondAnswer: 902 }
+    console.log(postCreatedEvent);
+    console.log(postCreatedEvent.createPostDto);
+    console.log(postCreatedEvent.postId);
+    return { answer: postCreatedEvent, secondAnswer: 902 };
   }
 }

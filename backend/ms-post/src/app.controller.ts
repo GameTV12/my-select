@@ -1,13 +1,11 @@
-import {Controller, Get, Inject, OnModuleInit, ValidationPipe} from '@nestjs/common';
+import { Controller, Get, ValidationPipe } from '@nestjs/common';
 import { AppService } from './app.service';
-import {ClientKafka, EventPattern, MessagePattern, Payload} from "@nestjs/microservices";
-import {PostCreatedEvent} from "./events/post-created.event";
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { PostCreatedEvent } from './events/post-created.event';
 
 @Controller()
 export class AppController {
-  constructor(
-      private readonly appService: AppService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {
@@ -15,8 +13,7 @@ export class AppController {
   }
 
   @MessagePattern('post_created')
-  handlePostCreated(@Payload(ValidationPipe) data: PostCreatedEvent){
-    console.log(3)
-    return this.appService.handlePostCreated(data)
+  handlePostCreated(@Payload(ValidationPipe) data: PostCreatedEvent) {
+    return this.appService.handlePostCreated(data);
   }
 }

@@ -10,7 +10,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ShortUser {
-  userId       String @unique
-  linkNickname String @unique
+model AuthUser {
+  userId             String        @unique
+  nickname           String
+  linkNickname       String        @unique
+  password           String
+  email              String        @unique
+  firstVerification  Boolean       @default(true)
+  role               UserRole      @default(DEFAULT_USER)
+  secondVerification Boolean       @default(false)
+  visible            Boolean       @default(true)
+  unlockTime         DateTime?
+  hashedRt           String?
+  AuthSession        AuthSession[]
+}
+
+enum UserRole {
+  DEFAULT_USER
+  ADMIN
+  MODERATOR
+  BANNED_USER
+}
+
+model AuthSession {
+  id             String   @id
+  user           AuthUser @relation(fields: [authUserUserId], references: [userId])
+  authUserUserId String
+  loginTime      DateTime @default(now())
+  exitTime       DateTime
 }

@@ -1,23 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import {GetUserRequestDto} from "./dto/get-user-request.dto";
+import { PrismaService } from './prisma/prisma.service';
+import { UserCreatedEvent } from './events/user-created.event';
+import { CreateUserDto } from './dtos/create-user.dto';
 
 @Injectable()
 export class AppService {
-  private readonly users: any[] = [
-    {
-      userId: '123',
-      stripeUserId: '43234',
-    },
-    {
-      userId: '345',
-      stripeUserId: '27279',
-    }
-  ]
+  constructor(private prisma: PrismaService) {}
   getHello(): string {
     return 'Hello World!';
   }
 
-  getUser(getUserRequestDto: GetUserRequestDto) {
-    return this.users.find((user) => user.userId === getUserRequestDto.userId)
+  getFollowersOfUser(userId: string) {
+    return this.prisma.user.findMany({
+      where: { id: userId },
+      include: { Followers: true },
+    });
+  }
+
+  async createUser(userDto: CreateUserDto, pass: string) {
+    console.log(userDto.birthday);
+    const newUser = await this.prisma.user.create({
+      data: {
+        nickname: userDto.nickname,
+        linkNickname: userDto.linkNickname,
+        birthday: new Date(Number(userDto.birthday)),
+        password: pass,
+        email: userDto.email,
+        firstName: userDto.firstName,
+        lastName: userDto.lastName,
+        photo: userDto.photo,
+        phone: userDto.phone,
+      },
+    });
+
+    return newUser.id;
   }
 }

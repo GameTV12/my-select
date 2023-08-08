@@ -1,9 +1,9 @@
 export class GetUserDto {
-    constructor(public readonly userId: string) {}
+  constructor(public readonly userId: string) {}
 
-    toString() {
-        return JSON.stringify({
-            userId: this.userId
-        })
-    }
+  toString() {
+    return JSON.stringify({
+      userId: this.userId,
+    });
+  }
 }

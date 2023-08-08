@@ -1,14 +1,29 @@
-import {Body, Controller, Get, Post, ValidationPipe} from '@nestjs/common';
-import {AuthService} from "./auth.service";
-import {CreateUserDto} from "../dtos/create-user.dto";
+import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { CreateUserDto } from '../dtos/create-user.dto';
+import { Tokens } from './types';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) {
-    }
+  constructor(private authService: AuthService) {}
 
-    @Post()
-    createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-        return this.authService.createNewUser(createUserDto)
-    }
+  @Post('local/signup')
+  signupLocal(@Body(ValidationPipe) dto: CreateUserDto) {
+    return this.authService.signupLocal(dto);
+  }
+
+  // @Post('local/signin')
+  // signinLocal() {
+  //   this.authService.signinLocal();
+  // }
+  //
+  // @Post('logout')
+  // logout() {
+  //   this.authService.logout();
+  // }
+  //
+  // @Post('refresh')
+  // refreshTokens() {
+  //   this.authService.refreshTokens();
+  // }
 }

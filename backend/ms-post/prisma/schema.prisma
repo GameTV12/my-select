@@ -14,24 +14,25 @@ model ShortUser {
   userId       String     @unique
   linkNickname String     @unique
   nickname     String
+  visible      Boolean
   Post         Post[]
   Reaction     Reaction[]
   Vote         Vote[]
 }
 
 model Reaction {
-  id        String    @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid())
   user      ShortUser @relation(fields: [userId], references: [userId])
   userId    String
   type      String
   startTime DateTime  @default(now())
   endTime   DateTime  @updatedAt
   post      Post      @relation(fields: [postId], references: [id])
-  postId    String    @db.Uuid
+  postId    String
 }
 
 model Variant {
-  id    String @id @default(uuid()) @db.Uuid
+  id    String @id @default(uuid())
   text  String
   votes Int
 }
@@ -40,21 +41,31 @@ model Vote {
   user   ShortUser @relation(fields: [userId], references: [userId])
   userId String
   post   Post      @relation(fields: [postId], references: [id])
-  postId String    @db.Uuid
+  postId String
 
   @@id([userId, postId])
 }
 
+model Photo {
+  id     String @id @default(uuid())
+  link   String
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+}
+
 model Post {
-  id              String    @id @default(uuid()) @db.Uuid
-  user            ShortUser @relation(fields: [shortUserUserId], references: [userId])
+  id              String     @id @default(uuid())
+  user            ShortUser  @relation(fields: [shortUserUserId], references: [userId])
   shortUserUserId String
   title           String
   text            String
+  commentsAllowed Boolean
+  variantsAllowed Boolean
   video           String?
-
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Reaction  Reaction[]
-  Vote      Vote[]
+  visible         Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  Reaction        Reaction[]
+  Vote            Vote[]
+  Photo           Photo[]
 }
