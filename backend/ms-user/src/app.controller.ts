@@ -15,6 +15,6 @@ export class AppController {
   @MessagePattern('create_user')
   getUser(@Payload(ValidationPipe) data: { dto: CreateUserDto; pass: string }) {
     console.log(78);
-    return this.appService.createUser(data.dto, data.pass);
+    return this.appService.createUser(data.dto);
   }
 }

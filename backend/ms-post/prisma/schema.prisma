@@ -11,13 +11,23 @@ datasource db {
 }
 
 model ShortUser {
-  userId       String     @unique
-  linkNickname String     @unique
-  nickname     String
-  visible      Boolean
-  Post         Post[]
-  Reaction     Reaction[]
-  Vote         Vote[]
+  userId             String     @unique
+  linkNickname       String     @unique
+  nickname           String
+  photo              String
+  visible            Boolean    @default(true)
+  role               UserRole   @default(DEFAULT_USER)
+  secondVerification Boolean    @default(false)
+  Post               Post[]
+  Reaction           Reaction[]
+  Vote               Vote[]
+}
+
+enum UserRole {
+  DEFAULT_USER
+  ADMIN
+  MODERATOR
+  BANNED_USER
 }
 
 model Reaction {

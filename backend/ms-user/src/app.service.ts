@@ -17,14 +17,13 @@ export class AppService {
     });
   }
 
-  async createUser(userDto: CreateUserDto, pass: string) {
+  async createUser(userDto: CreateUserDto) {
     console.log(userDto.birthday);
     const newUser = await this.prisma.user.create({
       data: {
         nickname: userDto.nickname,
         linkNickname: userDto.linkNickname,
         birthday: new Date(Number(userDto.birthday)),
-        password: pass,
         email: userDto.email,
         firstName: userDto.firstName,
         lastName: userDto.lastName,
