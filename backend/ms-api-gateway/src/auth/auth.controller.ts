@@ -1,16 +1,17 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from '../dtos/create-user.dto';
 import { Tokens } from './types';
-import { LogInDto } from '../dtos/log-in.dto';
+import { LogInDto, CreateUserDto, EditUserDto } from '../dtos';
 import { RtGuard } from './common/guards';
 import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
 
@@ -32,7 +33,17 @@ export class AuthController {
     return this.authService.signinLocal(dto);
   }
 
-  // @UseGuards(AtGuard)
+  @Patch('edit')
+  @HttpCode(HttpStatus.OK)
+  updateUser(@GetCurrentUserId() userId: string, @Body() dto: EditUserDto) {
+    return this.authService.updateUser(userId, dto);
+  }
+
+  @Get('me')
+  getCurrentUser(@GetCurrentUserId() userId: string) {
+    return this.authService.getCurrentUser(userId);
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@GetCurrentUserId() userId: string) {

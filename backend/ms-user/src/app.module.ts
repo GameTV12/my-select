@@ -12,15 +12,15 @@ import { ConfigModule } from '@nestjs/config';
     }),
     ClientsModule.register([
       {
-        name: 'AUTH_SERVICE',
+        name: 'USER_SERVICE',
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'auth',
+            clientId: 'user',
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'auth-consumer',
+            groupId: 'user-consumer',
           },
         },
       },

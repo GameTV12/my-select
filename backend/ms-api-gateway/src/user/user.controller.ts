@@ -11,10 +11,10 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Public()
-  @Get('/:id')
+  @Get('/:link')
   @HttpCode(HttpStatus.OK)
-  getUserById(@Param('id') id: string) {
-    return 1;
+  getUserByNickname(@Param('link') linkNickname: string) {
+    return this.userService.getUserByNickname(linkNickname);
   }
 
   @Get('/:id/requests')
@@ -31,5 +31,18 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   getAllRequests(@GetCurrentUser() user: any) {
     return 1;
+  }
+
+  @Get('/follow/:id')
+  @HttpCode(HttpStatus.OK)
+  getFollowToUser(@GetCurrentUserId() from: string, @Param('id') to: string) {
+    return this.userService.followToUser(from, to);
+  }
+
+  @Public()
+  @Get('/:id/followers')
+  @HttpCode(HttpStatus.OK)
+  getCurrentFollowers(@Param('id') userId: string) {
+    return this.userService.getCurrentFollowers(userId);
   }
 }

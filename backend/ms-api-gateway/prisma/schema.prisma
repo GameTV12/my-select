@@ -13,6 +13,7 @@ datasource db {
 model AuthUser {
   userId             String        @unique
   nickname           String
+  photo              String        @default("")
   linkNickname       String        @unique
   password           String
   email              String        @unique

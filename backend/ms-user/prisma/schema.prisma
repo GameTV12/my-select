@@ -43,22 +43,24 @@ enum UserRole {
 }
 
 model Followers {
-  followingUser User   @relation("Followers", fields: [following], references: [id])
+  followingUser User      @relation("Followers", fields: [following], references: [id])
   following     String
-  followerUser  User   @relation("Following", fields: [follower], references: [id])
+  followerUser  User      @relation("Following", fields: [follower], references: [id])
   follower      String
+  start         DateTime
+  end           DateTime?
 
-  @@id([follower, following])
+  @@id([follower, following, start])
 }
 
 model Request {
-  id      String @id @default(uuid())
-  user    User   @relation("Requests", fields: [userId], references: [id])
+  id      String  @id @default(uuid())
+  user    User    @relation("Requests", fields: [userId], references: [id])
   userId  String
   text    String
-  status  Status @default(WAITING)
-  court   User   @relation("Decisions", fields: [courtId], references: [id])
-  courtId String
+  status  Status  @default(WAITING)
+  court   User?   @relation("Decisions", fields: [courtId], references: [id])
+  courtId String?
 }
 
 enum Status {

@@ -11,7 +11,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import { CreatePostDto } from '../dtos/index.dto';
+import { CreatePostDto } from '../dtos';
 
 @Controller('posts')
 export class PostController {

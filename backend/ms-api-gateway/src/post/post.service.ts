@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { CreatePostDto } from '../dtos/index.dto';
+import { CreatePostDto } from '../dtos';
 import { PostCreatedEvent } from '../events/post-created.event';
 
 @Injectable()

@@ -1,22 +1,22 @@
 import {
+  BadGatewayException,
   ForbiddenException,
   Inject,
   Injectable,
   OnModuleInit,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { CreateUserDto } from '../dtos/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { LogInDto } from '../dtos/log-in.dto';
 import { Tokens } from './types';
+import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
+    @Inject('USER_SERVICE') private readonly authClient: ClientKafka,
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
@@ -44,6 +44,7 @@ export class AuthService implements OnModuleInit {
       data: {
         userId: realUserId,
         nickname: dto.nickname,
+        photo: dto.photo,
         linkNickname: dto.linkNickname,
         password: hash,
         email: dto.email,
@@ -136,6 +137,76 @@ export class AuthService implements OnModuleInit {
     });
   }
 
+  async updateUser(userId: string, dto: EditUserDto) {
+    console.log(dto);
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+    if (!user || !user.hashedRt) throw new ForbiddenException('Access Denied');
+    let hash;
+    if (dto.password) {
+      hash = await this.hashData(dto.password);
+    } else {
+      hash = user.password;
+    }
+    const newUser = await this.prisma.authUser.update({
+      where: {
+        userId: userId,
+      },
+      data: {
+        userId: userId,
+        nickname: dto.nickname,
+        photo: dto.photo,
+        linkNickname: dto.linkNickname,
+        password: hash,
+        email: dto.email,
+      },
+    });
+    const answerUserService: boolean = await new Promise((resolve) => {
+      this.authClient
+        .send('update_user', {
+          dto: dto,
+          userId: userId,
+        })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    if (!answerUserService) {
+      throw new BadGatewayException('Problems with updating');
+    }
+
+    const tokens = await this.getTokens(
+      newUser.userId,
+      newUser.email,
+      newUser.role,
+      newUser.visible,
+      newUser.firstVerification,
+      newUser.secondVerification,
+      newUser.unlockTime,
+    );
+    await this.updateRtHash(newUser.userId, tokens.refresh_token);
+    return tokens;
+  }
+
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+    if (!user || !user.hashedRt) throw new ForbiddenException('Access denied');
+    const answerUser = await new Promise((resolve) => {
+      this.authClient.send('get_current_user', userId).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    return answerUser;
+  }
+
   async getTokens(
     userId: string,
     email: string,
@@ -158,7 +229,7 @@ export class AuthService implements OnModuleInit {
 
     const [at, rt] = await Promise.all([
       this.jwt.signAsync(payload, {
-        expiresIn: 45,
+        expiresIn: 45 * 3600,
         secret: 'at-' + secret,
       }),
       this.jwt.signAsync(payload, {
@@ -172,6 +243,11 @@ export class AuthService implements OnModuleInit {
 
   async onModuleInit() {
     this.authClient.subscribeToResponseOf('create_user');
+    this.authClient.subscribeToResponseOf('update_user');
+    this.authClient.subscribeToResponseOf('get_current_user');
+    this.authClient.subscribeToResponseOf('get_nickname');
+    this.authClient.subscribeToResponseOf('follow_to_user');
+    this.authClient.subscribeToResponseOf('get_current_followers');
     await this.authClient.connect();
   }
 }

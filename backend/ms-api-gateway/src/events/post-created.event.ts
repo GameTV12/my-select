@@ -1,4 +1,4 @@
-import { CreatePostDto } from '../dtos/index.dto';
+import { CreatePostDto } from '../dtos';
 
 export class PostCreatedEvent {
   constructor(

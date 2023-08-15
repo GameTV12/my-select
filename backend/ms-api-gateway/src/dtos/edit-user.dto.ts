@@ -1,34 +1,33 @@
 import {
   IsEmail,
-  IsNotEmpty,
   IsOptional,
   IsString,
   Length,
   MaxLength,
 } from 'class-validator';
 
-export class CreateUserDto {
-  @IsNotEmpty()
+export class EditUserDto {
+  @IsOptional()
   @IsString()
   @Length(2, 80)
   nickname: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @Length(2, 30)
   linkNickname: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEmail()
   @MaxLength(100)
   email: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @Length(6, 40)
   password: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(50)
   phone: string;
@@ -36,10 +35,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(400)
-  photo =
-    'https://i.pinimg.com/564x/46/72/f8/4672f876389036583190d93a71aa6cb2.jpg';
+  photo;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(80)
   firstName: string;
@@ -49,6 +47,6 @@ export class CreateUserDto {
   @MaxLength(80)
   lastName: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   birthday: number;
 }
