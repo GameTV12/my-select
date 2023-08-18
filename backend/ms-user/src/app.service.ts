@@ -1,21 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateUserDto, EditUserDto } from './dtos';
-import { RpcException } from '@nestjs/microservices';
+import { CreateModeratorRequestDto, CreateUserDto, EditUserDto } from './dtos';
+import { CreateReportDto } from './dtos';
 
 @Injectable()
 export class AppService {
   constructor(private prisma: PrismaService) {}
-  getHello(): string {
-    return 'Hello World!';
-  }
-
-  getFollowersOfUser(userId: string) {
-    return this.prisma.user.findMany({
-      where: { id: userId },
-      include: { Followers: true },
-    });
-  }
 
   async createUser(userDto: CreateUserDto) {
     const newUser = await this.prisma.user.create({
@@ -140,12 +130,111 @@ export class AppService {
     return followers;
   }
 
-  async getFullFollowers(userId: string) {
+  // // Your followers
+  // async getFullFollowers(userId: string) {
+  //   //later
+  //   const followers = await this.prisma.followers.findMany({
+  //     where: {
+  //       AND: [{ following: userId }],
+  //     },
+  //   });
+  //   return followers;
+  // }
+
+  // You follow them
+  async getFullFollowings(userId: string) {
+    //later
     const followers = await this.prisma.followers.findMany({
       where: {
-        AND: [{ following: userId }],
+        AND: [{ follower: userId }, { end: null }],
       },
     });
     return followers;
+  }
+
+  async createModeratorRequest({ userId, text }: CreateModeratorRequestDto) {
+    const request = await this.prisma.request.create({
+      data: {
+        userId,
+        text,
+      },
+    });
+
+    return request;
+  }
+
+  async showModeratorRequestsById(userId: string) {
+    const requests = await this.prisma.request.findMany({
+      where: {
+        userId,
+      },
+    });
+    return requests;
+  }
+
+  async showWaitingRequests() {
+    const requests = await this.prisma.request.findMany({
+      where: {
+        status: 'WAITING',
+      },
+    });
+    return requests;
+  }
+
+  async decideRequest(requestId: string, adminId: string, decision: string) {
+    let status;
+    if (decision == 'ACCEPTED') status = 'ACCEPTED';
+    else status = 'DENIED';
+    const decidedRequest = await this.prisma.request.update({
+      where: {
+        id: requestId,
+      },
+      data: {
+        courtId: adminId,
+        status: status,
+      },
+    });
+    if (decision == 'ACCEPTED') {
+      const userId: string = decidedRequest.userId;
+      await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          role: 'MODERATOR',
+        },
+      });
+    }
+    return decidedRequest;
+  }
+
+  async createReport({ senderId, reportedUserId, text }: CreateReportDto) {
+    const report = await this.prisma.report.create({
+      data: {
+        senderId: senderId,
+        reportedUserId: reportedUserId,
+        text: text,
+      },
+    });
+    return report;
+  }
+
+  async showReports() {
+    const report = await this.prisma.report.findMany();
+    return report;
+  }
+
+  async banUser(userId: string, unlockTime: number) {
+    const user = await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        visible: false,
+        unlockTime: new Date(Number(unlockTime)),
+        role: 'BANNED_USER',
+      },
+    });
+    return user;
   }
 }

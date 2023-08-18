@@ -22,14 +22,20 @@ export class AuthController {
   @Public()
   @Post('local/signup')
   @HttpCode(HttpStatus.CREATED)
-  signupLocal(@Body(ValidationPipe) dto: CreateUserDto): Promise<Tokens> {
+  signupLocal(@Body() dto: CreateUserDto): Promise<Tokens> {
     return this.authService.signupLocal(dto);
+  }
+
+  @Public()
+  @Post('local/check')
+  checkUniqueEmailOrLink(@Body() body: { value: string; type: string }) {
+    return this.authService.checkUniqueEmailOrLink(body.value, body.type);
   }
 
   @Public()
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
-  signinLocal(@Body(ValidationPipe) dto: LogInDto): Promise<Tokens> {
+  signinLocal(@Body() dto: LogInDto): Promise<Tokens> {
     return this.authService.signinLocal(dto);
   }
 

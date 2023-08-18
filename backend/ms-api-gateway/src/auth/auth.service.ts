@@ -63,6 +63,24 @@ export class AuthService implements OnModuleInit {
     await this.updateRtHash(newUser.userId, tokens.refresh_token);
     return tokens;
   }
+
+  async checkUniqueEmailOrLink(value: string, type: string) {
+    let user;
+    if (type == 'email') {
+      user = await this.prisma.authUser.findUnique({
+        where: {
+          email: value,
+        },
+      });
+    } else if (type == 'linkNickname') {
+      user = await this.prisma.authUser.findUnique({
+        where: {
+          linkNickname: value,
+        },
+      });
+    }
+    return !!user;
+  }
   async signinLocal(dto: LogInDto): Promise<Tokens> {
     const user = await this.prisma.authUser.findUnique({
       where: {
@@ -144,7 +162,7 @@ export class AuthService implements OnModuleInit {
         userId: userId,
       },
     });
-    if (!user || !user.hashedRt) throw new ForbiddenException('Access Denied');
+    if (!user) throw new ForbiddenException('Access Denied');
     let hash;
     if (dto.password) {
       hash = await this.hashData(dto.password);
@@ -193,12 +211,6 @@ export class AuthService implements OnModuleInit {
   }
 
   async getCurrentUser(userId: string) {
-    const user = await this.prisma.authUser.findUnique({
-      where: {
-        userId: userId,
-      },
-    });
-    if (!user || !user.hashedRt) throw new ForbiddenException('Access denied');
     const answerUser = await new Promise((resolve) => {
       this.authClient.send('get_current_user', userId).subscribe((data) => {
         resolve(data);
@@ -248,6 +260,14 @@ export class AuthService implements OnModuleInit {
     this.authClient.subscribeToResponseOf('get_nickname');
     this.authClient.subscribeToResponseOf('follow_to_user');
     this.authClient.subscribeToResponseOf('get_current_followers');
+    this.authClient.subscribeToResponseOf('get_full_followings');
+    this.authClient.subscribeToResponseOf('create_moderator_request');
+    this.authClient.subscribeToResponseOf('show_moderator_request_id');
+    this.authClient.subscribeToResponseOf('show_waiting_requests');
+    this.authClient.subscribeToResponseOf('decide_request');
+    this.authClient.subscribeToResponseOf('create_report');
+    this.authClient.subscribeToResponseOf('show_reports');
+    this.authClient.subscribeToResponseOf('ban_user');
     await this.authClient.connect();
   }
 }

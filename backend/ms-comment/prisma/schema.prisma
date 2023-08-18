@@ -30,34 +30,38 @@ enum UserRole {
 }
 
 model Reaction {
-  id        String    @id @default(uuid())
-  user      ShortUser @relation(fields: [userId], references: [id])
+  id        String       @id @default(uuid())
+  user      ShortUser    @relation(fields: [userId], references: [id])
   userId    String
-  type      String
-  startTime DateTime  @default(now())
-  endTime   DateTime  @updatedAt
-  comment   Comment   @relation(fields: [commentId], references: [id])
+  type      ReactionType
+  startTime DateTime     @default(now())
+  endTime   DateTime?
+  comment   Comment      @relation(fields: [commentId], references: [id])
   commentId String
 }
 
-model Comment {
-  id        String     @id @default(uuid())
-  user      ShortUser  @relation(fields: [userId], references: [id])
-  userId    String
-  text      String
-  visible   Boolean    @default(true)
-  type      Type
-  reply     Comment    @relation("Replies", fields: [replyTo], references: [id])
-  variantId String?
-  postId    String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Reaction  Reaction[]
-  Comment   Comment[]  @relation("Replies")
-  replyTo   String
+enum ReactionType {
+  LIKE
+  DISLIKE
 }
 
-enum Type {
+model Comment {
+  id        String      @id @default(uuid())
+  user      ShortUser   @relation(fields: [userId], references: [id])
+  userId    String
+  text      String
+  visible   Boolean     @default(true)
+  type      CommentType
+  reply     Comment?    @relation("Replies", fields: [replyTo], references: [id])
+  goalId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Reaction  Reaction[]
+  Comment   Comment[]   @relation("Replies")
+  replyTo   String?
+}
+
+enum CommentType {
   POST
-  COMMENT
+  VARIANT
 }

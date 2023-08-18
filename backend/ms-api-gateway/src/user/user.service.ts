@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateModeratorRequestDto, CreateReportDto } from '../dtos';
 
 @Injectable()
 export class UserService {
@@ -18,14 +19,6 @@ export class UserService {
   ) {}
 
   async getUserByNickname(linkNickname: string) {
-    const user = await this.prisma.authUser.findUnique({
-      where: {
-        linkNickname: linkNickname,
-      },
-    });
-    console.log(user);
-    console.log(linkNickname);
-    if (!user) throw new NotFoundException('Not found');
     const answerUser = await new Promise((resolve) => {
       this.userClient.send('get_nickname', linkNickname).subscribe((data) => {
         resolve(data);
@@ -36,18 +29,12 @@ export class UserService {
 
   async followToUser(from: string, to: string) {
     console.log(from);
-    const user = await this.prisma.authUser.findUnique({
-      where: {
-        userId: from,
-      },
-    });
     const userTo = await this.prisma.authUser.findUnique({
       where: {
         userId: to,
       },
     });
-    if (!user || !user.hashedRt || from == to || !userTo)
-      throw new ForbiddenException('Access denied');
+    if (from == to || !userTo) throw new ForbiddenException('Access denied');
 
     const subscription = await new Promise((resolve) => {
       this.userClient
@@ -77,4 +64,78 @@ export class UserService {
     });
     return followers;
   }
+
+  async getFullFollowings(linkNickname: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        linkNickname: linkNickname,
+      },
+    });
+    if (!user) throw new ForbiddenException('Access denied');
+    const userId = user.userId;
+
+    const followings = await new Promise((resolve) => {
+      this.userClient.send('get_full_followings', userId).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    return followings;
+  }
+
+  async createModeratorRequest(
+    role: string,
+    { userId, text }: CreateModeratorRequestDto,
+  ) {
+    if (role != 'DEFAULT_USER') throw new ForbiddenException('Access denied');
+    const newRequest = await new Promise((resolve) => {
+      this.userClient
+        .send('create_moderator_request', { userId, text })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return newRequest;
+  }
+
+  // async showModeratorRequestsById(role: string, userId: string) {
+  //   if (role != 'MODERATOR' && role != 'ADMIN')
+  //     throw new ForbiddenException('Access denied');
+  //   const requests = await new Promise((resolve) => {
+  //     this.userClient
+  //       .send('create_moderator_request', { userId, text })
+  //       .subscribe((data) => {
+  //         resolve(data);
+  //       });
+  //   });
+  //   return requests;
+  // }
+
+  // async showWaitingRequests(userId: string) {}
+  //
+  // async decideRequest(userId: string, requestId: string, decision: string) {}
+
+  async createReport(
+    senderId: string,
+    { reportedUserId, text }: CreateReportDto,
+  ) {
+    const userReport = await this.prisma.authUser.findUnique({
+      where: {
+        userId: reportedUserId,
+      },
+    });
+    if (!userReport) throw new NotFoundException('User not found');
+
+    const report = await new Promise((resolve) => {
+      this.userClient
+        .send('create_report', { senderId, reportedUserId, text })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return report;
+  }
+
+  // async showReports(adminId: string) {}
+  //
+  // async banUser(adminId: string, userId: string, unlockTime: number) {}
 }
