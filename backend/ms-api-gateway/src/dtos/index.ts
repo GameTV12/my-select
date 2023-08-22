@@ -5,3 +5,5 @@ export * from './log-in.dto';
 export * from './edit-user.dto';
 export * from './create-moderator-request.dto';
 export * from './create-report.dto';
+export * from './ban-user.dto';
+export * from './decide-request.dto';

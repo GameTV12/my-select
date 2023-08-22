@@ -3,15 +3,11 @@ import { AppService } from './app.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateModeratorRequestDto, CreateUserDto } from './dtos';
 import { CreateReportDto } from './dtos/create-report.dto';
+import { DecideRequestsDto } from './dtos/decide-requests.dto';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
 
   @MessagePattern('create_user')
   getUser(@Payload(ValidationPipe) data: { dto: CreateUserDto; pass: string }) {
@@ -66,19 +62,8 @@ export class AppController {
   }
 
   @MessagePattern('decide_request')
-  decideRequest(
-    @Payload(ValidationPipe)
-    data: {
-      requestId: string;
-      adminId: string;
-      decision: string;
-    },
-  ) {
-    return this.appService.decideRequest(
-      data.requestId,
-      data.adminId,
-      data.decision,
-    );
+  decideRequest(@Payload(ValidationPipe) dto: DecideRequestsDto) {
+    return this.appService.decideRequest(dto);
   }
 
   @MessagePattern('create_report')

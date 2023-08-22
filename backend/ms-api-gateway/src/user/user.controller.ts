@@ -19,6 +19,7 @@ import {
   EditUserDto,
 } from '../dtos';
 import { GetCurrentUserRole } from '../auth/common/decorators/get-current-user-role.decorator';
+import { BanUserDto } from '../dtos/ban-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -67,14 +68,32 @@ export class UserController {
     return this.userService.getFullFollowings(linkNickname);
   }
 
-  @Post('/request/create')
-  @HttpCode(HttpStatus.OK)
+  @Post('/requests/create')
+  @HttpCode(HttpStatus.CREATED)
   createModeratorRequest(
     @Body() dto: CreateModeratorRequestDto,
     @GetCurrentUserRole() role: string,
   ) {
     return this.userService.createModeratorRequest(role, dto);
   }
+
+  // @Get('/:id/requests')
+  // @HttpCode(HttpStatus.OK)
+  // showModeratorRequestsById() {
+  //   return 1;
+  // }
+
+  // @Get('/requests')
+  // @HttpCode(HttpStatus.OK)
+  // showWaitingRequests() {
+  //   return 1;
+  // }
+
+  // @Post('/requests/:id')
+  // @HttpCode(HttpStatus.OK)
+  // decideRequest() {
+  //   return 1;
+  // }
 
   @Post('/reports/create')
   @HttpCode(HttpStatus.CREATED)
@@ -84,4 +103,16 @@ export class UserController {
   ) {
     return this.userService.createReport(userId, dto);
   }
+
+  // @Get('/reports')
+  // @HttpCode(HttpStatus.CREATED)
+  // showReports() {
+  //   return 1;
+  // }
+
+  // @Post('/ban')
+  // @HttpCode(HttpStatus.OK)
+  // banUser(@Body() dto: BanUserDto) {
+  //   return this.userService.banUser(dto);
+  // }
 }

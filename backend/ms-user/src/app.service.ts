@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { CreateModeratorRequestDto, CreateUserDto, EditUserDto } from './dtos';
-import { CreateReportDto } from './dtos';
+import { CreateReportDto, DecideRequestsDto } from './dtos';
 
 @Injectable()
 export class AppService {
@@ -181,7 +181,7 @@ export class AppService {
     return requests;
   }
 
-  async decideRequest(requestId: string, adminId: string, decision: string) {
+  async decideRequest({ requestId, adminId, decision }: DecideRequestsDto) {
     let status;
     if (decision == 'ACCEPTED') status = 'ACCEPTED';
     else status = 'DENIED';
