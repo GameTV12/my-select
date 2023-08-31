@@ -21,4 +21,7 @@ export class CreateUserDto {
   lastName: string;
 
   birthday: number;
+
+  @IsOptional()
+  firstVerification? = false;
 }

@@ -6,47 +6,20 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { GetCurrentUserId, Public, Roles } from '../auth/common/decorators';
 import {
-  GetCurrentUser,
-  GetCurrentUserId,
-  Public,
-} from '../auth/common/decorators';
-import {
+  BanUserDto,
   CreateModeratorRequestDto,
   CreateReportDto,
-  EditUserDto,
 } from '../dtos';
-import { GetCurrentUserRole } from '../auth/common/decorators/get-current-user-role.decorator';
-import { BanUserDto } from '../dtos/ban-user.dto';
+import { RolesGuard } from '../auth/common/guards/roles.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
-
-  @Public()
-  @Get('/:link')
-  @HttpCode(HttpStatus.OK)
-  getUserByNickname(@Param('link') linkNickname: string) {
-    return this.userService.getUserByNickname(linkNickname);
-  }
-
-  @Get('/:id/requests')
-  @HttpCode(HttpStatus.OK)
-  getRequestsByUserId(
-    @GetCurrentUser('role') user: string,
-    @GetCurrentUserId() userId: string,
-    @Param('id') id: string,
-  ) {
-    return { k: id, l: user };
-  }
-
-  @Get('/requests')
-  @HttpCode(HttpStatus.OK)
-  getAllRequests(@GetCurrentUser() user: any) {
-    return 1;
-  }
 
   @Get('/follow/:id')
   @HttpCode(HttpStatus.OK)
@@ -68,32 +41,39 @@ export class UserController {
     return this.userService.getFullFollowings(linkNickname);
   }
 
+  @Public()
+  @Get('/requests')
+  @HttpCode(HttpStatus.OK)
+  showWaitingRequests() {
+    return this.userService.showWaitingRequests();
+  }
+
   @Post('/requests/create')
+  @Roles(['DEFAULT_USER'])
+  @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.CREATED)
   createModeratorRequest(
     @Body() dto: CreateModeratorRequestDto,
-    @GetCurrentUserRole() role: string,
+    @GetCurrentUserId() userId: string,
   ) {
-    return this.userService.createModeratorRequest(role, dto);
+    return this.userService.createModeratorRequest(userId, dto.text);
   }
 
-  // @Get('/:id/requests')
-  // @HttpCode(HttpStatus.OK)
-  // showModeratorRequestsById() {
-  //   return 1;
-  // }
+  @Get('/requests/:link')
+  @HttpCode(HttpStatus.OK)
+  @Roles(['ADMIN'])
+  @UseGuards(RolesGuard)
+  showModeratorRequestsById(@Param('link') linkNickname: string) {
+    return this.userService.showModeratorRequestsById(linkNickname);
+  }
 
-  // @Get('/requests')
-  // @HttpCode(HttpStatus.OK)
-  // showWaitingRequests() {
-  //   return 1;
-  // }
-
-  // @Post('/requests/:id')
-  // @HttpCode(HttpStatus.OK)
-  // decideRequest() {
-  //   return 1;
-  // }
+  @Post('/requests/:link')
+  @Roles(['ADMIN'])
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  decideRequest() {
+    return 1;
+  }
 
   @Post('/reports/create')
   @HttpCode(HttpStatus.CREATED)
@@ -104,15 +84,26 @@ export class UserController {
     return this.userService.createReport(userId, dto);
   }
 
-  // @Get('/reports')
-  // @HttpCode(HttpStatus.CREATED)
-  // showReports() {
-  //   return 1;
-  // }
+  @Get('/reports')
+  @Roles(['MODERATOR', 'ADMIN'])
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.CREATED)
+  showReports() {
+    return 1;
+  }
 
-  // @Post('/ban')
-  // @HttpCode(HttpStatus.OK)
-  // banUser(@Body() dto: BanUserDto) {
-  //   return this.userService.banUser(dto);
-  // }
+  @Post('/ban')
+  @Roles(['MODERATOR', 'ADMIN'])
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  banUser(@Body() dto: BanUserDto) {
+    // return this.userService.banUser(dto);
+  }
+
+  @Public()
+  @Get('/:link')
+  @HttpCode(HttpStatus.OK)
+  getUserByNickname(@Param('link') linkNickname: string) {
+    return this.userService.getUserByNickname(linkNickname);
+  }
 }

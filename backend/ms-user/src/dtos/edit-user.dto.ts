@@ -10,42 +10,42 @@ export class EditUserDto {
   @IsOptional()
   @IsString()
   @Length(2, 80)
-  nickname: string;
+  nickname?: string;
 
   @IsOptional()
   @IsString()
   @Length(2, 30)
-  linkNickname: string;
+  linkNickname?: string;
 
   @IsOptional()
   @IsEmail()
   @MaxLength(100)
-  email: string;
+  email?: string;
 
   @IsOptional()
   @IsString()
   @Length(6, 40)
-  password: string;
+  password?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  phone: string;
+  phone?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(400)
-  photo;
+  photo?;
 
   @IsOptional()
   @IsString()
   @MaxLength(80)
-  firstName: string;
+  firstName?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(80)
-  lastName: string;
+  lastName?: string;
 
   @IsOptional()
   birthday: number;

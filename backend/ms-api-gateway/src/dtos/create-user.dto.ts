@@ -36,7 +36,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(400)
-  photo =
+  photo? =
     'https://i.pinimg.com/564x/46/72/f8/4672f876389036583190d93a71aa6cb2.jpg';
 
   @IsNotEmpty()
@@ -47,8 +47,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(80)
-  lastName: string;
+  lastName?: string;
 
   @IsNotEmpty()
   birthday: number;
+
+  @IsOptional()
+  firstVerification? = false;
 }

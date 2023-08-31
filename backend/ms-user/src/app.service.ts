@@ -18,6 +18,7 @@ export class AppService {
         lastName: userDto.lastName,
         photo: userDto.photo,
         phone: userDto.phone,
+        firstVerification: userDto.firstVerification,
       },
     });
 

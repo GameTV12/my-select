@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
@@ -12,6 +13,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  MaxLength,
+} from 'class-validator';
+import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -20,6 +31,7 @@ export class AuthService implements OnModuleInit {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private googleStrategy: GoogleStrategy,
   ) {}
 
   hashData(data: string) {
@@ -64,6 +76,100 @@ export class AuthService implements OnModuleInit {
     return tokens;
   }
 
+  async googleLogin(req) {
+    console.log(req.session);
+    if (!req.user) {
+      throw new NotFoundException("User doesn't exist");
+    }
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        email: req.user.email,
+      },
+    });
+
+    if (!user) {
+      let randomLink = randomStringGenerator();
+      while (
+        await this.prisma.authUser.findUnique({
+          where: {
+            linkNickname: randomLink,
+          },
+        })
+      ) {
+        randomLink = randomStringGenerator();
+      }
+
+      const randomPassword = randomStringGenerator();
+      const dto: CreateUserDto = {
+        nickname: req.user.firstName,
+        linkNickname: randomLink,
+        email: req.user.email,
+        password: randomPassword,
+        phone: null,
+        photo: req.user.photo,
+        firstName: req.user.firstName,
+        birthday: 1,
+        firstVerification: true,
+      };
+      const hash = await this.hashData(dto.password);
+
+      const realUserId: string = await new Promise((resolve) => {
+        this.authClient
+          .send('create_user', {
+            dto: dto,
+            pass: hash,
+          })
+          .subscribe((data) => {
+            resolve(data);
+          });
+      });
+
+      const newUser = await this.prisma.authUser.create({
+        data: {
+          userId: realUserId,
+          nickname: dto.nickname,
+          photo: req.user.photo,
+          linkNickname: dto.linkNickname,
+          password: hash,
+          email: req.user.email,
+          firstVerification: true,
+        },
+      });
+
+      const tokens = await this.getTokens(
+        newUser.userId,
+        newUser.email,
+        newUser.role,
+        newUser.visible,
+        newUser.firstVerification,
+        newUser.secondVerification,
+        newUser.unlockTime,
+      );
+      await this.updateRtHash(user.userId, tokens.refresh_token);
+
+      return {
+        message: 'You dont have this account',
+        email: req.user.email,
+        user: req.user,
+        tokens: tokens,
+      };
+    }
+    const tokens = await this.getTokens(
+      user.userId,
+      user.email,
+      user.role,
+      user.visible,
+      user.firstVerification,
+      user.secondVerification,
+      user.unlockTime,
+    );
+    return {
+      message: 'OK',
+      user: req.user,
+      tokens: tokens,
+    };
+  }
+
   async checkUniqueEmailOrLink(value: string, type: string) {
     let user;
     if (type == 'email') {
@@ -89,6 +195,8 @@ export class AuthService implements OnModuleInit {
     });
 
     if (!user) throw new ForbiddenException('Access Denied');
+    if (!user.firstVerification)
+      throw new ForbiddenException("Email isn't verified");
 
     const passwordMatches = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatches) throw new ForbiddenException('Access Denied');

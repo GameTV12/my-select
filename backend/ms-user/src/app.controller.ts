@@ -1,9 +1,12 @@
 import { Controller, Get, ValidationPipe } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CreateModeratorRequestDto, CreateUserDto } from './dtos';
-import { CreateReportDto } from './dtos/create-report.dto';
-import { DecideRequestsDto } from './dtos/decide-requests.dto';
+import {
+  CreateModeratorRequestDto,
+  CreateUserDto,
+  DecideRequestsDto,
+  CreateReportDto,
+} from './dtos';
 
 @Controller()
 export class AppController {
@@ -46,7 +49,7 @@ export class AppController {
 
   @MessagePattern('create_moderator_request')
   createModeratorRequest(
-    @Payload(ValidationPipe) dto: CreateModeratorRequestDto,
+    @Payload(ValidationPipe) dto: { userId: string; text: string },
   ) {
     return this.appService.createModeratorRequest(dto);
   }

@@ -17,7 +17,7 @@ model AuthUser {
   linkNickname       String        @unique
   password           String
   email              String        @unique
-  firstVerification  Boolean       @default(true)
+  firstVerification  Boolean       @default(false)
   role               UserRole      @default(DEFAULT_USER)
   secondVerification Boolean       @default(false)
   visible            Boolean       @default(true)

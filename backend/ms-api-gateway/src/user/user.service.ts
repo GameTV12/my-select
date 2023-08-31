@@ -82,14 +82,10 @@ export class UserService {
     return followings;
   }
 
-  async createModeratorRequest(
-    role: string,
-    { userId, text }: CreateModeratorRequestDto,
-  ) {
-    if (role != 'DEFAULT_USER') throw new ForbiddenException('Access denied');
+  async createModeratorRequest(userId: string, text: string) {
     const newRequest = await new Promise((resolve) => {
       this.userClient
-        .send('create_moderator_request', { userId, text })
+        .send('create_moderator_request', { userId: userId, text: text })
         .subscribe((data) => {
           resolve(data);
         });
@@ -97,20 +93,30 @@ export class UserService {
     return newRequest;
   }
 
-  // async showModeratorRequestsById(role: string, userId: string) {
-  //   if (role != 'MODERATOR' && role != 'ADMIN')
-  //     throw new ForbiddenException('Access denied');
-  //   const requests = await new Promise((resolve) => {
-  //     this.userClient
-  //       .send('create_moderator_request', { userId, text })
-  //       .subscribe((data) => {
-  //         resolve(data);
-  //       });
-  //   });
-  //   return requests;
-  // }
+  async showModeratorRequestsById(linkNickname: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        linkNickname,
+      },
+    });
+    const requests = await new Promise((resolve) => {
+      this.userClient
+        .send('show_moderator_request_id', user.userId)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return requests;
+  }
 
-  // async showWaitingRequests(userId: string) {}
+  async showWaitingRequests() {
+    const requests = await new Promise((resolve) => {
+      this.userClient.send('show_waiting_requests', null).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    return requests;
+  }
   //
   // async decideRequest(userId: string, requestId: string, decision: string) {}
 

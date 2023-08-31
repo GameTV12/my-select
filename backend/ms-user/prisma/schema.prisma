@@ -14,12 +14,12 @@ model User {
   id                 String      @id @default(uuid())
   nickname           String
   linkNickname       String      @unique
-  photo              String
+  photo              String      @default("")
   email              String      @unique
   firstName          String
   lastName           String?
-  phone              String      @unique
-  firstVerification  Boolean     @default(true)
+  phone              String?     @unique
+  firstVerification  Boolean     @default(false)
   role               UserRole    @default(DEFAULT_USER)
   secondVerification Boolean     @default(false)
   visible            Boolean     @default(true)

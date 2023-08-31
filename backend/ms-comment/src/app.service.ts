@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateCommentDto } from './dtos';
+import { CreateCommentDto, EditCommentDto } from './dtos';
 
 enum Type {
   POST = 'POST',
@@ -28,12 +28,45 @@ export class AppService {
     return comment;
   }
 
+  // I'll finish this, it's a huge
   async getCommentList(goalId: string, type: Type) {
     const comment = await this.prisma.comment.findMany({
       where: {
         type: type,
         goalId: goalId,
         visible: true,
+        user: {
+          visible: true,
+        },
+      },
+      select: {
+        text: true,
+        reply: {
+          select: {
+            id: true,
+            text: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            linkNickname: true,
+            photo: true,
+            role: true,
+            secondVerification: true,
+          },
+        },
+        _count: {
+          select: {
+            Reaction: {
+              where: {
+                endTime: null,
+                type: ReactionType.LIKE,
+              },
+            },
+          },
+        },
       },
     });
     return comment;
@@ -52,16 +85,13 @@ export class AppService {
     return comment;
   }
 
-  async updateComment(commentId: string, dto: CreateCommentDto) {
+  async updateComment(dto: EditCommentDto) {
     const newComment = await this.prisma.comment.update({
       where: {
-        id: commentId,
+        id: dto.id,
       },
       data: {
-        userId: dto.userId,
         text: dto.text,
-        goalId: dto.goalId,
-        type: dto.type,
         replyTo: dto.replyTo,
       },
     });

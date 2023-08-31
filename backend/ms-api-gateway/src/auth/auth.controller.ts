@@ -6,14 +6,17 @@ import {
   HttpStatus,
   Patch,
   Post,
+  Redirect,
+  Req,
+  Res,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Tokens } from './types';
 import { LogInDto, CreateUserDto, EditUserDto } from '../dtos';
 import { RtGuard } from './common/guards';
 import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +40,56 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   signinLocal(@Body() dto: LogInDto): Promise<Tokens> {
     return this.authService.signinLocal(dto);
+  }
+
+  // google
+  @Public()
+  @Get('google/signin')
+  @UseGuards(AuthGuard('google'))
+  @HttpCode(HttpStatus.OK)
+  signInGoogle() {
+    //
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleAuthRedirect(@Req() req) {
+    return this.authService.googleLogin(req);
+  }
+
+  @Public()
+  @Get('google/logout')
+  googleLogout(@Res() res) {
+    res.redirect('https://mail.google.com/mail/u/0/?logout&hl=en');
+    return { hi: 'guys' };
+  }
+
+  // fb
+  @Public()
+  @Get('fb/signin')
+  @UseGuards(AuthGuard('facebook'))
+  @HttpCode(HttpStatus.OK)
+  signInFacebook() {
+    //
+  }
+
+  @Public()
+  @Get('fb/callback')
+  @UseGuards(AuthGuard('facebook'))
+  facebookAuthRedirect(@Req() req) {
+    return {
+      data: req.user,
+    };
+  }
+
+  @Public()
+  @Get('fb/logout')
+  facebookLogout(@Req() req, @Res() res) {
+    req.session.destroy(function () {
+      req.logout();
+      res.redirect('/');
+    });
   }
 
   @Patch('edit')
