@@ -1,4 +1,5 @@
 import {
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -6,16 +7,16 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class EditCommentDto {
-  @IsNotEmpty()
-  @IsString()
-  @Length(1, 500)
-  id: string;
-
+export class CreateCommentDto {
   @IsNotEmpty()
   @IsString()
   @Length(2, 600)
   text: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Length(1, 500)
+  goalId: string;
 
   @IsOptional()
   @IsString()

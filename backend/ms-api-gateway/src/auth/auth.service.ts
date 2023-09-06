@@ -13,14 +13,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Length,
-  MaxLength,
-} from 'class-validator';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { GoogleStrategy } from './strategies/google.strategy';
 

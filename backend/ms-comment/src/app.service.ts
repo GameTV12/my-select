@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { CreateCommentDto, EditCommentDto } from './dtos';
+import { CommentInterface } from './types/CommentInterface';
+import e from 'express';
 
-enum Type {
+export enum Type {
   POST = 'POST',
   VARIANT = 'VARIANT',
 }
 
-enum ReactionType {
+export enum ReactionType {
   LIKE = 'LIKE',
   DISLIKE = 'DISLIKE',
 }
@@ -29,66 +31,195 @@ export class AppService {
   }
 
   // I'll finish this, it's a huge
-  async getCommentList(goalId: string, type: Type) {
-    const comment = await this.prisma.comment.findMany({
-      where: {
-        type: type,
-        goalId: goalId,
-        visible: true,
-        user: {
+  async getCommentList(goalId: string, type: Type, viewerId?: string) {
+    const commentWithLikes: CommentInterface[] =
+      await this.prisma.comment.findMany({
+        where: {
+          type: type,
+          goalId: goalId,
           visible: true,
-        },
-      },
-      select: {
-        text: true,
-        reply: {
-          select: {
-            id: true,
-            text: true,
+          user: {
+            visible: true,
           },
         },
-        user: {
-          select: {
-            id: true,
-            nickname: true,
-            linkNickname: true,
-            photo: true,
-            role: true,
-            secondVerification: true,
+        select: {
+          id: true,
+          text: true,
+          reply: {
+            select: {
+              id: true,
+              text: true,
+            },
           },
-        },
-        _count: {
-          select: {
-            Reaction: {
-              where: {
-                endTime: null,
-                type: ReactionType.LIKE,
+          user: {
+            select: {
+              id: true,
+              nickname: true,
+              linkNickname: true,
+              photo: true,
+              role: true,
+              secondVerification: true,
+            },
+          },
+          _count: {
+            select: {
+              Reaction: {
+                where: {
+                  endTime: null,
+                  type: ReactionType.LIKE,
+                },
               },
             },
           },
         },
-      },
-    });
-    return comment;
-  }
+      });
+    const commentWithDislikes: CommentInterface[] =
+      await this.prisma.comment.findMany({
+        where: {
+          type: type,
+          goalId: goalId,
+          visible: true,
+          user: {
+            visible: true,
+          },
+        },
+        select: {
+          id: true,
+          text: true,
+          _count: {
+            select: {
+              Reaction: {
+                where: {
+                  endTime: null,
+                  type: ReactionType.DISLIKE,
+                },
+              },
+            },
+          },
+        },
+      });
+    if (!viewerId) {
+      return commentWithLikes.map((item) => {
+        const dislikes = commentWithDislikes.find((x) => x.id == item.id);
+        return {
+          ...item,
+          likes: item._count.Reaction,
+          dislikes: dislikes._count.Reaction,
+        };
+      });
+    }
 
-  async getAllCommentsOfUser(userId: string) {
-    const comment = await this.prisma.comment.findMany({
+    const allReactions = await this.prisma.reaction.findMany({
       where: {
-        userId: userId,
-        visible: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
+        AND: { userId: viewerId, endTime: null },
       },
     });
-    return comment;
+    return commentWithLikes.map((item) => {
+      const dislikes = commentWithDislikes.find((x) => x.id == item.id);
+      const reaction = allReactions.find((x) => x.commentId == item.id);
+      return {
+        ...item,
+        status: reaction.type,
+        likes: item._count.Reaction,
+        dislikes: dislikes._count.Reaction,
+      };
+    });
   }
 
-  async updateComment(dto: EditCommentDto) {
+  async getAllCommentsOfUser(userId: string, viewerId?: string | null) {
+    const commentWithLikes: CommentInterface[] =
+      await this.prisma.comment.findMany({
+        where: {
+          visible: true,
+          userId: userId,
+        },
+        select: {
+          id: true,
+          text: true,
+          reply: {
+            select: {
+              id: true,
+              text: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              nickname: true,
+              linkNickname: true,
+              photo: true,
+              role: true,
+              secondVerification: true,
+            },
+          },
+          _count: {
+            select: {
+              Reaction: {
+                where: {
+                  endTime: null,
+                  type: ReactionType.LIKE,
+                },
+              },
+            },
+          },
+        },
+      });
+    const commentWithDislikes: CommentInterface[] =
+      await this.prisma.comment.findMany({
+        where: {
+          visible: true,
+          userId: userId,
+        },
+        select: {
+          id: true,
+          text: true,
+          _count: {
+            select: {
+              Reaction: {
+                where: {
+                  endTime: null,
+                  type: ReactionType.DISLIKE,
+                },
+              },
+            },
+          },
+        },
+      });
+    if (!viewerId) {
+      return commentWithLikes.map((item) => {
+        const dislikes = commentWithDislikes.find((x) => x.id == item.id);
+        return {
+          ...item,
+          likes: item._count.Reaction,
+          dislikes: dislikes._count.Reaction,
+        };
+      });
+    }
+
+    const allReactions = await this.prisma.reaction.findMany({
+      where: {
+        AND: { userId: viewerId, endTime: null },
+      },
+    });
+    return commentWithLikes.map((item) => {
+      const dislikes = commentWithDislikes.find((x) => x.id == item.id);
+      const reaction = allReactions.find((x) => x.commentId == item.id);
+      return {
+        ...item,
+        status: reaction.type,
+        likes: item._count.Reaction,
+        dislikes: dislikes._count.Reaction,
+      };
+    });
+  }
+
+  async updateComment(userId: string, dto: EditCommentDto) {
     const newComment = await this.prisma.comment.update({
       where: {
         id: dto.id,
+        user: {
+          id: userId,
+        },
       },
       data: {
         text: dto.text,
@@ -98,7 +229,14 @@ export class AppService {
     return newComment;
   }
 
-  async deleteComment(userId: string, commentId: string, isModerator: boolean) {
+  async deleteComment(userId: string, commentId: string) {
+    const user = await this.prisma.shortUser.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    const isModerator: boolean =
+      user.role == 'ADMIN' || user.role == 'MODERATOR';
     const newComment = await this.prisma.comment.update({
       where: {
         id: commentId,
@@ -123,25 +261,36 @@ export class AppService {
     });
 
     let newReaction;
-    // if (checkReaction.length > 0 && checkReaction[0].endTime == null) {
-    //   newReaction = await this.prisma.reaction.update({
-    //     where: {
-    //
-    //     },
-    //     data: {
-    //       end: new Date(),
-    //     },
-    //   });
-    // } else {
-    //   newReaction = await this.prisma.followers.create({
-    //     data: {
-    //       follower: from,
-    //       following: to,
-    //       start: new Date(),
-    //     },
-    //   });
-    // }
-    //
-    // return newReaction;
+    if (checkReaction.length == 0 || checkReaction[0].endTime != null) {
+      newReaction = await this.prisma.reaction.create({
+        data: {
+          type: type,
+          startTime: new Date(),
+          commentId: commentId,
+          userId: userId,
+        },
+      });
+    } else {
+      newReaction = await this.prisma.reaction.update({
+        where: {
+          id: checkReaction[0].id,
+        },
+        data: {
+          endTime: new Date(),
+        },
+      });
+      if (checkReaction[0].type != type) {
+        newReaction = await this.prisma.reaction.create({
+          data: {
+            type: type,
+            startTime: new Date(),
+            commentId: commentId,
+            userId: userId,
+          },
+        });
+      }
+    }
+
+    return newReaction;
   }
 }
