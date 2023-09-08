@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateModeratorRequestDto, CreateReportDto } from '../dtos';
+import {
+  CreateModeratorRequestDto,
+  CreateReportDto,
+  DecideRequestsDto,
+  Decision,
+} from '../dtos';
 
 @Injectable()
 export class UserService {
@@ -117,8 +122,30 @@ export class UserService {
     });
     return requests;
   }
-  //
-  // async decideRequest(userId: string, requestId: string, decision: string) {}
+
+  async decideRequest(requestId: string, adminId: string, decision: Decision) {
+    const dto: DecideRequestsDto = {
+      requestId: requestId,
+      adminId: adminId,
+      decision: decision,
+    };
+    const newModerator: any = await new Promise((resolve) => {
+      this.userClient.send('decide_request', dto).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    if (newModerator.role == 'MODERATOR') {
+      this.prisma.authUser.update({
+        where: {
+          userId: newModerator.id,
+        },
+        data: {
+          role: 'MODERATOR',
+        },
+      });
+    }
+    return newModerator;
+  }
 
   async createReport(
     senderId: string,
@@ -141,7 +168,23 @@ export class UserService {
     return report;
   }
 
-  // async showReports(adminId: string) {}
-  //
-  // async banUser(adminId: string, userId: string, unlockTime: number) {}
+  async showReports() {
+    const reports = await new Promise((resolve) => {
+      this.userClient.send('show_reports', null).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    return reports;
+  }
+
+  async banUser(userId: string, unlockTime: number) {
+    const bannedUser = await new Promise((resolve) => {
+      this.userClient
+        .send('ban_user', { userId: userId, unlockTime: unlockTime })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return bannedUser;
+  }
 }

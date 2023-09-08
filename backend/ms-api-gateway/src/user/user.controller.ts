@@ -14,6 +14,7 @@ import {
   BanUserDto,
   CreateModeratorRequestDto,
   CreateReportDto,
+  Decision,
 } from '../dtos';
 import { RolesGuard } from '../auth/common/guards/roles.guard';
 
@@ -67,12 +68,20 @@ export class UserController {
     return this.userService.showModeratorRequestsById(linkNickname);
   }
 
-  @Post('/requests/:link')
+  @Get('/requests/:id/accept')
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
-  decideRequest() {
-    return 1;
+  acceptRequest(@GetCurrentUserId() adminId: string, @Param('id') id: string) {
+    return this.userService.decideRequest(adminId, id, Decision.ACCEPTED);
+  }
+
+  @Get('/requests/:id/deny')
+  @Roles(['ADMIN'])
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  denyRequest(@GetCurrentUserId() adminId: string, @Param('id') id: string) {
+    return this.userService.decideRequest(adminId, id, Decision.DENIED);
   }
 
   @Post('/reports/create')
@@ -87,17 +96,17 @@ export class UserController {
   @Get('/reports')
   @Roles(['MODERATOR', 'ADMIN'])
   @UseGuards(RolesGuard)
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   showReports() {
-    return 1;
+    return this.userService.showReports();
   }
 
   @Post('/ban')
   @Roles(['MODERATOR', 'ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
-  banUser(@Body() dto: BanUserDto) {
-    // return this.userService.banUser(dto);
+  banUser(@Body() dto: BanUserDto, @GetCurrentUserId() adminId: string) {
+    return this.userService.banUser(dto.userId, dto.unlockTime);
   }
 
   @Public()

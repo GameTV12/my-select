@@ -195,9 +195,10 @@ export class AppService {
         status: status,
       },
     });
+    let newModerator;
+    const userId: string = decidedRequest.userId;
     if (decision == 'ACCEPTED') {
-      const userId: string = decidedRequest.userId;
-      await this.prisma.user.update({
+      newModerator = await this.prisma.user.update({
         where: {
           id: userId,
         },
@@ -205,8 +206,14 @@ export class AppService {
           role: 'MODERATOR',
         },
       });
+    } else {
+      newModerator = await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
     }
-    return decidedRequest;
+    return newModerator;
   }
 
   async createReport({ senderId, reportedUserId, text }: CreateReportDto) {
@@ -221,8 +228,8 @@ export class AppService {
   }
 
   async showReports() {
-    const report = await this.prisma.report.findMany();
-    return report;
+    const reports = await this.prisma.report.findMany();
+    return reports;
   }
 
   async banUser(userId: string, unlockTime: number) {

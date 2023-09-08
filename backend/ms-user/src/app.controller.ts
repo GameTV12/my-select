@@ -71,7 +71,6 @@ export class AppController {
 
   @MessagePattern('create_report')
   createReport(@Payload(ValidationPipe) dto: CreateReportDto) {
-    console.log(dto);
     return this.appService.createReport(dto);
   }
 

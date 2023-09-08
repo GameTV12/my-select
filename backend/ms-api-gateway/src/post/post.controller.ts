@@ -12,11 +12,13 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from '../dtos';
+import { Public } from '../auth/common/decorators';
 
 @Controller('posts')
 export class PostController {
   constructor(private postService: PostService) {}
 
+  @Public()
   @Get(':id')
   getPostById(@Param('id') postId: string) {
     return this.postService.getPostById(postId);

@@ -40,6 +40,7 @@ export class CommentService implements OnModuleInit {
   }
 
   async getCommentList(goalId: string, type: Type, viewerId?: string | null) {
+    console.log(2);
     const comments = await new Promise((resolve) => {
       this.commentClient
         .send('get_comments', { goalId, type, viewerId })

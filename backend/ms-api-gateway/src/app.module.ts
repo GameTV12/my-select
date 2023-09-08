@@ -21,13 +21,12 @@ import { CommentModule } from './comment/comment.module';
     UserModule,
     CommentModule,
   ],
-  controllers: [CommentController],
+  controllers: [],
   providers: [
     {
       provide: APP_GUARD,
       useClass: AtGuard,
     },
-    CommentService,
   ],
 })
 export class AppModule {}

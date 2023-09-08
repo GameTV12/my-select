@@ -22,6 +22,7 @@ export class AppController {
       viewerId?: string;
     },
   ) {
+    console.log(3);
     return this.appService.getCommentList(
       data.goalId,
       data.type,

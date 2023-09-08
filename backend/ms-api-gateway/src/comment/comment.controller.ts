@@ -53,6 +53,7 @@ export class CommentController {
   @Get('variant/:id')
   @Public()
   getVariantCommentsUnauthorized(@Param('id') goalId: string) {
+    console.log(1);
     return this.commentService.getCommentList(goalId, Type.VARIANT, null);
   }
 

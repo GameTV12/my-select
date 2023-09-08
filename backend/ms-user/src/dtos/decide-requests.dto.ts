@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 
-enum Decision {
+export enum Decision {
   ACCEPTED = 'ACCEPTED',
   DENIED = 'DENIED',
   WAITING = 'WAITING',
