@@ -9,11 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class CreatePostDto {
-  @IsNotEmpty()
-  @IsString()
-  userId: string;
-
+export class PostDto {
   @IsNotEmpty()
   @IsString()
   @Length(2, 160)

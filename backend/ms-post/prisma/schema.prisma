@@ -42,9 +42,11 @@ model Reaction {
 }
 
 model Variant {
-  id    String @id @default(uuid())
-  text  String
-  votes Int
+  id     String @id @default(uuid())
+  text   String
+  votes  Int
+  Post   Post   @relation(fields: [postId], references: [id])
+  postId String
 }
 
 model Vote {
@@ -70,7 +72,7 @@ model Post {
   title           String
   text            String
   commentsAllowed Boolean
-  variantsAllowed Boolean
+  variantsAllowed Boolean?   @default(false)
   video           String?
   visible         Boolean    @default(true)
   createdAt       DateTime   @default(now())
@@ -78,4 +80,5 @@ model Post {
   Reaction        Reaction[]
   Vote            Vote[]
   Photo           Photo[]
+  Variants        Variant[]
 }

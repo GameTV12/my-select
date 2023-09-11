@@ -31,7 +31,6 @@ export class AppService {
   }
 
   async getCommentList(goalId: string, type: Type, viewerId?: string) {
-    console.log(4);
     const commentWithLikes: CommentInterface[] =
       await this.prisma.comment.findMany({
         where: {

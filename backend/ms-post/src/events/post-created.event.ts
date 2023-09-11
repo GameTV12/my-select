@@ -5,12 +5,12 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { CreatePostDto } from '../dtos/create-post.dto';
+import { PostDto } from '../dtos/post.dto';
 
 export class PostCreatedEvent {
   constructor(
     public readonly postId: string,
-    public readonly createPostDto: CreatePostDto,
+    public readonly createPostDto: PostDto,
   ) {}
 
   public toString() {
