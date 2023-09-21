@@ -76,7 +76,7 @@ export class UserService {
         linkNickname: linkNickname,
       },
     });
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user) throw new NotFoundException('User not found');
     const userId = user.userId;
 
     const followings = await new Promise((resolve) => {

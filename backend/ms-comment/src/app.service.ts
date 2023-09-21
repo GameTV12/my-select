@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { CreateCommentDto, EditCommentDto } from './dtos';
 import { CommentInterface } from './types/CommentInterface';
@@ -249,6 +249,13 @@ export class AppService {
   }
 
   async reactOnComment(commentId: string, userId: string, type: ReactionType) {
+    const comment = await this.prisma.comment.findUnique({
+      where: {
+        id: commentId,
+      },
+    });
+    if (!comment) throw new NotFoundException('Comment not found');
+
     const checkReaction = await this.prisma.reaction.findMany({
       where: {
         AND: { commentId: commentId, userId: userId },

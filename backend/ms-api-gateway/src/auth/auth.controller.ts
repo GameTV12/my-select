@@ -17,7 +17,10 @@ import { LogInDto, CreateUserDto, EditUserDto } from '../dtos';
 import { RtGuard } from './common/guards';
 import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { CheckDto } from '../dtos/check.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -31,7 +34,9 @@ export class AuthController {
 
   @Public()
   @Post('local/check')
-  checkUniqueEmailOrLink(@Body() body: { value: string; type: string }) {
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'OK', type: Boolean })
+  checkUniqueEmailOrLink(@Body() body: CheckDto) {
     return this.authService.checkUniqueEmailOrLink(body.value, body.type);
   }
 
@@ -86,10 +91,7 @@ export class AuthController {
   @Public()
   @Get('fb/logout')
   facebookLogout(@Req() req, @Res() res) {
-    req.session.destroy(function () {
-      req.logout();
-      res.redirect('/');
-    });
+    //
   }
 
   @Patch('edit')

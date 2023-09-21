@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PostCreatedEvent } from './events/post-created.event';
 import { PrismaService } from './prisma/prisma.service';
 import { PostDto } from './dtos/post.dto';
 import { PostInterface } from './types/PostInterface';
@@ -283,7 +282,7 @@ export class AppService {
         user: {
           userId,
         },
-        visible: false,
+        visible: true,
       },
       select: {
         id: true,
@@ -315,13 +314,16 @@ export class AppService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     const postsWithDislikes = await this.prisma.post.findMany({
       where: {
         user: {
           userId,
         },
-        visible: false,
+        visible: true,
       },
       select: {
         id: true,
@@ -385,7 +387,113 @@ export class AppService {
       },
     });
     if (!post) throw new NotFoundException('Post not found');
-    //
+
+    const checkReaction = await this.prisma.reaction.findMany({
+      where: {
+        AND: { postId, userId },
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+      take: 1,
+    });
+
+    let newReaction;
+    if (checkReaction.length == 0 || checkReaction[0].endTime != null) {
+      newReaction = await this.prisma.reaction.create({
+        data: {
+          type: reaction,
+          startTime: new Date(),
+          postId,
+          userId,
+        },
+      });
+    } else {
+      newReaction = await this.prisma.reaction.update({
+        where: {
+          id: checkReaction[0].id,
+        },
+        data: {
+          endTime: new Date(),
+        },
+      });
+      if (checkReaction[0].type != reaction) {
+        newReaction = await this.prisma.reaction.create({
+          data: {
+            type: reaction,
+            startTime: new Date(),
+            postId,
+            userId,
+          },
+        });
+      }
+    }
+
+    const postInfo: PostInterface = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        id: true,
+        title: true,
+        text: true,
+        video: true,
+        variantsAllowed: true,
+        commentsAllowed: true,
+        Variants: true,
+        Photo: true,
+        user: {
+          select: {
+            userId: true,
+            nickname: true,
+            linkNickname: true,
+            photo: true,
+            role: true,
+            secondVerification: true,
+          },
+        },
+        _count: {
+          select: {
+            Reaction: {
+              where: {
+                endTime: null,
+                type: ReactionType.LIKE,
+              },
+            },
+          },
+        },
+      },
+    });
+    const dislikes = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        _count: {
+          select: {
+            Reaction: {
+              where: {
+                endTime: null,
+                type: ReactionType.DISLIKE,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const userVoted = await this.prisma.vote.findUnique({
+      where: {
+        userId_postId: { userId, postId },
+      },
+    });
+    return {
+      ...postInfo,
+      likes: postInfo._count.Reaction,
+      dislikes: dislikes._count.Reaction,
+      status: newReaction.endTime == null ? reaction : null,
+      isVoted: userVoted != undefined,
+    };
   }
 
   async vote(variant: string, userId: string) {
@@ -536,11 +644,11 @@ export class AppService {
   }
 
   async getReactionInfo(postId: string) {
-    //
+    // likes and dislikes
   }
 
   async getPollInfo(postId: string) {
-    //
+    // all votes
   }
 
   // I must sort this by date up->to
@@ -579,6 +687,9 @@ export class AppService {
             },
           },
         },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
@@ -642,8 +753,116 @@ export class AppService {
     });
   }
 
-  async getTrendingPosts() {
-    //
+  async getTrendingPosts(viewerId?: string) {
+    const lastDays = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+    const postList: PostInterface[] = await this.prisma.post.findMany({
+      where: {
+        createdAt: {
+          gte: lastDays,
+        },
+        visible: true,
+      },
+      orderBy: {
+        Reaction: {
+          _count: 'desc',
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        text: true,
+        video: true,
+        variantsAllowed: true,
+        commentsAllowed: true,
+        Variants: true,
+        Photo: true,
+        user: {
+          select: {
+            userId: true,
+            nickname: true,
+            linkNickname: true,
+            photo: true,
+            role: true,
+            secondVerification: true,
+          },
+        },
+        _count: {
+          select: {
+            Reaction: {
+              where: {
+                endTime: null,
+                type: ReactionType.LIKE,
+              },
+            },
+          },
+        },
+      },
+    });
+    const postsWithDislikes = await this.prisma.post.findMany({
+      where: {
+        createdAt: {
+          gte: lastDays,
+        },
+        visible: true,
+      },
+      orderBy: {
+        Reaction: {
+          _count: 'desc',
+        },
+      },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            Reaction: {
+              where: {
+                endTime: null,
+                type: ReactionType.DISLIKE,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!viewerId) {
+      return postList.map((item) => {
+        const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+        return {
+          ...item,
+          likes: item._count.Reaction,
+          dislikes: dislikes._count.Reaction,
+        };
+      });
+    }
+
+    const allReactions = await this.prisma.reaction.findMany({
+      where: {
+        AND: { userId: viewerId, endTime: null },
+      },
+    });
+    const allVotes = await this.prisma.vote.findMany({
+      where: {
+        AND: { userId: viewerId },
+      },
+    });
+
+    return postList.map((item) => {
+      const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+      const reaction = allReactions.find((x) => x.postId == item.id);
+      const vote: boolean = allVotes.includes({
+        postId: item.id,
+        userId: viewerId,
+      });
+
+      return {
+        ...item,
+        status: reaction.type,
+        likes: item._count.Reaction,
+        dislikes: dislikes._count.Reaction,
+        voted: vote,
+      };
+    });
   }
 
   async searchPosts(args: string, viewerId: string) {
@@ -715,6 +934,9 @@ export class AppService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     const postsWithDislikes = await this.prisma.post.findMany({
@@ -808,12 +1030,5 @@ export class AppService {
         voted: vote,
       };
     });
-  }
-
-  async handlePostCreated(postCreatedEvent: PostCreatedEvent) {
-    console.log(postCreatedEvent);
-    console.log(postCreatedEvent.createPostDto);
-    console.log(postCreatedEvent.postId);
-    return { answer: postCreatedEvent, secondAnswer: 902 };
   }
 }

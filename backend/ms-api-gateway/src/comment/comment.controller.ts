@@ -13,7 +13,9 @@ import { CommentService, ReactionType, Type } from './comment.service';
 import { CreateCommentDto } from '../dtos/create-comment.dto';
 import { GetCurrentUserId, Public } from '../auth/common/decorators';
 import { EditCommentDto } from '../dtos/edit-comment.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Comments')
 @Controller('comments')
 export class CommentController {
   constructor(private commentService: CommentService) {}

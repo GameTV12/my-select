@@ -17,7 +17,9 @@ import {
   Decision,
 } from '../dtos';
 import { RolesGuard } from '../auth/common/guards/roles.guard';
+import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
@@ -38,6 +40,8 @@ export class UserController {
   @Public()
   @Get('/:id/followings')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'OK', type: '' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   getFullFollowings(@Param('id') linkNickname: string) {
     return this.userService.getFullFollowings(linkNickname);
   }

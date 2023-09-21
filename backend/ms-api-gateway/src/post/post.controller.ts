@@ -13,7 +13,9 @@ import {
 import { PostService } from './post.service';
 import { CreatePostDto } from '../dtos';
 import { Public } from '../auth/common/decorators';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Posts')
 @Controller('posts')
 export class PostController {
   constructor(private postService: PostService) {}
@@ -26,8 +28,7 @@ export class PostController {
 
   @Post()
   createPost(@Body(ValidationPipe) createPostDto: CreatePostDto) {
-    console.log(1);
-    return this.postService.createPost(createPostDto);
+    return { id: 'sfd' };
   }
 
   @Patch(':id')
