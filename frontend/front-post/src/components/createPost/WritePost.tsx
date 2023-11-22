@@ -235,7 +235,7 @@ export const WritePost = () => {
                             Text
                         </FormLabel>
                         <TextField id={"text"} name={"text"} type={"text"} placeholder={"Enter a text"} multiline
-                                   rows={12}
+                                   rows={3}
                                    maxRows={50} required fullWidth/>
                     </CustomFormControl>
                     <CustomFormGroup>
@@ -246,7 +246,7 @@ export const WritePost = () => {
                             sx={{
                                 border: '2px rgba(0, 0, 0, 0.25) dashed',
                                 borderRadius: '10px',
-                                minHeight: '200px',
+                                minHeight: '50px',
                                 textAlign: 'center',
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -310,7 +310,7 @@ export const WritePost = () => {
                             sx={{
                                 border: '2px rgba(0, 0, 0, 0.25) dashed',
                                 borderRadius: '10px',
-                                minHeight: '200px',
+                                minHeight: '50px',
                                 textAlign: 'center',
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -373,7 +373,7 @@ export const WritePost = () => {
                         </FormLabel>
                         <FormControlLabel
                             control={<Checkbox id={"variantsAllowed"} disabled={variants.length <= 1} onChange={(e) => setFormData({...formData, variantsAllowed: !formData.variantsAllowed })} defaultChecked/>}
-                            label="People can add variants"/>
+                            label="People can add options"/>
 
                         {variants.map((item, index) => (
                             <OutlinedInput

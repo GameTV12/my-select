@@ -2,7 +2,7 @@ import {CommentType, LikeStatus} from "../components/Comment";
 export const allComments: CommentType[] = [
     {
         id: "POLC-1202-KLDB",
-        nickname: "GameTV",
+        nickname: "WildBird",
         linkNickname: "gametvcity",
         userId: "USER-4480",
         image: "poimzcvu",
@@ -44,7 +44,7 @@ export const allComments: CommentType[] = [
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        repliedNickname: "GameTV",
+        repliedNickname: "WildBird",
         text: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +
@@ -90,7 +90,7 @@ export const allComments: CommentType[] = [
             "\n" +
             "\n" +
             "Fusce tellus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Curabitur sagittis hendrerit ante. Integer lacinia. Vivamus ac leo pretium faucibus. In dapibus augue non sapien. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus. Aenean placerat. Aliquam erat volutpat. Maecenas ipsum velit, consectetuer eu lobortis ut, dictum at dui. In rutrum. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Duis risus.",
-        repliedNickname: "GameTV",
+        repliedNickname: "WildBird",
         text: "Donec vitae arcu. Fusce nibh. Nulla turpis magna, cursus sit amet, suscipit a, interdum id, felis. Integer lacinia. Phasellus enim erat, vestibulum vel, aliquam a, posuere eu, velit. Nulla non lectus sed nisl molestie malesuada. In rutrum. Etiam posuere lacus quis dolor. Curabitur bibendum justo non orci. Praesent id justo in neque elementum ultrices. Nulla est.\n" +
             "\n" +
             "\n" +

@@ -25,7 +25,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import {Navigate, useParams} from "react-router-dom"
 import {Link} from "react-router-dom"
 
-type FilterParams = {
+export type FilterParams = {
     sortingArgs: number[]
     startDate?: dayjs.Dayjs
     endDate?: dayjs.Dayjs

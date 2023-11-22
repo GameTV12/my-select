@@ -1,29 +1,3 @@
-// import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material'
-// import MenuIcon from '@mui/icons-material/Menu'
-// import * as React from 'react'
-//
-// export default function Header(){
-//     return (
-//         <>
-//             <AppBar position="fixed">
-//                 <Toolbar>
-//                     <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-//                         <MenuIcon />
-//                     </IconButton>
-//                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-//                         MYSELECT
-//                     </Typography>
-//                     <Button color="inherit">
-//                         Logout
-//                     </Button>
-//                 </Toolbar>
-//             </AppBar>
-//             <Toolbar />
-//
-//         </>
-//     )
-// }
-
 import * as React from 'react';
 import {styled, alpha} from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
@@ -35,14 +9,11 @@ import InputBase from '@mui/material/InputBase';
 import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {createTheme} from "@mui/material/styles";
 import {Grid} from "@mui/material";
@@ -140,9 +111,7 @@ export default function Header() {
             onClose={handleMenuClose}
         >
             <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User123</MenuItem></Link>
-            <MenuItem onClick={handleMenuClose}>Business account1</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Business account2</MenuItem>
-            <MenuItem onClick={handleMenuClose} sx={{fontWeight: 'bold'}}>Logout&nbsp;<LogoutIcon
+            <MenuItem onClick={handleMenuClose} sx={{fontStyle: 'italic'}}>Logout&nbsp;<LogoutIcon
                 fontSize={"small"}/></MenuItem>
         </Menu>
     );
@@ -164,26 +133,6 @@ export default function Header() {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-            <MenuItem>
-                <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                    <Badge badgeContent={4} color="error">
-                        <ChatBubbleIcon/>
-                    </Badge>
-                </IconButton>
-                <p>Messages</p>
-            </MenuItem>
-            <MenuItem>
-                <IconButton
-                    size="large"
-                    aria-label="show 17 new notifications"
-                    color="inherit"
-                >
-                    <Badge badgeContent={17} color="error">
-                        <NotificationsIcon/>
-                    </Badge>
-                </IconButton>
-                <p>Notifications</p>
-            </MenuItem>
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     size="large"
@@ -246,22 +195,6 @@ export default function Header() {
                                 <Link to={'/posts/create'} style={{ textDecoration: 'none', color: 'inherit' }}>Write a post</Link>
                             </Typography>
                             <Box sx={{display: {xs: 'none', md: 'flex'}}}>
-                                <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                                    <Badge badgeContent={0} color="error">
-                                        {/*<ChatBubbleIcon />*/}
-                                        <ChatBubbleOutlineIcon/>
-                                    </Badge>
-                                </IconButton>
-                                <IconButton
-                                    size="large"
-                                    aria-label="show 17 new notifications"
-                                    color="inherit"
-                                >
-                                    <Badge badgeContent={17} color="error">
-                                        <NotificationsIcon/>
-                                        {/*<NotificationsNoneIcon />*/}
-                                    </Badge>
-                                </IconButton>
                                 <IconButton
                                     size="large"
                                     edge="end"

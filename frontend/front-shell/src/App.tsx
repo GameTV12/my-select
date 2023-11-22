@@ -13,7 +13,6 @@ const PostList = React.lazy(() => import('front_post/PostList'))
 
 
 export const App = () => {
-    //const HelloWorld = VueInReact(Hello)
     return (
         <Box>
             <Header />

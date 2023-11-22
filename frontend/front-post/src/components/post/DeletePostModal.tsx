@@ -27,10 +27,10 @@ const DeletePostModal = ({onClose, open, deletePost, commentId}: DialogProps & D
             aria-describedby="alert-dialog-slide-description"
             onKeyDown={handleKeyDown}
         >
-            <DialogTitle sx={{ textAlign: "center" }}>{"Delete this comment?"}</DialogTitle>
+            <DialogTitle sx={{ textAlign: "center" }}>{"Del`ete this post?"}</DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-slide-description">
-                   Do you really want to delete this comment?
+                   Do you really want to delete this post?
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

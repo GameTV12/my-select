@@ -12,7 +12,9 @@ export default defineConfig({
       // Modules to expose
       exposes: {
         './PostCommentList': './src/pages/PostCommentList',
-        './VariantCommentList': './src/pages/VariantCommentList'
+        './VariantCommentList': './src/pages/VariantCommentList',
+        './Comment': './src/components/Comment',
+        './UserCommentList': './src/pages/UserCommentList'
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })

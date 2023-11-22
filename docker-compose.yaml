@@ -32,7 +32,7 @@ services:
     environment:
       POSTGRES_USER: myselect
       POSTGRES_PASSWORD: noadminno
-      POSTGRES_DB: apigateway
+      POSTGRES_DB: apigatewaygr
   db-post:
     image: postgres:12
     ports:

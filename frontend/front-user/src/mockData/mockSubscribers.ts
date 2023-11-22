@@ -45,3 +45,24 @@ console.log(1)
 
 export const mockSubscribers: SubscriberStatistics[] = Array(...generateData().allSubscribers)
 export const mockRealSubscribers: SubscriberStatistics[] = Array(...generateData().verifiedSubscribers)
+//
+// export const mockSubscribers: SubscriberStatistics[] = [
+//     {time: Number(new Date('2023-10-07').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-08').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-09').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-10').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-11').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-12').getTime()), subscribers: 8},
+//     {time: Number(new Date('2023-10-13').getTime()), subscribers: 8},
+//     {time: Number(new Date('2023-10-13').getTime()), subscribers: 8},
+// ]
+// export const mockRealSubscribers: SubscriberStatistics[] = [
+//     {time: Number(new Date('2023-10-07').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-08').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-09').getTime()), subscribers: 0},
+//     {time: Number(new Date('2023-10-10').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-11').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-12').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-13').getTime()), subscribers: 1},
+//     {time: Number(new Date('2023-10-13').getTime()), subscribers: 1},
+// ]
