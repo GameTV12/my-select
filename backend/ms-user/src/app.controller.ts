@@ -13,13 +13,22 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @MessagePattern('create_user')
-  getUser(@Payload(ValidationPipe) data: { dto: CreateUserDto; pass: string }) {
+  createUser(
+    @Payload(ValidationPipe) data: { dto: CreateUserDto; pass: string },
+  ) {
     return this.appService.createUser(data.dto);
   }
 
   @MessagePattern('update_user')
   editUser(@Payload(ValidationPipe) data: { dto; userId: string }) {
     return this.appService.updateUser(data.dto, data.userId);
+  }
+
+  @MessagePattern('ban_user')
+  banUser(
+    @Payload(ValidationPipe) data: { userId: string; unlockTime: number },
+  ) {
+    return this.appService.banUser(data.userId, data.unlockTime);
   }
 
   @MessagePattern('get_current_user')
@@ -77,12 +86,5 @@ export class AppController {
   @MessagePattern('show_reports')
   showReports() {
     return this.appService.showReports();
-  }
-
-  @MessagePattern('ban_user')
-  banUser(
-    @Payload(ValidationPipe) data: { userId: string; unlockTime: number },
-  ) {
-    return this.appService.banUser(data.userId, data.unlockTime);
   }
 }

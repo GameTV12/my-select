@@ -16,10 +16,10 @@ export enum ReactionType {
 export class AppService {
   constructor(private prisma: PrismaService) {}
 
-  async createPost(userId: string, dto: PostDto) {
+  async createPost(dto: PostDto) {
     const newPost = await this.prisma.post.create({
       data: {
-        shortUserUserId: userId,
+        shortUserUserId: dto.userId,
         title: dto.title,
         text: dto.text,
         commentsAllowed: dto.commentsAllowed,
@@ -865,7 +865,7 @@ export class AppService {
     });
   }
 
-  async searchPosts(args: string, viewerId: string) {
+  async searchPosts(args: string, viewerId?: string) {
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
         AND: [
@@ -1030,5 +1030,70 @@ export class AppService {
         voted: vote,
       };
     });
+  }
+
+  async createUser(dto) {
+    const newUser = await this.prisma.shortUser.create({
+      data: {
+        userId: dto.id,
+        nickname: dto.nickname,
+        photo: dto.photo,
+        linkNickname: dto.linkNickname,
+      },
+    });
+    return newUser;
+  }
+
+  async updateUser(data) {
+    await this.prisma.shortUser.update({
+      where: {
+        userId: data.userId,
+      },
+      data: {
+        nickname: data.nickname,
+        linkNickname: data.linkNickname,
+        photo: data.photo,
+      },
+    });
+    return true;
+  }
+
+  async banUser(userId: string, unlockTime: number) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        userId,
+      },
+      data: {
+        visible: false,
+        role: 'BANNED_USER',
+      },
+    });
+    return user;
+  }
+
+  async makeModerator(data) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        userId: data.userId,
+      },
+      data: {
+        role: 'MODERATOR',
+      },
+    });
+
+    return user;
+  }
+
+  async cancelModerator(data) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        userId: data.userId,
+      },
+      data: {
+        role: 'DEFAULT_USER',
+      },
+    });
+
+    return user;
   }
 }

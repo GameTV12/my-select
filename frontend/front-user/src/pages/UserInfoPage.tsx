@@ -1,9 +1,9 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {mockRealSubscribers, mockSubscribers} from "../mockData/mockSubscribers";
 import {
     Avatar,
     Box, ClickAwayListener,
-    Grid, Grow, IconButton, Link, MenuItem, MenuList,
+    Grid, Grow, IconButton, MenuItem, MenuList,
     Paper, Popper,
     Table,
     TableBody,
@@ -14,6 +14,7 @@ import {
     Toolbar,
     Typography
 } from "@mui/material"
+import {Link} from "react-router-dom"
 import ModeratorRequestModal from "../components/ModeratorRequestModal";
 import DeleteModal from "../components/DeleteModal";
 import LogoutModal from "../components/LogoutModal";
@@ -23,26 +24,26 @@ import {Chart} from 'react-chartjs-2'
 
 ChartJS.register(...registerables)
 import 'chartjs-plugin-annotation'
-import LineChart from "../components/LineChart";
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import ListComment from "../components/ListComment";
-import {useParams} from "react-router-dom";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
+import {findUserByNickname} from "../serverRequests";
 
-interface User {
-    id: string
+export interface User {
     firstName: string
     lastName: string
     nickname: string
     linkNickname: string
     photo: string
-    dateOfBirth: Date
-    country: string
+    birthday: Date
     createdAt: Date
-    isActivated: boolean
-    subscribers: number
+    secondVerification: boolean
+    _count: {
+        Followers: number
+    }
 }
 
 export type SubscriberStatistics = {
@@ -51,30 +52,39 @@ export type SubscriberStatistics = {
 }
 
 const mockUser = {
-    id: '123',
-    firstName: 'Dave',
-    lastName: 'Smith',
-    nickname: 'UserPro 999',
-    linkNickname: 'userpro999official',
-    image: 'https://i.pinimg.com/originals/b6/b5/99/b6b59960f63c54ef78bf0f10d72c7218.jpg',
-    dateOfBirth: new Date('1998-09-03').getTime(),
-    country: "United Kingdom",
+    firstName: 'Not',
+    lastName: 'Found',
+    nickname: 'notfounduser',
+    linkNickname: 'notfounduser',
+    photo: 'https://i.pinimg.com/originals/b6/b5/99/b6b59960f63c54ef78bf0f10d72c7218.jpg',
+    birthday: new Date('1998-09-03').getTime(),
     createdAt: new Date('2020-11-01').getTime(),
-    isActivated: false,
-    subscribers: 90139,
-    posts: 20,
-    comments: 193,
+    secondVerification: false,
+    _count: {
+        Followers: 999
+    },
+    posts: 999,
+    comments: 999,
 }
 
 const UserInfoPage = () => {
     const { id } = useParams()
     console.log(id)
+    useEffect(() => {
+        let response;
+        if (id != undefined) {
+            findUserByNickname(id).then(r => setUserInfo(r)).catch(r => {
+                return <Navigate to={'/'} />
+            })
+        }
+    }, [id]);
 
     const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
     const [openModalModeratorRequest, setOpenModalModeratorRequest] = useState<boolean>(false)
     const [openModalDelete, setOpenModalDelete] = useState<boolean>(false)
     const [openModalLogout, setOpenModalLogout] = useState<boolean>(false)
     const [tabPosition, setTabPosition] = useState<string>('1');
+    const [userInfo, setUserInfo] = useState(mockUser);
     const [chartSubscriberData, setChartSubscriberData] = useState({
         labels: mockSubscribers.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth() + 1}.${new Date(data.time).getFullYear()}`)),
         type: "line",
@@ -175,11 +185,10 @@ const UserInfoPage = () => {
                     >
                         <Box sx={{display: 'flex', alignItems: 'center'}}>
                             <Avatar>
-                                <Box component={"img"} src={mockUser.image} sx={{objectFit: 'cover'}} minWidth={'100%'}
+                                <Box component={"img"} src={userInfo.photo} sx={{objectFit: 'cover'}} minWidth={'100%'}
                                      minHeight={'100%'}/>
                             </Avatar>
-                            <Typography sx={{px: 2}}>{mockUser.nickname} (<i><Link target={"_blank"} underline="none"
-                                                                                   href={"https://leetcode.com/"}>{mockUser.linkNickname}</Link></i>)</Typography>
+                            <Typography sx={{px: 2}}>{userInfo.nickname} (<i><Link target={"_blank"} to={`/users/${userInfo.linkNickname}`} style={{ textDecoration: 'none' }}>{userInfo.linkNickname}</Link></i>)</Typography>
                         </Box>
                         <IconButton aria-label="settings"
                                     ref={anchorRef}
@@ -242,49 +251,43 @@ const UserInfoPage = () => {
                                 <TableCell component="th" scope="row">
                                     <strong>Full name</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.firstName} {mockUser.lastName}</TableCell>
+                                <TableCell>{userInfo.firstName} {userInfo.lastName}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Subscribers</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.subscribers}</TableCell>
+                                <TableCell>{userInfo._count.Followers}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Posts</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.posts}</TableCell>
+                                <TableCell>{userInfo.posts}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Comments</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.comments}</TableCell>
+                                <TableCell>{userInfo.comments}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Birthdate</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.dateOfBirth).getDate()}.{new Date(mockUser.dateOfBirth).getMonth() + 1}.{new Date(mockUser.dateOfBirth).getFullYear()}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th" scope="row">
-                                    <strong>Country</strong>
-                                </TableCell>
-                                <TableCell>{mockUser.country}</TableCell>
+                                <TableCell>{new Date(userInfo.birthday).getDate()}.{new Date(userInfo.birthday).getMonth() + 1}.{new Date(userInfo.birthday).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>User since</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.createdAt).getDate()}.{new Date(mockUser.createdAt).getMonth() + 1}.{new Date(mockUser.createdAt).getFullYear()}</TableCell>
+                                <TableCell>{new Date(userInfo.createdAt).getDate()}.{new Date(userInfo.createdAt).getMonth() + 1}.{new Date(userInfo.createdAt).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Activated</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.isActivated ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)'}</TableCell>
+                                <TableCell>{userInfo.secondVerification ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)'}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -300,7 +303,7 @@ const UserInfoPage = () => {
                         <TabPanel value="1">
                             <Box>
                                 <Typography variant={"h5"} align={"center"}>Subscribers
-                                    of <em>{mockUser.nickname}</em></Typography>
+                                    of <em>{userInfo.nickname}</em></Typography>
                                 {chart}
                             </Box>
                         </TabPanel>

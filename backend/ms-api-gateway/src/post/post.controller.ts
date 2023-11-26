@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from '../dtos';
-import { Public } from '../auth/common/decorators';
+import { GetCurrentUserId, Public } from '../auth/common/decorators';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Posts')
@@ -27,8 +27,11 @@ export class PostController {
   }
 
   @Post()
-  createPost(@Body(ValidationPipe) createPostDto: CreatePostDto) {
-    return { id: 'sfd' };
+  createPost(
+    @Body(ValidationPipe) createPostDto: CreatePostDto,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.postService.createPost(userId, createPostDto);
   }
 
   @Patch(':id')

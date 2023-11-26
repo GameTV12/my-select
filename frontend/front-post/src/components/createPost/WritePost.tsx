@@ -217,7 +217,7 @@ export const WritePost = () => {
                     Create a post
                 </Typography>
                 <form onSubmit={handleSubmit}>
-                    <CustomFormControl fullWidth>
+                    <CustomFormControl fullWidth required>
                         <FormLabel htmlFor={"title"}>
                             Title
                         </FormLabel>
@@ -230,7 +230,7 @@ export const WritePost = () => {
                             fullWidth
                         />
                     </CustomFormControl>
-                    <CustomFormControl fullWidth>
+                    <CustomFormControl fullWidth required>
                         <FormLabel htmlFor={"text"}>
                             Text
                         </FormLabel>
@@ -246,7 +246,7 @@ export const WritePost = () => {
                             sx={{
                                 border: '2px rgba(0, 0, 0, 0.25) dashed',
                                 borderRadius: '10px',
-                                minHeight: '50px',
+                                minHeight: '200px',
                                 textAlign: 'center',
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -302,66 +302,68 @@ export const WritePost = () => {
                             </ButtonGroup>
                         </FormControl>
                     </CustomFormGroup>
-                    <CustomFormGroup>
-                        <FormLabel>
-                            Video
+                    {/*<CustomFormGroup>*/}
+                    {/*    <FormLabel>*/}
+                    {/*        Video*/}
+                    {/*    </FormLabel>*/}
+                    {/*    <Box*/}
+                    {/*        sx={{*/}
+                    {/*            border: '2px rgba(0, 0, 0, 0.25) dashed',*/}
+                    {/*            borderRadius: '10px',*/}
+                    {/*            minHeight: '50px',*/}
+                    {/*            textAlign: 'center',*/}
+                    {/*            display: 'flex',*/}
+                    {/*            justifyContent: 'center',*/}
+                    {/*            fontSize: '24px',*/}
+                    {/*            color: "rgba(0, 0, 0, 0.5)",*/}
+                    {/*            mb: '10px',*/}
+                    {/*        }}*/}
+                    {/*        onDrop={handleDropVideos}*/}
+                    {/*        onDragOver={handleDragOverFiles}*/}
+                    {/*    >*/}
+                    {/*        <input type="file"*/}
+                    {/*               hidden*/}
+                    {/*               accept="video/*"*/}
+                    {/*               ref={videoRef}*/}
+                    {/*               onChange={handleExplorerVideo}*/}
+                    {/*        />*/}
+
+                    {/*            <Grid container sx={{*/}
+                    {/*                display: 'flex',*/}
+                    {/*                alignItems: 'center',*/}
+                    {/*                justifyContent: 'center',*/}
+                    {/*                px: 1,*/}
+                    {/*            }}>*/}
+                    {/*                {!video ?*/}
+                    {/*                <>Upload a video&nbsp;<UploadFileIcon/></>*/}
+                    {/*                :*/}
+                    {/*                <Grid onClick={() => callModalWindow(video)}*/}
+                    {/*                       sx={{ py: 1, pr: 2, cursor: 'grab' }}*/}
+                    {/*                >*/}
+                    {/*                </Grid>*/}
+                    {/*                }*/}
+                    {/*            </Grid>*/}
+
+                    {/*    </Box>*/}
+                    {/*    <FormControl fullWidth>*/}
+                    {/*        <ButtonGroup variant="contained" fullWidth>*/}
+                    {/*            <Button color={"error"} onClick={clearVideosHandler}>Clear the video</Button>*/}
+                    {/*            <Button color={"info"} onClick={openVideoExplorer}>Change a video</Button>*/}
+                    {/*        </ButtonGroup>*/}
+                    {/*    </FormControl>*/}
+                    {/*</CustomFormGroup>*/}
+                    <CustomFormControl fullWidth>
+                        <FormLabel htmlFor={"video"}>
+                            Video from YouTube
                         </FormLabel>
-                        <Box
-                            sx={{
-                                border: '2px rgba(0, 0, 0, 0.25) dashed',
-                                borderRadius: '10px',
-                                minHeight: '50px',
-                                textAlign: 'center',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                fontSize: '24px',
-                                color: "rgba(0, 0, 0, 0.5)",
-                                mb: '10px',
-                            }}
-                            onDrop={handleDropVideos}
-                            onDragOver={handleDragOverFiles}
-                        >
-                            <input type="file"
-                                   hidden
-                                   accept="video/*"
-                                   ref={videoRef}
-                                   onChange={handleExplorerVideo}
-                            />
-
-                                <Grid container sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    px: 1,
-                                }}>
-                                    {!video ?
-                                    <>Upload a video&nbsp;<UploadFileIcon/></>
-                                    :
-                                    <Grid onClick={() => callModalWindow(video)}
-                                           sx={{ py: 1, pr: 2, cursor: 'grab' }}
-                                    >
-                                        {/*<video*/}
-                                        {/*    autoPlay*/}
-                                        {/*    loop*/}
-                                        {/*    muted*/}
-                                        {/*>*/}
-                                        {/*    <source*/}
-                                        {/*        src={video.name}*/}
-                                        {/*        type="video/mp4"*/}
-                                        {/*    />*/}
-                                        {/*</video>*/}
-                                    </Grid>
-                                    }
-                                </Grid>
-
-                        </Box>
-                        <FormControl fullWidth>
-                            <ButtonGroup variant="contained" fullWidth>
-                                <Button color={"error"} onClick={clearVideosHandler}>Clear the video</Button>
-                                <Button color={"info"} onClick={openVideoExplorer}>Change a video</Button>
-                            </ButtonGroup>
-                        </FormControl>
-                    </CustomFormGroup>
+                        <TextField
+                            id={"video"}
+                            name={"video"}
+                            type={"text"}
+                            placeholder={"Enter a video from YouTube"}
+                            fullWidth
+                        />
+                    </CustomFormControl>
                     <FormGroup>
                         <FormControlLabel
                             control={<Checkbox defaultChecked id={"commentsAllowed"} value={formData.commentsAllowed} onChange={() => setFormData({...formData, commentsAllowed: !formData.commentsAllowed })} />}

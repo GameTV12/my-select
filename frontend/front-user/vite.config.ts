@@ -15,6 +15,7 @@ export default defineConfig({
         './UserInfoPage': './src/pages/UserInfoPage',
         './RequestList': './src/pages/RequestList',
         './SubscriptionList': './src/pages/SubscriptionList',
+        './LoginModal': './src/pages/LoginModal'
       },
       remotes: {
         front_comment: "http://localhost:3006/assets/remoteEntry.js",

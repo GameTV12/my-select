@@ -20,22 +20,34 @@ const RequestList = React.lazy(() => import('front_user/RequestList'))
 // @ts-ignore
 const SubscriptionList = React.lazy(() => import('front_user/SubscriptionList'))
 
+export enum Roles {
+    ADMIN = "ADMIN",
+    MODERATOR = "MODERATOR",
+    DEFAULT_USER = "DEFAULT_USER",
+    BANNED_USER = "BANNED_USER"
+}
+
 export interface IRoute {
     path: string
     element: FC
     auth: boolean
+    roles?: Roles[]
 }
 
 export const routePublic: IRoute[] = [
-    { path: '/', element: PostList, auth: false },
-    { path: '/users/:id', element: PostList, auth: false },
-    { path: '/users/:id/posts', element: PostList, auth: false },
-    { path: '/signup', element: RegisterPage, auth: false },
-    { path: '/users/subscriptions', element: SubscriptionList, auth: false },
-    { path: '/users/:id/profile', element: UserInfoPage, auth: false },
-    { path: '/posts/create', element: WritePost, auth: false },
-    { path: '/posts/:id', element: SinglePost, auth: false },
-    { path: '/posts/:id/comments', element: PostCommentList, auth: false },
-    { path: '/posts/:id/:variantId/comments', element: VariantCommentList, auth: false },
-    { path: '*', element: App, auth: true },
+    { path: '/', element: PostList, auth: false }, // all posts +
+    { path: '/users/:id', element: PostList, auth: false }, // all posts of user +
+    { path: '/signup', element: RegisterPage, auth: false }, // register page +
+    { path: '/users/subscriptions', element: SubscriptionList, auth: true }, // subscriptions of current user (you) +
+    { path: '/users/:id/profile', element: UserInfoPage, auth: false }, // profile page +
+    { path: '/users/requests', element: RequestList, auth: true, roles: [Roles.ADMIN] }, // requests for admin +
+    { path: '/users/reports', element: UserInfoPage, auth: true, roles: [Roles.ADMIN, Roles.MODERATOR] }, // reports of users -
+    { path: '/posts/create', element: WritePost, auth: true }, // write a post +
+    { path: '/posts/:id', element: SinglePost, auth: false }, // single post +
+    { path: '/posts/:id/comments', element: PostCommentList, auth: false }, // comments of posts +
+    { path: '/posts/:id/:variantId/comments', element: VariantCommentList, auth: false }, // comments of option +
+    { path: '/posts/reports', element: SinglePost, auth: true, roles: [Roles.ADMIN, Roles.MODERATOR] }, // reports on posts -
+    { path: '/comments/reports', element: App, auth: true, roles: [Roles.ADMIN, Roles.MODERATOR] }, // reports on comments -
+    { path: '/admin', element: App, auth: true, roles: [Roles.ADMIN, Roles.MODERATOR] }, // reports on comments -
+    { path: '*', element: App, auth: false }, // 404 found -
 ]

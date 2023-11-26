@@ -173,7 +173,7 @@ const Post = ({
     return (
         <ListItem alignItems="flex-start" sx={{boxShadow: 5, mb: 4, p: 3, pr: 4, pt: 2}}>
             <ListItemAvatar>
-                <Avatar alt="Remy Sharp" src={userPhoto}/>
+                <Link to={`/users/${linkNickname}/profile`}><Avatar alt="Remy Sharp" src={userPhoto}/></Link>
             </ListItemAvatar>
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>

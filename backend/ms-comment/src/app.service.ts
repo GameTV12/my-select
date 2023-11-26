@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { CreateCommentDto, EditCommentDto } from './dtos';
 import { CommentInterface } from './types/CommentInterface';
-import e from 'express';
 
 export enum Type {
   POST = 'POST',
@@ -298,5 +297,70 @@ export class AppService {
     }
 
     return newReaction;
+  }
+
+  async createUser(dto) {
+    const newUser = await this.prisma.shortUser.create({
+      data: {
+        id: dto.id,
+        nickname: dto.nickname,
+        photo: dto.photo,
+        linkNickname: dto.linkNickname,
+      },
+    });
+    return newUser;
+  }
+
+  async updateUser(data) {
+    await this.prisma.shortUser.update({
+      where: {
+        id: data.userId,
+      },
+      data: {
+        nickname: data.nickname,
+        linkNickname: data.linkNickname,
+        photo: data.photo,
+      },
+    });
+    return true;
+  }
+
+  async banUser(userId: string, unlockTime: number) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        visible: false,
+        role: 'BANNED_USER',
+      },
+    });
+    return user;
+  }
+
+  async makeModerator(data) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        id: data.userId,
+      },
+      data: {
+        role: 'MODERATOR',
+      },
+    });
+
+    return user;
+  }
+
+  async cancelModerator(data) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        id: data.userId,
+      },
+      data: {
+        role: 'DEFAULT_USER',
+      },
+    });
+
+    return user;
   }
 }

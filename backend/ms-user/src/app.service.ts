@@ -79,6 +79,17 @@ export class AppService {
         visible: true,
         birthday: true,
         secondVerification: true,
+        createdAt: true,
+        role: true,
+        _count: {
+          select: {
+            Followers: {
+              where: {
+                end: null,
+              },
+            },
+          },
+        },
       },
     });
     return user;

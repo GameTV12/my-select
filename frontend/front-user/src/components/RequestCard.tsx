@@ -10,10 +10,8 @@ import {
     IconButton, IconButtonProps, Link,
     Typography
 } from "@mui/material";
-import {red} from "@mui/material/colors"
 import { styled } from '@mui/material/styles'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import SubscriptionCard from "./SubscriptionCard";
 
 interface ExpandMoreProps extends IconButtonProps {
     expand: boolean;

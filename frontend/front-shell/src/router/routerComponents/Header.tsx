@@ -6,18 +6,17 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
-import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {createTheme} from "@mui/material/styles";
 import {Grid} from "@mui/material";
 import {Link} from "react-router-dom"
+import {useState} from "react";
+import LoginModal from "../../components/login/LoginModal";
 
 const mainTheme = createTheme({
     palette: {
@@ -75,6 +74,7 @@ export default function Header() {
 
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+    const [loginOpen, setLoginOpen] = useState(false);
 
     const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -93,6 +93,16 @@ export default function Header() {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
+    const handleOpenLogin = () => {
+        setLoginOpen(true);
+    }
+
+    const handleCloseLogin = () => {
+        setLoginOpen(false);
+    }
+
+
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
@@ -110,9 +120,8 @@ export default function Header() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User123</MenuItem></Link>
-            <MenuItem onClick={handleMenuClose} sx={{fontStyle: 'italic'}}>Logout&nbsp;<LogoutIcon
-                fontSize={"small"}/></MenuItem>
+            <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User1234</MenuItem></Link>
+            <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
         </Menu>
     );
 
@@ -224,6 +233,7 @@ export default function Header() {
 
                 </Toolbar>
             </AppBar>
+            <LoginModal open={loginOpen} children={<></>} onClose={handleCloseLogin} />
             <Toolbar/>
             {renderMobileMenu}
             {renderMenu}

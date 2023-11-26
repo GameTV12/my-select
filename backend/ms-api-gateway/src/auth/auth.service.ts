@@ -55,6 +55,29 @@ export class AuthService implements OnModuleInit {
       },
     });
 
+    const postCommentUser = {
+      userId: realUserId,
+      nickname: dto.nickname,
+      photo: dto.photo,
+      linkNickname: dto.linkNickname,
+    };
+
+    await new Promise((resolve) => {
+      this.authClient
+        .send('post_create_user', postCommentUser)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    await new Promise((resolve) => {
+      this.authClient
+        .send('comment_create_user', postCommentUser)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
     const tokens = await this.getTokens(
       newUser.userId,
       newUser.email,
@@ -62,6 +85,7 @@ export class AuthService implements OnModuleInit {
       newUser.visible,
       newUser.firstVerification,
       newUser.secondVerification,
+      newUser.linkNickname,
       newUser.unlockTime,
     );
     await this.updateRtHash(newUser.userId, tokens.refresh_token);
@@ -135,6 +159,7 @@ export class AuthService implements OnModuleInit {
         newUser.visible,
         newUser.firstVerification,
         newUser.secondVerification,
+        newUser.linkNickname,
         newUser.unlockTime,
       );
       await this.updateRtHash(user.userId, tokens.refresh_token);
@@ -153,6 +178,7 @@ export class AuthService implements OnModuleInit {
       user.visible,
       user.firstVerification,
       user.secondVerification,
+      user.linkNickname,
       user.unlockTime,
     );
     return {
@@ -200,6 +226,7 @@ export class AuthService implements OnModuleInit {
       user.visible,
       user.firstVerification,
       user.secondVerification,
+      user.linkNickname,
       user.unlockTime,
     );
     await this.updateRtHash(user.userId, tokens.refresh_token);
@@ -238,6 +265,7 @@ export class AuthService implements OnModuleInit {
       user.visible,
       user.firstVerification,
       user.secondVerification,
+      user.linkNickname,
       user.unlockTime,
     );
     await this.updateRtHash(user.userId, tokens.refresh_token);
@@ -304,6 +332,7 @@ export class AuthService implements OnModuleInit {
       newUser.visible,
       newUser.firstVerification,
       newUser.secondVerification,
+      newUser.linkNickname,
       newUser.unlockTime,
     );
     await this.updateRtHash(newUser.userId, tokens.refresh_token);
@@ -326,11 +355,13 @@ export class AuthService implements OnModuleInit {
     visible: boolean,
     firstVerification: boolean,
     secondVerification: boolean,
+    linkNickname: string,
     unlockTime: any,
   ) {
     const payload = {
       id: userId,
       email: email,
+      linkNickname: linkNickname,
       role: role,
       visible: visible,
       firstVerification: firstVerification,

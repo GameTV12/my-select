@@ -12,6 +12,10 @@ import {
 export class PostDto {
   @IsNotEmpty()
   @IsString()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsString()
   @Length(2, 160)
   title: string;
 
