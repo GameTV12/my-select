@@ -1,16 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Avatar,
-    Box, Grid,
-    IconButton, ImageList, ImageListItem, LinearProgress,
+    Box,
+    ClickAwayListener,
+    Grid,
+    Grow,
+    IconButton,
+    LinearProgress,
     ListItem,
     ListItemAvatar,
     ListItemText,
+    MenuItem,
+    MenuList,
+    Paper,
+    Popper,
     Tooltip,
     Typography
 } from "@mui/material"
-import FlagIcon from '@mui/icons-material/Flag'
-import CancelPresentationIcon from '@mui/icons-material/CancelPresentation'
 import ReactionComponent from "./ReactionComponent"
 import CommentIcon from '@mui/icons-material/Comment'
 import ReportPostModal from "./ReportPostModal"
@@ -18,32 +24,50 @@ import DeletePostModal from "./DeletePostModal"
 import ImageBlock from "./ImageBlock"
 import YouTube from "react-youtube"
 import PollBlock from "./PollBlock"
-import AddBoxIcon from '@mui/icons-material/AddBox';
 import AddNewVariantModal, {VariantMessage} from "./AddNewVariantModal"
 import {Link} from "react-router-dom"
 
 export interface Variant {
-    id: string
-    title: string
-    votes: number
+    id: string,
+    text: string,
+    votes: number,
+    postId: string
 }
 
-export interface PostData {
+export interface Photo {
     id: string
-    userId: string
-    nickname: string
-    linkNickname: string
-    userPhoto: string
+    link: string
+    postId: string
+}
+
+export enum Role {
+    ADMIN,
+    MODERATOR,
+    DEFAULT_USER
+}
+
+export interface PostInterface {
+    id: string
     title: string
+    user: {
+        userId: string
+        nickname: string
+        linkNickname: string
+        photo: string
+        role: Role
+        secondVerification: boolean
+    }
     text: string
-    photos?: string[]
+    Photo?: Photo[]
     video?: string
     commentsAllowed: boolean
     variantsAllowed?: boolean
-    variants?: Variant[]
+    Variants?: Variant[]
     isVoted?: boolean
-    createdAt: number
-    updatedAt: number
+    createdAt: Date
+    _count?: {
+        Reaction: number
+    }
     likes: number
     dislikes: number
     status: LikeStatus
@@ -59,26 +83,22 @@ export enum LikeStatus {
 
 const Post = ({
                   id,
-                  userId,
-                  nickname,
-                  linkNickname,
-                  userPhoto,
+                  user,
                   title,
                   text,
-                  photos,
+                  Photo,
                   video,
                   commentsAllowed,
                   variantsAllowed,
-                  variants,
+                  Variants,
                   isVoted,
                   createdAt,
-                  updatedAt,
                   likes,
                   dislikes,
                   status,
                   fullPost,
                   deletePost
-              }: PostData) => {
+              }: PostInterface) => {
     const [likesNumber, setLikesNumber] = useState<number>(likes)
     const [dislikesNumber, setDislikesNumber] = useState<number>(dislikes)
     const [currentStatus, setCurrentStatus] = useState<LikeStatus>(status)
@@ -86,9 +106,22 @@ const Post = ({
     const [progressNumber, setProgressNumber] = useState(0)
     const [deleteModal, setDeleteModal] = useState<boolean>(false)
     const [reportModal, setReportModal] = useState<boolean>(false)
-    const [variantList, setVariantList] = useState<Variant[]>(variants ? variants : [])
+    const [variantList, setVariantList] = useState<Variant[]>(Variants ? Variants : [])
     const [votedStatus, setVotedStatus] = useState<boolean | undefined>(isVoted!=undefined ? isVoted : undefined)
     const [variantModal, setVariantModal] = useState(false)
+    const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
+    const anchorRef = useRef<HTMLButtonElement>(null)
+
+    const handleAddMenuClose = (event: Event | React.SyntheticEvent) => {
+        if (
+            anchorRef.current &&
+            anchorRef.current.contains(event.target as HTMLElement)
+        ) {
+            return;
+        }
+
+        setOpenAddMenu(false);
+    }
 
     useEffect(() => {
         if (likesNumber + dislikesNumber) setProgressNumber(100 * likesNumber / (likesNumber + dislikesNumber))
@@ -132,6 +165,11 @@ const Post = ({
         setDeleteModal(true)
     }
 
+    const handleAddMenuToggle = () => {
+        setOpenAddMenu((prevOpen) => !prevOpen);
+    }
+
+
     function handleDeleteModalClose() {
         setDeleteModal(false)
     }
@@ -154,14 +192,14 @@ const Post = ({
 
     function addNewVariant({id, text}: VariantMessage) {
         setVotedStatus(true)
-        setVariantList(prevState => ([...prevState, {id: id, title: text, votes: 1}]))
+        setVariantList(prevState => ([...prevState, {id: id, text: text, votes: 1, postId: id}]))
     }
 
     function voteForVariant(variantId: string) {
-        if (variants != undefined) {
+        if (Variants != undefined) {
             const newList = variantList.map(variant => {
                 if (variant.id == variantId) {
-                    return {title: variant.title, votes: variant.votes+1, id: variant.id}
+                    return {text: variant.text, votes: variant.votes+1, id: variant.id, postId: id}
                 }
                 return variant
             })
@@ -170,24 +208,77 @@ const Post = ({
         }
     }
 
+    function handleListKeyDown(event: React.KeyboardEvent) {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            setOpenAddMenu(false);
+        } else if (event.key === 'Escape') {
+            setOpenAddMenu(false);
+        }
+    }
+
     return (
         <ListItem alignItems="flex-start" sx={{boxShadow: 5, mb: 4, p: 3, pr: 4, pt: 2}}>
             <ListItemAvatar>
-                <Link to={`/users/${linkNickname}/profile`}><Avatar alt="Remy Sharp" src={userPhoto}/></Link>
+                <Link to={`/users/${user.linkNickname}/profile`} target={"_blank"} style={{ "textDecoration": "none" }}><Avatar alt="Remy Sharp" src={user.photo}/></Link>
             </ListItemAvatar>
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
-                        <Link to={"https://leetcode.com/"} target={"_blank"} style={{ "display": "none" }}>{nickname}</Link>
+                        <Link to={`/users/${user.linkNickname}/profile`} target={"_blank"} style={{ "textDecoration": "none" }}>{user.nickname}</Link>
                         <em>&nbsp;{new Date(createdAt).getDate()}.{new Date(createdAt).getMonth() + 1}.{new Date(createdAt).getFullYear()} {String(new Date(createdAt).getHours()).padStart(2, '0')}:{String(new Date(createdAt).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>
-                        <Tooltip title={"Report"}><IconButton
-                            onClick={handleReportModalClickOpen}><FlagIcon/></IconButton></Tooltip>
-                        {deletePost && <Tooltip title={"Delete"}><IconButton
-                            onClick={handleDeleteModalClickOpen}><CancelPresentationIcon/></IconButton></Tooltip>
-                        }
-                        {variants != undefined && votedStatus != undefined && !votedStatus && variantsAllowed && <Tooltip title={"Add a new variant"}><IconButton onClick={handleAddNewVariantModalClickOpen}><AddBoxIcon /></IconButton></Tooltip>}
+                        <IconButton aria-label="settings"
+                                    ref={anchorRef}
+                                    id="composition-button"
+                                    aria-controls={openAddMenu ? 'composition-menu' : undefined}
+                                    aria-expanded={openAddMenu ? 'true' : undefined}
+                                    aria-haspopup="true"
+                                    onClick={handleAddMenuToggle}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                                <path d="M0 0h24v24H0z" fill="none"/>
+                                <path
+                                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </IconButton>
+                        <Popper
+                            open={openAddMenu}
+                            anchorEl={anchorRef.current}
+                            role={undefined}
+                            placement="bottom-start"
+                            sx={{ zIndex: 100 }}
+                            transition
+                            disablePortal
+                        >
+                            {({TransitionProps, placement}) => (
+                                <Grow
+                                    {...TransitionProps}
+                                    style={{
+                                        transformOrigin:
+                                            placement === 'bottom-start' ? 'right top' : 'rigth bottom',
+                                    }}
+                                >
+                                    <Paper>
+                                        <ClickAwayListener onClickAway={handleAddMenuClose}>
+                                            <MenuList
+                                                autoFocusItem={openAddMenu}
+                                                id="composition-menu"
+                                                aria-labelledby="composition-button"
+                                                sx={{ z: 10 }}
+                                                onKeyDown={handleListKeyDown}
+                                            >
+                                                <MenuItem onClick={handleAddMenuClose}>Edit the post</MenuItem>
+                                                <MenuItem onClick={handleReportModalClickOpen} sx={{color: 'error.main'}}>Report the post</MenuItem>
+                                                <MenuItem onClick={handleDeleteModalClickOpen} sx={{color: 'text.secondary'}}>Delete the post</MenuItem>
+                                                {!fullPost && <MenuItem onClick={handleDeleteModalClickOpen}><Link to={`/posts/${id}`} style={{ textDecoration: 'none' }}>Open full post</Link></MenuItem>}
+                                                {Variants != undefined && !votedStatus && variantsAllowed && <MenuItem onClick={handleAddNewVariantModalClickOpen} sx={{color: 'text.primary'}}>Add variant</MenuItem>}
+                                            </MenuList>
+                                        </ClickAwayListener>
+                                    </Paper>
+                                </Grow>
+                            )}
+                        </Popper>
                     </Box>
                 </Box>}
                 secondary={
@@ -204,9 +295,9 @@ const Post = ({
                         >
                             {text}
                         </Typography>
-                        {photos && <Box sx={{mt: 2}}><ImageBlock images={photos}/></Box>}
+                        {Photo && <Box sx={{mt: 2}}><ImageBlock images={Photo.map(item => item.link)}/></Box>}
                         {video && <Box sx={{mt: 2}}><YouTube videoId={video} opts={{width: '100%'}}/></Box>}
-                        {variants && <Box sx={{mt: 2}}><PollBlock postId={id} fullPost={fullPost} variants={variantList} isVoted={votedStatus} voteForVariant={votedStatus==false ? voteForVariant : (variantId: string)=> false }/></Box>}
+                        {Variants && Variants.length > 0 && <Box sx={{mt: 2}}><PollBlock postId={id} fullPost={fullPost} variants={variantList} isVoted={votedStatus} voteForVariant={votedStatus==false ? voteForVariant : (variantId: string)=> false }/></Box>}
                         <Grid container sx={{
                             p: 1,
                             bgcolor: 'background.paper',
@@ -257,7 +348,7 @@ const Post = ({
             />
             {deletePost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                             deletePost={deletePost}/>}
-            <ReportPostModal open={reportModal} onClose={handleReportModalClose} user={userId}/>
+            <ReportPostModal open={reportModal} onClose={handleReportModalClose} user={user.userId}/>
             <AddNewVariantModal open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
         </ListItem>
     );

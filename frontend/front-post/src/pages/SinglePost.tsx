@@ -1,25 +1,33 @@
-import React from 'react';
-import Post, {PostData} from "../components/post/Post";
+import React, {useState} from 'react';
+import Post, {PostInterface} from "../components/post/Post";
 import {Grid, List} from "@mui/material"
-import { useParams } from 'react-router-dom'
-import {allPosts} from "../mockData/mockPosts"
+import {Navigate, useParams} from 'react-router-dom'
+import {getSinglePost} from "../utils/publicRequests";
+import { useEffect } from "react";
+import {useCookies} from "react-cookie"
 
 const SinglePost = () => {
-    const params = useParams()
-    console.log(params)
-    const post: PostData = allPosts.filter(item=> item.id==params?.id)[0]
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const { id } = useParams()
+    useEffect(() => {
+        let response;
+        if (id != undefined) {
+            getSinglePost(id).then(r => {setPost(r)}).catch(r => {
+                return <Navigate replace to={'/'} />
+            })
+        }
+    }, [id]);
+    const [post, setPost] = useState<PostInterface>();
 
     return <>
-            {post != undefined && params != undefined ? <Grid container justifyContent="center" sx={{ mt: 5 }}>
+            {post != undefined && id != undefined ? <Grid container justifyContent="center" sx={{ mt: 5 }}>
                 <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
                     <List sx={{bgcolor: 'background.paper'}}>
-                        <Post id={post.id} nickname={post.nickname}
-                              linkNickname={post.linkNickname}
-                              userPhoto={post.userPhoto} text={post.text} createdAt={post.createdAt}
-                              status={post.status} updatedAt={post.updatedAt}
-                              userId={post.userId} photos={post.photos} video={post.video}
+                        <Post id={post.id} user={post.user} text={post.text} createdAt={post.createdAt}
+                              status={post.status}
+                              Photo={post.Photo} video={post.video}
                               likes={post.likes} dislikes={post.dislikes} commentsAllowed={post.commentsAllowed}
-                              title={post.title} variants={post.variants} isVoted={post.isVoted}
+                              title={post.title} Variants={post.Variants} isVoted={post.isVoted}
                               variantsAllowed={post.variantsAllowed} fullPost={true}/>
                     </List>
                 </Grid>

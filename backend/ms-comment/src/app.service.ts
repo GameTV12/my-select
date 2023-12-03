@@ -47,6 +47,11 @@ export class AppService {
             select: {
               id: true,
               text: true,
+              user: {
+                select: {
+                  nickname: true,
+                },
+              },
             },
           },
           user: {
@@ -69,6 +74,7 @@ export class AppService {
               },
             },
           },
+          createdAt: true,
         },
       });
     const commentWithDislikes: CommentInterface[] =
@@ -94,6 +100,7 @@ export class AppService {
               },
             },
           },
+          createdAt: true,
         },
       });
     if (!viewerId) {
@@ -124,12 +131,26 @@ export class AppService {
     });
   }
 
-  async getAllCommentsOfUser(userId: string, viewerId?: string | null) {
+  async getNumberCommentsOfUser(linkNickname: string) {
+    const numberOfComments: number = await this.prisma.comment.count({
+      where: {
+        visible: true,
+        user: {
+          linkNickname: linkNickname,
+        },
+      },
+    });
+    return numberOfComments;
+  }
+
+  async getAllCommentsOfUser(linkNickname: string, viewerId?: string | null) {
     const commentWithLikes: CommentInterface[] =
       await this.prisma.comment.findMany({
         where: {
           visible: true,
-          userId: userId,
+          user: {
+            linkNickname,
+          },
         },
         select: {
           id: true,
@@ -138,8 +159,14 @@ export class AppService {
             select: {
               id: true,
               text: true,
+              user: {
+                select: {
+                  nickname: true,
+                },
+              },
             },
           },
+          createdAt: true,
           user: {
             select: {
               id: true,
@@ -166,11 +193,14 @@ export class AppService {
       await this.prisma.comment.findMany({
         where: {
           visible: true,
-          userId: userId,
+          user: {
+            linkNickname,
+          },
         },
         select: {
           id: true,
           text: true,
+          createdAt: true,
           _count: {
             select: {
               Reaction: {
@@ -302,7 +332,7 @@ export class AppService {
   async createUser(dto) {
     const newUser = await this.prisma.shortUser.create({
       data: {
-        id: dto.id,
+        id: dto.userId,
         nickname: dto.nickname,
         photo: dto.photo,
         linkNickname: dto.linkNickname,
@@ -325,7 +355,7 @@ export class AppService {
     return true;
   }
 
-  async banUser(userId: string, unlockTime: number) {
+  async banUser(userId: string) {
     const user = await this.prisma.shortUser.update({
       where: {
         id: userId,
@@ -338,10 +368,10 @@ export class AppService {
     return user;
   }
 
-  async makeModerator(data) {
+  async makeModerator(id) {
     const user = await this.prisma.shortUser.update({
       where: {
-        id: data.userId,
+        id,
       },
       data: {
         role: 'MODERATOR',

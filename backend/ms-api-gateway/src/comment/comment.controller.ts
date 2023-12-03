@@ -40,12 +40,12 @@ export class CommentController {
 
   @Get('post/:id')
   @Public()
-  getPostCommentsUnauthorized(@Param('id') goalId: string) {
-    return this.commentService.getCommentList(goalId, Type.POST, null);
+  getPostComments(@Param('id') goalId: string) {
+    return this.commentService.getCommentList(goalId, Type.POST);
   }
 
-  @Get('post/:id')
-  getPostComments(
+  @Get('post/auth/:id')
+  getPostCommentsAuth(
     @GetCurrentUserId() userId: string,
     @Param('id') goalId: string,
   ) {
@@ -54,13 +54,12 @@ export class CommentController {
 
   @Get('variant/:id')
   @Public()
-  getVariantCommentsUnauthorized(@Param('id') goalId: string) {
-    console.log(1);
-    return this.commentService.getCommentList(goalId, Type.VARIANT, null);
+  getVariantComments(@Param('id') goalId: string) {
+    return this.commentService.getCommentList(goalId, Type.VARIANT);
   }
 
-  @Get('variant/:id')
-  getVariantComments(
+  @Get('variant/auth/:id')
+  getVariantCommentsAuth(
     @GetCurrentUserId() userId: string,
     @Param('id') goalId: string,
   ) {
@@ -69,16 +68,16 @@ export class CommentController {
 
   @Get('user/:id')
   @Public()
-  getUserCommentsUnauthorized(@Param('id') goalId: string) {
-    return this.commentService.getAllCommentsOfUser(goalId, null);
+  getUserComments(@Param('id') linkNickname: string) {
+    return this.commentService.getAllCommentsOfUser(linkNickname, null);
   }
 
-  @Get('user/:id')
-  getUserComments(
+  @Get('user/auth/:id')
+  getUserCommentsAuth(
     @GetCurrentUserId() userId: string,
-    @Param('id') goalId: string,
+    @Param('id') linkNickname: string,
   ) {
-    return this.commentService.getAllCommentsOfUser(goalId, userId);
+    return this.commentService.getAllCommentsOfUser(linkNickname, userId);
   }
 
   @Patch('update')

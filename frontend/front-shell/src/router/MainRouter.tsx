@@ -10,7 +10,7 @@ const MainRouter = () => {
     return (
         <Routes>
             {allRoutes.map((route: IRoute) => {
-                const ReturnComponent = AuthHOC(route.element, route.auth)
+                const ReturnComponent = AuthHOC(route.element, route.auth, route.roles)
                 // @ts-ignore
                 return <Route path={route.path} element={<ReturnComponent />} key={route.path} />
             })}

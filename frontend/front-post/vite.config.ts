@@ -12,6 +12,7 @@ export default defineConfig({
       // Modules to expose
       exposes: {
         './PostList': './src/pages/PostList',
+        './UserPostList': './src/pages/UserPostList',
         './SinglePost': './src/pages/SinglePost',
         './WritePost': './src/components/createPost/WritePost'
       },
@@ -20,11 +21,13 @@ export default defineConfig({
   ],
   server: {
     host: "127.0.0.1",
-    port: 3002
+    port: 3002,
+    cors: true,
   },
   preview: {
     host: "127.0.0.1",
     port: 3002,
+    cors: true,
   },
   cacheDir: "node_modules/.cacheDir",
   build: {

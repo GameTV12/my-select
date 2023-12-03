@@ -1,13 +1,10 @@
 import {
   ForbiddenException,
-  HttpCode,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateModeratorRequestDto,
@@ -20,6 +17,8 @@ import {
 export class UserService {
   constructor(
     @Inject('USER_SERVICE') private readonly userClient: ClientKafka,
+    @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
+    @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
     private prisma: PrismaService,
   ) {}
 
@@ -28,6 +27,34 @@ export class UserService {
       this.userClient.send('get_nickname', linkNickname).subscribe((data) => {
         resolve(data);
       });
+    });
+    const commentNumber = await new Promise((resolve) => {
+      this.commentClient
+        .send('get_number_comments_of_user', linkNickname)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    const postNumber = await new Promise((resolve) => {
+      this.postClient
+        .send('get_number_posts_of_user', linkNickname)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const answer = { ...answerUser, commentNumber, postNumber };
+    return answer;
+  }
+
+  async getUserInfo(linkNickname: string, viewerId?: string) {
+    const answerUser = await new Promise((resolve) => {
+      this.userClient
+        .send('get_user_info', { linkNickname, viewerId })
+        .subscribe((data) => {
+          resolve(data);
+        });
     });
     return answerUser;
   }
@@ -116,7 +143,7 @@ export class UserService {
 
   async showWaitingRequests() {
     const requests = await new Promise((resolve) => {
-      this.userClient.send('show_waiting_requests', null).subscribe((data) => {
+      this.userClient.send('show_waiting_requests', {}).subscribe((data) => {
         resolve(data);
       });
     });
@@ -142,6 +169,20 @@ export class UserService {
         data: {
           role: 'MODERATOR',
         },
+      });
+      await new Promise((resolve) => {
+        this.postClient
+          .send('post_make_moderator', newModerator.id)
+          .subscribe((data) => {
+            resolve(data);
+          });
+      });
+      await new Promise((resolve) => {
+        this.commentClient
+          .send('comment_make_moderator', newModerator.id)
+          .subscribe((data) => {
+            resolve(data);
+          });
       });
     }
     return newModerator;
@@ -170,7 +211,7 @@ export class UserService {
 
   async showReports() {
     const reports = await new Promise((resolve) => {
-      this.userClient.send('show_reports', null).subscribe((data) => {
+      this.userClient.send('show_reports', {}).subscribe((data) => {
         resolve(data);
       });
     });
@@ -178,12 +219,32 @@ export class UserService {
   }
 
   async banUser(userId: string, unlockTime: number) {
+    const apiUser = await this.prisma.authUser.update({
+      where: {
+        userId,
+      },
+      data: {
+        visible: false,
+        unlockTime: new Date(Number(unlockTime)),
+        role: 'BANNED_USER',
+      },
+    });
     const bannedUser = await new Promise((resolve) => {
       this.userClient
         .send('ban_user', { userId: userId, unlockTime: unlockTime })
         .subscribe((data) => {
           resolve(data);
         });
+    });
+    await new Promise((resolve) => {
+      this.userClient.send('post_ban_user', userId).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    await new Promise((resolve) => {
+      this.userClient.send('comment_ban_user', userId).subscribe((data) => {
+        resolve(data);
+      });
     });
     return bannedUser;
   }

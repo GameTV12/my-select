@@ -1,22 +1,7 @@
 import React, {FC, useEffect, useState} from 'react'
-import {
-    Avatar,
-    Box,
-    Grid,
-    IconButton,
-    Link,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    ListSubheader,
-    Typography
-} from "@mui/material"
-import ThumbUpOffAltOutlinedIcon from '@mui/icons-material/ThumbUpOffAltOutlined'
-import ThumbDownOffAltOutlinedIcon from '@mui/icons-material/ThumbDownOffAltOutlined'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
+import {Avatar, Box, Grid, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material"
+import {Link} from 'react-router-dom'
 import LinearProgress from '@mui/material/LinearProgress'
-import millify from "millify"
 import ReactionComponent from "./ReactionComponent";
 import Tooltip from "@mui/material/Tooltip"
 import FlagIcon from '@mui/icons-material/Flag'
@@ -139,7 +124,7 @@ const Comment: FC<CommentType> = ({
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
-                        <Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{nickname}</Link>
+                        <Link to={`/users/${linkNickname}/profile`} style={{ "textDecoration": "none" }}>{nickname}</Link>
                         <em>&nbsp;{new Date(time).getDate()}.{new Date(time).getMonth() + 1}.{new Date(time).getFullYear()} {String(new Date(time).getHours()).padStart(2, '0')}:{String(new Date(time).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>

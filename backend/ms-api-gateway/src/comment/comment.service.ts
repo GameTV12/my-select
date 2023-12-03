@@ -39,8 +39,7 @@ export class CommentService implements OnModuleInit {
     return comment;
   }
 
-  async getCommentList(goalId: string, type: Type, viewerId?: string | null) {
-    console.log(2);
+  async getCommentList(goalId: string, type: Type, viewerId?: string) {
     const comments = await new Promise((resolve) => {
       this.commentClient
         .send('get_comments', { goalId, type, viewerId })
@@ -51,10 +50,10 @@ export class CommentService implements OnModuleInit {
     return comments;
   }
 
-  async getAllCommentsOfUser(userId: string, viewerId?: string | null) {
+  async getAllCommentsOfUser(linkNickname: string, viewerId?: string) {
     const comments = await new Promise((resolve) => {
       this.commentClient
-        .send('get_all_comments_of_user', { userId, viewerId })
+        .send('get_all_comments_of_user', { linkNickname, viewerId })
         .subscribe((data) => {
           resolve(data);
         });
@@ -98,10 +97,16 @@ export class CommentService implements OnModuleInit {
   async onModuleInit() {
     this.commentClient.subscribeToResponseOf('create_comment');
     this.commentClient.subscribeToResponseOf('get_comments');
+    this.commentClient.subscribeToResponseOf('get_number_comments_of_user');
     this.commentClient.subscribeToResponseOf('get_all_comments_of_user');
     this.commentClient.subscribeToResponseOf('update_comment');
     this.commentClient.subscribeToResponseOf('delete_comment');
     this.commentClient.subscribeToResponseOf('react_on_comment');
+    this.commentClient.subscribeToResponseOf('comment_create_user');
+    this.commentClient.subscribeToResponseOf('comment_update_user');
+    this.commentClient.subscribeToResponseOf('comment_ban_user');
+    this.commentClient.subscribeToResponseOf('comment_make_moderator');
+    this.commentClient.subscribeToResponseOf('comment_cancel_moderator');
     await this.commentClient.connect();
   }
 }

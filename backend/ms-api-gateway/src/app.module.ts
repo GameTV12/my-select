@@ -6,8 +6,6 @@ import { PrismaModule } from './prisma/prisma.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './auth/common/guards';
 import { UserModule } from './user/user.module';
-import { CommentController } from './comment/comment.controller';
-import { CommentService } from './comment/comment.service';
 import { CommentModule } from './comment/comment.module';
 
 @Module({

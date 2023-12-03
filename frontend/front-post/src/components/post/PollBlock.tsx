@@ -36,9 +36,9 @@ const PollBlock = ({variants, postId, isVoted, voteForVariant, fullPost}: PollBl
             </IconButton>
         </Paper>
         {isVoted==false ?
-            variants.filter(item=> item.title.toLowerCase().includes(wordFilter.toLowerCase())).slice(0, numberOfVariants).map((item, index) => <VariantBar postId={postId} voteForVariant={voteForVariant} percentage={0} id={item.id} title={item.title} numberOfVotes={'You haven\'t been voted yet'} key={index} />)
+            variants.filter(item=> item.text.toLowerCase().includes(wordFilter.toLowerCase())).slice(0, numberOfVariants).map((item, index) => <VariantBar postId={postId} voteForVariant={voteForVariant} percentage={0} id={item.id} title={item.text} numberOfVotes={'You haven\'t been voted yet'} key={index} />)
             :
-            variants.sort((a, b) => b.votes - a.votes).filter(item=> item.title.toLowerCase().includes(wordFilter.toLowerCase())).slice(0, numberOfVariants).map((item, index) => <VariantBar postId={postId} percentage={totalVotes != 0 ? Number((item.votes/totalVotes * 100).toFixed(2)) : 0} id={item.id} title={item.title} numberOfVotes={item.votes.toString()} key={index} />)
+            variants.sort((a, b) => b.votes - a.votes).filter(item=> item.text.toLowerCase().includes(wordFilter.toLowerCase())).slice(0, numberOfVariants).map((item, index) => <VariantBar postId={postId} percentage={totalVotes != 0 ? Number((item.votes/totalVotes * 100).toFixed(2)) : 0} id={item.id} title={item.text} numberOfVotes={item.votes.toString()} key={index} />)
         }
         </>
 }

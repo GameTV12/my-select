@@ -18,4 +18,5 @@ export interface CommentInterface {
   _count: {
     Reaction: number;
   };
+  createdAt: Date;
 }

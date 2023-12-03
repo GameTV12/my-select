@@ -47,7 +47,7 @@ model Followers {
   following     String
   followerUser  User      @relation("Following", fields: [follower], references: [id])
   follower      String
-  start         DateTime
+  start         DateTime  @default(now())
   end           DateTime?
 
   @@id([follower, following, start])

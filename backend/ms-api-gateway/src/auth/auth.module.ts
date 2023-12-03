@@ -24,6 +24,36 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
         },
       },
     ]),
+    ClientsModule.register([
+      {
+        name: 'COMMENT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'comment',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'comment-consumer',
+          },
+        },
+      },
+    ]),
+    ClientsModule.register([
+      {
+        name: 'POST_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'post',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'post-consumer',
+          },
+        },
+      },
+    ]),
     JwtModule.register({
       global: true,
     }),

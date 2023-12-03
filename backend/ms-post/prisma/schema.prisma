@@ -36,9 +36,14 @@ model Reaction {
   userId    String
   type      String
   startTime DateTime  @default(now())
-  endTime   DateTime  @updatedAt
+  endTime   DateTime? @updatedAt
   post      Post      @relation(fields: [postId], references: [id])
   postId    String
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
 }
 
 model Variant {

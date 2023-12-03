@@ -46,14 +46,16 @@ export class UserController {
     return this.userService.getFullFollowings(linkNickname);
   }
 
+  //@Roles(['ADMIN'])
+  //@UseGuards(RolesGuard)
   @Public()
-  @Get('/requests')
+  @Get('/utils')
   @HttpCode(HttpStatus.OK)
   showWaitingRequests() {
     return this.userService.showWaitingRequests();
   }
 
-  @Post('/requests/create')
+  @Post('/utils/create')
   @Roles(['DEFAULT_USER'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -64,7 +66,7 @@ export class UserController {
     return this.userService.createModeratorRequest(userId, dto.text);
   }
 
-  @Get('/requests/:link')
+  @Get('/utils/:link')
   @HttpCode(HttpStatus.OK)
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
@@ -72,7 +74,7 @@ export class UserController {
     return this.userService.showModeratorRequestsById(linkNickname);
   }
 
-  @Get('/requests/:id/accept')
+  @Get('/utils/:id/accept')
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
@@ -80,7 +82,7 @@ export class UserController {
     return this.userService.decideRequest(adminId, id, Decision.ACCEPTED);
   }
 
-  @Get('/requests/:id/deny')
+  @Get('/utils/:id/deny')
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
@@ -98,8 +100,9 @@ export class UserController {
   }
 
   @Get('/reports')
-  @Roles(['MODERATOR', 'ADMIN'])
-  @UseGuards(RolesGuard)
+  @Public() //
+  // @Roles(['MODERATOR', 'ADMIN'])
+  // @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   showReports() {
     return this.userService.showReports();
@@ -111,6 +114,22 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   banUser(@Body() dto: BanUserDto, @GetCurrentUserId() adminId: string) {
     return this.userService.banUser(dto.userId, dto.unlockTime);
+  }
+
+  @Get('/info/:link/auth')
+  @HttpCode(HttpStatus.OK)
+  getUserInfoAuth(
+    @Param('link') linkNickname: string,
+    @GetCurrentUserId() viewerId,
+  ) {
+    return this.userService.getUserInfo(linkNickname, viewerId);
+  }
+
+  @Public()
+  @Get('/info/:link')
+  @HttpCode(HttpStatus.OK)
+  getUserInfo(@Param('link') linkNickname: string) {
+    return this.userService.getUserInfo(linkNickname);
   }
 
   @Public()

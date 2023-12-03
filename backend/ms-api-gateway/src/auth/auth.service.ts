@@ -14,16 +14,16 @@ import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
-import { GoogleStrategy } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
   constructor(
     @Inject('USER_SERVICE') private readonly authClient: ClientKafka,
+    @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
+    @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
-    private googleStrategy: GoogleStrategy,
   ) {}
 
   hashData(data: string) {
@@ -32,6 +32,16 @@ export class AuthService implements OnModuleInit {
 
   async signupLocal(dto: CreateUserDto): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
+
+    const possibleUser = await this.prisma.authUser.findUnique({
+      where: {
+        linkNickname: dto.linkNickname,
+      },
+    });
+
+    if (possibleUser) {
+      return this.signinLocal({ password: dto.password, email: dto.email });
+    }
 
     const realUserId: string = await new Promise((resolve) => {
       this.authClient
@@ -55,7 +65,7 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    const postCommentUser = {
+    const postAndCommentUser = {
       userId: realUserId,
       nickname: dto.nickname,
       photo: dto.photo,
@@ -63,16 +73,16 @@ export class AuthService implements OnModuleInit {
     };
 
     await new Promise((resolve) => {
-      this.authClient
-        .send('post_create_user', postCommentUser)
+      this.postClient
+        .send('post_create_user', postAndCommentUser)
         .subscribe((data) => {
           resolve(data);
         });
     });
 
     await new Promise((resolve) => {
-      this.authClient
-        .send('comment_create_user', postCommentUser)
+      this.commentClient
+        .send('comment_create_user', postAndCommentUser)
         .subscribe((data) => {
           resolve(data);
         });
@@ -213,8 +223,8 @@ export class AuthService implements OnModuleInit {
     });
 
     if (!user) throw new ForbiddenException('Access Denied');
-    if (!user.firstVerification)
-      throw new ForbiddenException("Email isn't verified");
+    // if (!user.firstVerification)
+    //   throw new ForbiddenException("Email isn't verified");
 
     const passwordMatches = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatches) throw new ForbiddenException('Access Denied');
@@ -310,12 +320,36 @@ export class AuthService implements OnModuleInit {
         email: dto.email,
       },
     });
+
     const answerUserService: boolean = await new Promise((resolve) => {
       this.authClient
         .send('update_user', {
           dto: dto,
           userId: userId,
         })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    const postAndCommentUser = {
+      userId: userId,
+      nickname: dto.nickname,
+      photo: dto.photo,
+      linkNickname: dto.linkNickname,
+    };
+
+    await new Promise((resolve) => {
+      this.postClient
+        .send('post_update_user', postAndCommentUser)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    await new Promise((resolve) => {
+      this.commentClient
+        .send('comment_update_user', postAndCommentUser)
         .subscribe((data) => {
           resolve(data);
         });
@@ -389,6 +423,7 @@ export class AuthService implements OnModuleInit {
     this.authClient.subscribeToResponseOf('update_user');
     this.authClient.subscribeToResponseOf('get_current_user');
     this.authClient.subscribeToResponseOf('get_nickname');
+    this.authClient.subscribeToResponseOf('get_user_info');
     this.authClient.subscribeToResponseOf('follow_to_user');
     this.authClient.subscribeToResponseOf('get_current_followers');
     this.authClient.subscribeToResponseOf('get_full_followings');

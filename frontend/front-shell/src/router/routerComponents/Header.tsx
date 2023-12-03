@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {styled, alpha} from '@mui/material/styles';
+import {useEffect, useState} from 'react';
+import {alpha, createTheme, styled} from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,11 +13,14 @@ import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import LogoutIcon from '@mui/icons-material/Logout';
-import {createTheme} from "@mui/material/styles";
 import {Grid} from "@mui/material";
 import {Link} from "react-router-dom"
-import {useState} from "react";
-import LoginModal from "../../components/login/LoginModal";
+import LoginModal from "../../components/login/LoginModal"
+import {Cookies, useCookies} from "react-cookie";
+import {UserI} from "../../utils/authRequests";
+import {jwtDecode} from "jwt-decode";
+import {Role} from "../routes/publicRoutes";
+import {Cookie} from "@mui/icons-material";
 
 const mainTheme = createTheme({
     palette: {
@@ -75,6 +79,13 @@ export default function Header() {
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const [loginOpen, setLoginOpen] = useState(false);
+    const [cookies, setCookie, removeCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -101,6 +112,13 @@ export default function Header() {
         setLoginOpen(false);
     }
 
+    const handleLogout = () => {
+        const rigthCookie = new Cookies();
+        removeCookie('myselect_refresh')
+        removeCookie('myselect_access')
+        rigthCookie.remove('myselect_refresh')
+        rigthCookie.remove('myselect_access')
+    }
 
 
     const menuId = 'primary-search-account-menu';
@@ -120,8 +138,14 @@ export default function Header() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User1234</MenuItem></Link>
-            <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
+            {currentUser && <Link to={`/users/${currentUser.linkNickname}/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>{currentUser.email}</MenuItem></Link>}
+            {currentUser && (currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR) && <Link to={`/admin/reports`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Reports</MenuItem></Link>}
+            {currentUser && currentUser.role == Role.ADMIN && <Link to={`/admin/requests`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Requests</MenuItem></Link>}
+            {currentUser && <Link to={`/users/subscriptions`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Subscriptions</MenuItem></Link>}
+            {currentUser ?
+                <MenuItem onClick={handleLogout} sx={{fontStyle: 'italic'}}>Logout&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem> :
+                <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
+            }
         </Menu>
     );
 

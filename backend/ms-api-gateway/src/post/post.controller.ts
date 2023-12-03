@@ -14,6 +14,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from '../dtos';
 import { GetCurrentUserId, Public } from '../auth/common/decorators';
 import { ApiTags } from '@nestjs/swagger';
+import { ReactionType } from '../comment/comment.service';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -26,6 +27,14 @@ export class PostController {
     return this.postService.getPostById(postId);
   }
 
+  @Get(':id/auth')
+  getPostByIdAuth(
+    @Param('id') postId: string,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.postService.getPostById(postId, userId);
+  }
+
   @Post()
   createPost(
     @Body(ValidationPipe) createPostDto: CreatePostDto,
@@ -35,13 +44,95 @@ export class PostController {
   }
 
   @Patch(':id')
-  editPost(@Param('id') postId: string, @Body() dto: CreatePostDto) {
-    return this.postService.editPost('mockUserId', postId, dto);
+  updatePost(
+    @Param('id') postId: string,
+    @Body() dto: CreatePostDto,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.postService.updatePost(userId, postId, dto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deletePost(@Param('id') postId: string) {
-    return this.postService.deletePost('userId', postId);
+  deletePost(@Param('id') postId: string, @GetCurrentUserId() userId) {
+    return this.postService.deletePost(userId, postId);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/variants/:id')
+  deleteVariant(@Param('id') variantId: string) {
+    return this.postService.deleteVariant(variantId);
+  }
+
+  @Get(':link/user/auth')
+  getPostListOfUserAuth(
+    @Param('link') link: string,
+    @GetCurrentUserId() viewerId: string,
+  ) {
+    return this.postService.getPostListOfUser(link, viewerId);
+  }
+
+  @Public()
+  @Get(':link/user')
+  getPostListOfUser(@Param('id') link: string) {
+    return this.postService.getPostListOfUser(link);
+  }
+
+  @Patch('/:id/like')
+  likePost(@Param('id') postId: string, @GetCurrentUserId() userId: string) {
+    return this.postService.reactOnPost(postId, userId, ReactionType.LIKE);
+  }
+
+  @Patch('/:id/dislike')
+  dislikePost(@Param('id') postId: string, @GetCurrentUserId() userId: string) {
+    return this.postService.reactOnPost(postId, userId, ReactionType.DISLIKE);
+  }
+
+  @Patch('/variant/:id/vote')
+  voteForPost(
+    @Param('id') variant: string,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.postService.voteForPost(variant, userId);
+  }
+
+  @Post('/:id/variant')
+  addVariant(
+    @Param('id') postId: string,
+    @GetCurrentUserId() userId: string,
+    @Body() dto: { variant: string },
+  ) {
+    return this.postService.addVariant(dto.variant, userId, postId);
+  }
+
+  @Get('followings')
+  getPostOfFollowings(@GetCurrentUserId() viewerId: string) {
+    return this.postService.getPostOfFollowings(viewerId);
+  }
+
+  @Get('auth/trends')
+  getTrendingPostsAuth(@GetCurrentUserId() viewerId: string) {
+    return this.postService.getTrendingPosts(viewerId);
+  }
+
+  @Public()
+  @Get('trends')
+  getTrendingPosts() {
+    console.log('9');
+    return { id: '1' };
+  }
+
+  @Get('auth/search/:args')
+  searchPostsAuth(
+    @Param('args') args: string,
+    @GetCurrentUserId() viewerId: string,
+  ) {
+    return this.postService.searchPosts(args, viewerId);
+  }
+
+  @Public()
+  @Get('search/:args')
+  searchPosts(@Param('args') args: string) {
+    return this.postService.searchPosts(args);
   }
 }

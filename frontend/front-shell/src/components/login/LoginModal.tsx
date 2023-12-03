@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
+import {Cookies, useCookies} from "react-cookie";
 import {
     Box, Button,
     FormControl, Modal, ModalProps, TextField,
     Typography
 } from "@mui/material";
-import {signInRequest} from "../../router/serverRequests";
+import {signInRequest} from "../../utils/publicRequests";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -26,6 +27,7 @@ export interface LoginCard {
 }
 
 const LoginModal = ({open, onClose}: ModalProps) => {
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
     const [data, setData] = useState<LoginCard>({
         email: '',
         password: '',
@@ -35,16 +37,27 @@ const LoginModal = ({open, onClose}: ModalProps) => {
         e.preventDefault()
         console.log(data)
         signInRequest(data).then(r => {
-            console.log(r)
-            localStorage.setItem("at_token", r.access_token)
+            console.log(data)
+            if (r.access_token) {
+                const rightCookie = new Cookies();
+                rightCookie.remove('myselect_access')
+                rightCookie.remove('myselect_refresh')
+                const current = new Date()
+                const accessTime = new Date(current.getTime() + 30 * 1000)
+                const refreshTime = new Date(current.getTime() + 90 * 24 * 3600 * 1000)
+                setCookie('myselect_access', r.access_token, { expires: accessTime })
+                setCookie('myselect_refresh', r.refresh_token, { expires: refreshTime })
+                rightCookie.set('myselect_access', r.access_token, { expires: accessTime })
+                rightCookie.set('myselect_refresh', r.refresh_token, { expires: refreshTime })
+                console.log('access time - ' + accessTime)
+            }
         }
-        )
+        ).catch((data) => console.log(data));
         setData({email: '', password: ''})
         if (onClose) {
             onClose(e, "backdropClick")
         }
     }
-
 
 
     return (

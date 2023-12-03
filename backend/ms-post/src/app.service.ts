@@ -99,6 +99,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -169,17 +170,32 @@ export class AppService {
         userId,
       },
     });
-    const isModerator: boolean =
-      user.role == 'ADMIN' || user.role == 'MODERATOR';
+    const authorOfPost = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        user: true,
+      },
+    });
+    if (authorOfPost == null) {
+      throw new Error();
+    }
+    const isModerator: boolean = user.role == 'MODERATOR';
+    const isAdmin: boolean = user.role == 'ADMIN';
     const newPost = await this.prisma.post.update({
       where: {
         id: postId,
-        ...(!isModerator ? { userId: userId } : {}),
+        ...((isAdmin && authorOfPost.user.role != 'ADMIN') ||
+        (isModerator && authorOfPost.user.role == 'DEFAULT_USER')
+          ? {}
+          : { userId: userId }),
       },
       data: {
         visible: false,
       },
     });
+
     return newPost;
   }
 
@@ -197,6 +213,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -276,11 +293,23 @@ export class AppService {
     });
   }
 
-  async getPostListOfUser(userId: string, viewerId?: string) {
+  async getNumberPostsOfUser(linkNickname: string) {
+    const numberOfPosts: number = await this.prisma.post.count({
+      where: {
+        visible: true,
+        user: {
+          linkNickname: linkNickname,
+        },
+      },
+    });
+    return numberOfPosts;
+  }
+
+  async getPostListOfUser(linkNickname: string, viewerId?: string) {
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
         user: {
-          userId,
+          linkNickname,
         },
         visible: true,
       },
@@ -293,6 +322,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -321,7 +351,7 @@ export class AppService {
     const postsWithDislikes = await this.prisma.post.findMany({
       where: {
         user: {
-          userId,
+          linkNickname,
         },
         visible: true,
       },
@@ -367,7 +397,7 @@ export class AppService {
       const reaction = allReactions.find((x) => x.postId == item.id);
       const vote: boolean = allVotes.includes({
         postId: item.id,
-        userId: userId,
+        userId: viewerId,
       });
 
       return {
@@ -442,6 +472,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -580,6 +611,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -667,6 +699,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -754,6 +787,7 @@ export class AppService {
   }
 
   async getTrendingPosts(viewerId?: string) {
+    console.log('Lol azaza');
     const lastDays = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
@@ -776,6 +810,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -913,6 +948,7 @@ export class AppService {
         commentsAllowed: true,
         Variants: true,
         Photo: true,
+        createdAt: true,
         user: {
           select: {
             userId: true,
@@ -1035,7 +1071,7 @@ export class AppService {
   async createUser(dto) {
     const newUser = await this.prisma.shortUser.create({
       data: {
-        userId: dto.id,
+        userId: dto.userId,
         nickname: dto.nickname,
         photo: dto.photo,
         linkNickname: dto.linkNickname,
@@ -1058,7 +1094,7 @@ export class AppService {
     return true;
   }
 
-  async banUser(userId: string, unlockTime: number) {
+  async banUser(userId: string) {
     const user = await this.prisma.shortUser.update({
       where: {
         userId,
@@ -1071,10 +1107,10 @@ export class AppService {
     return user;
   }
 
-  async makeModerator(data) {
+  async makeModerator(userId: string) {
     const user = await this.prisma.shortUser.update({
       where: {
-        userId: data.userId,
+        userId,
       },
       data: {
         role: 'MODERATOR',

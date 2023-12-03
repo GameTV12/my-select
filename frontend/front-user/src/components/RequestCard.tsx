@@ -34,10 +34,9 @@ interface RequestCard {
     linkNickname: string
     description: string
     image: string
-    date: string
     makeDecision: (id: string, decision: boolean)=>void
 }
-const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, date, makeDecision, description}: RequestCard) => {
+const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, makeDecision, description}: RequestCard) => {
     const [expanded, setExpanded] = React.useState(false);
 
     const handleExpandClick = () => {

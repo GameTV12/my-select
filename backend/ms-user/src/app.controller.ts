@@ -41,6 +41,11 @@ export class AppController {
     return this.appService.getUserByLinkNickname(linkNickname);
   }
 
+  @MessagePattern('get_user_info')
+  getUserInfo(@Payload(ValidationPipe) { linkNickname, viewerId }) {
+    return this.appService.getUserInfo(linkNickname, viewerId);
+  }
+
   @MessagePattern('follow_to_user')
   followToUser(@Payload(ValidationPipe) dto: { from: string; to: string }) {
     return this.appService.followToUser(dto.from, dto.to);
@@ -69,7 +74,7 @@ export class AppController {
   }
 
   @MessagePattern('show_waiting_requests')
-  showWaitingRequests() {
+  showWaitingRequests(@Payload(ValidationPipe) dto) {
     return this.appService.showWaitingRequests();
   }
 
@@ -84,7 +89,7 @@ export class AppController {
   }
 
   @MessagePattern('show_reports')
-  showReports() {
+  showReports(@Payload(ValidationPipe) dto) {
     return this.appService.showReports();
   }
 }

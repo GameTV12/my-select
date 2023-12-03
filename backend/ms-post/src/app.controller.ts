@@ -11,12 +11,12 @@ export class AppController {
     return this.appService.createPost(dto);
   }
 
-  @MessagePattern('create_user')
+  @MessagePattern('post_create_user')
   createUser(@Payload(ValidationPipe) dto) {
     return this.appService.createUser(dto);
   }
 
-  @MessagePattern('update_user')
+  @MessagePattern('post_update_user')
   updateUser(@Payload(ValidationPipe) dto) {
     return this.appService.updateUser(dto);
   }
@@ -42,10 +42,8 @@ export class AppController {
   }
 
   @MessagePattern('post_ban_user')
-  banUser(
-    @Payload(ValidationPipe) data: { userId: string; unlockTime: number },
-  ) {
-    return this.appService.banUser(data.userId, data.unlockTime);
+  banUser(@Payload(ValidationPipe) data) {
+    return this.appService.banUser(data);
   }
 
   @MessagePattern('post_make_moderator')
@@ -58,9 +56,17 @@ export class AppController {
     return this.appService.cancelModerator(data);
   }
 
+  @MessagePattern('get_number_posts_of_user')
+  getNumberPostOfUser(
+    @Payload(ValidationPipe)
+    data: string,
+  ) {
+    return this.appService.getNumberPostsOfUser(data);
+  }
+
   @MessagePattern('get_post_list_of_user')
   getPostListOfUser(@Payload(ValidationPipe) data) {
-    return this.appService.getPostListOfUser(data.id, data.viewerId);
+    return this.appService.getPostListOfUser(data.linkNickname, data.viewerId);
   }
 
   @MessagePattern('react_on_post')
@@ -94,11 +100,11 @@ export class AppController {
   }
 
   @MessagePattern('get_trending_posts')
-  getTrendingPosts(@Payload(ValidationPipe) viewerId) {
-    return this.appService.getTrendingPosts(viewerId);
+  getTrendingPosts(@Payload(ValidationPipe) dto) {
+    return this.appService.getTrendingPosts(dto.viewerId);
   }
 
-  @MessagePattern('get_trending_posts')
+  @MessagePattern('search_posts')
   searchPosts(@Payload(ValidationPipe) dto) {
     return this.appService.searchPosts(dto.args, dto.viewerId);
   }

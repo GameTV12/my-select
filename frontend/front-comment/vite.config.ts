@@ -21,11 +21,13 @@ export default defineConfig({
   ],
   server: {
     host: "127.0.0.1",
-    port: 3006
+    port: 3006,
+    cors: true,
   },
   preview: {
     host: "127.0.0.1",
     port: 3006,
+    cors: true,
   },
   cacheDir: "node_modules/.cacheDir",
   build: {

@@ -28,9 +28,10 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import ListComment from "../components/ListComment";
+import UserCommentList from "../components/UserCommentList";
 import {Navigate, useNavigate, useParams} from "react-router-dom";
-import {findUserByNickname} from "../serverRequests";
+import {findUserByNickname} from "../utils/publicRequests";
+import {useCookies} from "react-cookie";
 
 export interface User {
     firstName: string
@@ -44,6 +45,8 @@ export interface User {
     _count: {
         Followers: number
     }
+    commentNumber: number
+    postNumber: number
 }
 
 export type SubscriberStatistics = {
@@ -63,18 +66,18 @@ const mockUser = {
     _count: {
         Followers: 999
     },
-    posts: 999,
-    comments: 999,
+    postNumber: 999,
+    commentNumber: 999,
 }
 
 const UserInfoPage = () => {
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
     const { id } = useParams()
-    console.log(id)
     useEffect(() => {
         let response;
         if (id != undefined) {
-            findUserByNickname(id).then(r => setUserInfo(r)).catch(r => {
-                return <Navigate to={'/'} />
+            findUserByNickname(id).then(r => {setUserInfo(r), console.log(r)}).catch(r => {
+                return <Navigate replace to={'/'} />
             })
         }
     }, [id]);
@@ -263,13 +266,13 @@ const UserInfoPage = () => {
                                 <TableCell component="th" scope="row">
                                     <strong>Posts</strong>
                                 </TableCell>
-                                <TableCell>{userInfo.posts}</TableCell>
+                                <TableCell>{userInfo.postNumber}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Comments</strong>
                                 </TableCell>
-                                <TableCell>{userInfo.comments}</TableCell>
+                                <TableCell>{userInfo.commentNumber}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
@@ -307,7 +310,7 @@ const UserInfoPage = () => {
                                 {chart}
                             </Box>
                         </TabPanel>
-                        <TabPanel value="2"><ListComment /></TabPanel>
+                        <TabPanel value="2"><UserCommentList /></TabPanel>
                     </TabContext>
                 </Box>
             </Grid>

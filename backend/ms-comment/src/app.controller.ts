@@ -22,7 +22,6 @@ export class AppController {
       viewerId?: string;
     },
   ) {
-    console.log(3);
     return this.appService.getCommentList(
       data.goalId,
       data.type,
@@ -30,15 +29,26 @@ export class AppController {
     );
   }
 
+  @MessagePattern('get_number_comments_of_user')
+  getNumberCommentsOfUser(
+    @Payload(ValidationPipe)
+    data: string,
+  ) {
+    return this.appService.getNumberCommentsOfUser(data);
+  }
+
   @MessagePattern('get_all_comments_of_user')
   getAllCommentsOfUser(
     @Payload(ValidationPipe)
     data: {
-      userId: string;
+      linkNickname: string;
       viewerId?: string | null;
     },
   ) {
-    return this.appService.getAllCommentsOfUser(data.userId, data.viewerId);
+    return this.appService.getAllCommentsOfUser(
+      data.linkNickname,
+      data.viewerId,
+    );
   }
 
   @MessagePattern('update_comment')
@@ -73,5 +83,30 @@ export class AppController {
       data.userId,
       data.type,
     );
+  }
+
+  @MessagePattern('comment_create_user')
+  createUser(@Payload(ValidationPipe) dto) {
+    return this.appService.createUser(dto);
+  }
+
+  @MessagePattern('comment_update_user')
+  updateUser(@Payload(ValidationPipe) dto) {
+    return this.appService.updateUser(dto);
+  }
+
+  @MessagePattern('comment_ban_user')
+  banUser(@Payload(ValidationPipe) data) {
+    return this.appService.banUser(data);
+  }
+
+  @MessagePattern('comment_make_moderator')
+  makeModerator(@Payload(ValidationPipe) data) {
+    return this.appService.makeModerator(data);
+  }
+
+  @MessagePattern('comment_cancel_moderator')
+  cancelModerator(@Payload(ValidationPipe) data) {
+    return this.appService.cancelModerator(data);
   }
 }

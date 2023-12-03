@@ -95,6 +95,45 @@ export class AppService {
     return user;
   }
 
+  async getUserInfo(linkNickname: string, viewerId?: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        linkNickname: linkNickname,
+      },
+      select: {
+        id: true,
+        nickname: true,
+        linkNickname: true,
+        photo: true,
+        visible: true,
+        secondVerification: true,
+        createdAt: true,
+        role: true,
+        _count: {
+          select: {
+            Followers: {
+              where: {
+                end: null,
+              },
+            },
+          },
+        },
+      },
+    });
+    let subscribed = false;
+    if (viewerId) {
+      const userSubscribers = await this.prisma.followers.findMany({
+        where: {
+          follower: viewerId,
+          following: user.id,
+          end: null,
+        },
+      });
+      if (userSubscribers.length > 0) subscribed = true;
+    }
+    return { ...user, subscribed };
+  }
+
   async followToUser(from: string, to: string) {
     const checkSubscription = await this.prisma.followers.findMany({
       where: {
@@ -188,6 +227,20 @@ export class AppService {
     const requests = await this.prisma.request.findMany({
       where: {
         status: 'WAITING',
+        user: {
+          visible: true,
+        },
+      },
+      select: {
+        id: true,
+        user: {
+          select: {
+            nickname: true,
+            linkNickname: true,
+            photo: true,
+          },
+        },
+        text: true,
       },
     });
     return requests;

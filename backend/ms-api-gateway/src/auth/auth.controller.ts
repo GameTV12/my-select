@@ -6,7 +6,6 @@ import {
   HttpStatus,
   Patch,
   Post,
-  Redirect,
   Req,
   Res,
   UseGuards,

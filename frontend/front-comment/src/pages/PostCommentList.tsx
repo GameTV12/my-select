@@ -1,12 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
-    AppBar, Box,
+    AppBar,
+    Box,
     Button,
-    FormControl, FormGroup,
+    FormGroup,
     Grid,
     IconButton,
     List,
-    ListItem, Paper,
+    ListItem,
+    Paper,
     TextField,
     Toolbar,
     Typography
@@ -14,16 +16,17 @@ import {
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
 import SouthIcon from '@mui/icons-material/South'
-import {allComments} from "../mockData/mockComments"
-import Comment, {CommentType, LikeStatus} from "../components/Comment"
+import Comment, {LikeStatus} from "../components/Comment"
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
 import NorthIcon from '@mui/icons-material/North'
 import dayjs from "dayjs"
 import SendIcon from '@mui/icons-material/Send'
 import ReplyIcon from "@mui/icons-material/Reply"
 import CloseIcon from '@mui/icons-material/Close'
-import {Navigate, useParams} from "react-router-dom"
-import {Link} from "react-router-dom"
+import {Link, Navigate, useParams} from "react-router-dom"
+import {getAllCommentsOfPost} from "../utils/publicRequests";
+import {createComment} from "../utils/authRequests";
+
 
 type FilterParams = {
     sortingArgs: number[]
@@ -31,32 +34,61 @@ type FilterParams = {
     endDate?: dayjs.Dayjs
 }
 
+export enum UserRole {
+    DEFAULT_USER,
+    ADMIN,
+    MODERATOR,
+}
+
+export interface CommentInterface {
+    id: string;
+    text: string;
+    reply?: {
+        id: string;
+        text: string;
+        user: {
+            nickname: string
+        }
+    } | null;
+    user: {
+        id: string;
+        nickname: string;
+        linkNickname: string;
+        photo: string;
+        role: UserRole;
+        secondVerification: boolean;
+    };
+    _count: {
+        Reaction: number;
+    };
+    likes: number
+    dislikes: number
+    createdAt: Date;
+}
+
+export interface CreateCommentDto {
+    text: string,
+    goalId: string,
+    replyTo?: string,
+}
+
 const PostCommentList = () => {
     const { id } = useParams()
-    console.log('postID - ' + id)
 
 
-    const newComment: CommentType = {
-        id: "HELL-OWOR-LD12",
-        nickname: "David 999",
-        linkNickname: "fortnite_david",
-        userId: "USER-9018",
-        image: "poimzcvu",
+    const newComment: CreateCommentDto = {
         text: "",
-        time: (new Date()).getTime(),
-        likes: 0,
-        dislikes: 0,
-        status: LikeStatus.NONE
+        goalId: (id ? id : '1'),
     }
     const [commentText, setCommentText] = useState<string>("")
+    const [startComments, setStartComments] = useState<CommentInterface[]>([]);
     const [filterData, setFilterData] = useState<FilterParams>({sortingArgs: [2, 0, 0], endDate: dayjs(new Date())});
-    const [commentList, setCommentList] = useState(allComments)
+    const [commentList, setCommentList] = useState<CommentInterface[]>(startComments)
     const scrollRef = useRef<null | HTMLDivElement>(null)
-    const [repliedComment, setRepliedComment] = useState<CommentType | null>(null)
+    const [repliedComment, setRepliedComment] = useState<CommentInterface | null>(null)
     const [countOfWrittenComments, setCountOfWrittenComments] = useState<number>(0)
     const [disableWriting, setDisableWriting] = useState(false)
-    const [editableComment, setEditableComment] = useState<CommentType | null>(null);
-
+    const [editableComment, setEditableComment] = useState<CreateCommentDto | null>(null);
 
     useEffect(() => {
         searchByFilters()
@@ -70,40 +102,49 @@ const PostCommentList = () => {
         clearReply()
     }, [repliedComment])
 
-    function editComment (commentId: string) {
-        setRepliedComment(null)
-        setCommentText('')
-        const thisComment: CommentType | undefined = commentList.find(item => item.id == commentId)
-        if (!thisComment) return
-        setEditableComment(thisComment)
-        setCommentText(thisComment.text)
-        if ("repliedTo" in thisComment) {
-            const thisReply: CommentType | undefined = commentList.find(item => item.id == thisComment.repliedTo)
-            if (!thisReply) return
-            setRepliedComment(thisReply)
+    useEffect(() => {
+        let response;
+        if (id != undefined) {
+            getAllCommentsOfPost(id).then(r => {console.log('data - ' + r); setStartComments(r); setCommentList(r)}).catch(r => {
+                return <Navigate replace to={'/'} />
+            })
         }
+    }, [id, countOfWrittenComments]);
+
+    function editComment (commentId: string) {
+        // setRepliedComment(null)
+        // setCommentText('')
+        // const thisComment: CreateCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, goalId: (id ? id : 'id')})).find(item => item.id == commentId)
+        // if (!thisComment) return
+        // setEditableComment(thisComment)
+        // setCommentText(thisComment.text)
+        // if ("replyTo" in thisComment) {
+        //     const thisReply: CreateCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, goalId: (id ? id : 'id')})).find(item => item.id == thisComment.replyTo)
+        //     if (!thisReply) return
+        //     setRepliedComment(thisReply)
+        // }
     }
 
     function updateComment (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent) {
-        if (!editableComment || commentText.split(' ').join('').length == 0) return
-        e.preventDefault()
-        let copyComment = editableComment
-        copyComment.text = commentText
-        if (repliedComment) {
-            copyComment.repliedTo = repliedComment.id
-            copyComment.repliedNickname = repliedComment.nickname
-            copyComment.repliedText = repliedComment.text
-        }
-        const newList = commentList.map(comment => {
-            if (comment.id == copyComment.id) {
-                return copyComment
-            }
-            return comment
-        })
-        setCommentList(newList)
-        setCommentText('')
-        setRepliedComment(null)
-        setEditableComment(null)
+        // if (!editableComment || commentText.split(' ').join('').length == 0) return
+        // e.preventDefault()
+        // let copyComment = editableComment
+        // copyComment.text = commentText
+        // if (repliedComment) {
+        //     copyComment.repliedTo = repliedComment.id
+        //     copyComment.repliedNickname = repliedComment.nickname
+        //     copyComment.repliedText = repliedComment.text
+        // }
+        // const newList = commentList.map(comment => {
+        //     if (comment.id == copyComment.id) {
+        //         return copyComment
+        //     }
+        //     return comment
+        // })
+        // setCommentList(newList)
+        // setCommentText('')
+        // setRepliedComment(null)
+        // setEditableComment(null)
     }
 
     function clearUpdate() {
@@ -123,34 +164,35 @@ const PostCommentList = () => {
     }
 
     function replyComment(commentId: string) {
-        const thisComment: CommentType | undefined = commentList.find(item => item.id == commentId)
-        if (!thisComment) return
-        setRepliedComment(thisComment)
+        // const thisComment: CommentInterface | undefined = commentList.find(item => item.id == commentId)
+        // if (!thisComment) return
+        // setRepliedComment(thisComment)
     }
 
     function clearReply(){
-        delete newComment.repliedTo
-        delete newComment.repliedText
-        delete newComment.repliedNickname
+        delete newComment.replyTo
     }
 
     function sendComment(e: React.MouseEvent<HTMLElement> | React.KeyboardEvent) {
         e.preventDefault()
         if (commentText.split(' ').join('').length == 0) return
-        newComment.time = (new Date()).getTime()
         newComment.text = commentText
-        if (repliedComment != null) {
-            console.log(repliedComment)
-            newComment.repliedTo = repliedComment.id
-            newComment.repliedNickname = repliedComment.nickname
-            newComment.repliedText = repliedComment.text
-        }
-        setCommentList(prevState => [...prevState, newComment])
+        // if (repliedComment != null) {
+        //     console.log(repliedComment)
+        //     newComment.repliedTo = repliedComment.id
+        //     newComment.repliedNickname = repliedComment.nickname
+        //     newComment.repliedText = repliedComment.text
+        // }
+        // setCommentList(prevState => [...prevState, newComment])
         setCommentText('')
         setRepliedComment(null)
         setCountOfWrittenComments((prev) => prev+1)
 
         setDisableWriting(true)
+        if (id) {
+            console.log('Id for sending')
+            createComment({text: commentText, goalId: id}).then(r => console.log('request ' + r))
+        }
 
         setTimeout(() => {
             setDisableWriting(false)
@@ -168,11 +210,10 @@ const PostCommentList = () => {
     }
 
     function searchByFilters() {
-        const filteredArray = allComments.filter(item => {
-            // @ts-ignore
-            if (filterData.endDate != undefined && filterData.endDate.unix() * 1000 >= item.time && filterData.startDate != undefined && filterData.startDate.unix() * 1000 <= item.time) return true
-            else if (filterData.startDate == undefined && filterData.endDate != undefined && filterData.endDate.unix() * 1000 >= item.time) return true
-            else if (filterData.endDate == undefined && filterData.startDate != undefined && filterData.startDate.unix() * 1000 <= item.time) return true
+        const filteredArray = startComments.filter(item => {
+            if (filterData.endDate && filterData.endDate.unix() * 1000 >= new Date(item.createdAt).getTime() && filterData.startDate && filterData.startDate.unix() * 1000 <= new Date(item.createdAt).getTime()) return true
+            else if (filterData.startDate == undefined && filterData.endDate && filterData.endDate.unix() * 1000 >= new Date(item.createdAt).getTime()) return true
+            else if (filterData.endDate == undefined && filterData.startDate && filterData.startDate.unix() * 1000 <= new Date(item.createdAt).getTime()) return true
             else if (filterData.endDate == undefined && filterData.startDate == undefined) return true
             return false
         })
@@ -185,9 +226,9 @@ const PostCommentList = () => {
         } else if (filterData.sortingArgs[2] == 2) {
             filteredArray.sort((item1, item2) => item1.dislikes - item2.dislikes)
         } else if (filterData.sortingArgs[0] == 2) {
-            filteredArray.sort((item1, item2) => item1.time - item2.time)
+            filteredArray.sort((item1, item2) => new Date(item1.createdAt).getTime() - new Date(item2.createdAt).getTime())
         } else if (filterData.sortingArgs[0] == 1) {
-            filteredArray.sort((item1, item2) => item2.time - item1.time)
+            filteredArray.sort((item1, item2) => new Date(item2.createdAt).getTime()  - new Date(item1.createdAt).getTime())
         }
         setCommentList(filteredArray)
     }
@@ -228,7 +269,7 @@ const PostCommentList = () => {
                               sx={{display: "flex", justifyContent: "center", alignItems: "center", p: 1}}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 From&nbsp;
-                                <DatePicker value={filterData.startDate} onChange={(newValue) => {
+                                <DatePicker value={filterData.startDate} disableFuture onChange={(newValue) => {
                                     setFilterData({
                                         sortingArgs: filterData.sortingArgs,
                                         endDate: filterData.endDate,
@@ -236,7 +277,7 @@ const PostCommentList = () => {
                                     })
                                 }}/>&nbsp;
                                 To&nbsp;
-                                <DatePicker value={filterData.endDate} onChange={(newValue) => {
+                                <DatePicker value={filterData.endDate} disableFuture onChange={(newValue) => {
                                     setFilterData({
                                         sortingArgs: filterData.sortingArgs,
                                         startDate: filterData.startDate,
@@ -264,13 +305,13 @@ const PostCommentList = () => {
                 <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
                     <List sx={{bgcolor: 'background.paper'}}>
                         {commentList.map((comment) => {
-                            return <Comment key={comment.id} id={comment.id} nickname={comment.nickname}
-                                            linkNickname={comment.linkNickname}
-                                            image={comment.image} text={comment.text} time={comment.time}
-                                            status={comment.status}
-                                            userId={comment.userId}
-                                            repliedTo={comment.repliedTo} repliedText={comment.repliedText}
-                                            repliedNickname={comment.repliedNickname} deleteComment={deleteComment}
+                            return <Comment key={comment.id} id={comment.id} nickname={comment.user.nickname}
+                                            linkNickname={comment.user.linkNickname}
+                                            image={comment.user.photo} text={comment.text} time={new Date(comment.createdAt).getTime()}
+                                            status={LikeStatus.NONE}// for unauthorized users
+                                            userId={comment.user.id}
+                                            repliedTo={comment.reply?.id} repliedText={comment.reply?.text}
+                                            repliedNickname={comment.reply?.user.nickname} deleteComment={deleteComment}
                                             likes={comment.likes} dislikes={comment.dislikes} editComment={editComment}
                                             replyComment={replyComment}/>
                         })}
@@ -290,7 +331,7 @@ const PostCommentList = () => {
                                     align="justify"
                                     sx={{display: "flex", alignItems: "center", mt: 1}}
                                 >
-                                    <ReplyIcon/>&nbsp;{repliedComment.nickname}
+                                    <ReplyIcon/>&nbsp;{repliedComment.user.nickname}
                                 </Typography>
                                 <Typography
                                     component="div"

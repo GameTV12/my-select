@@ -1,29 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Link, useParams} from "react-router-dom";
-import Comment, {CommentType, LikeStatus} from "../components/Comment";
+import React, {useEffect, useState} from 'react';
+import Comment from "../components/Comment";
 import dayjs from "dayjs";
 import {allComments} from "../mockData/mockComments";
-import {
-    AppBar,
-    Box,
-    Button, FormGroup,
-    Grid,
-    IconButton,
-    List,
-    ListItem,
-    Paper,
-    TextField,
-    Toolbar,
-    Typography
-} from "@mui/material";
-import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import {AppBar, Button, Grid, List, ListItem, Toolbar, Typography} from "@mui/material";
 import SouthIcon from "@mui/icons-material/South";
 import NorthIcon from "@mui/icons-material/North";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import ReplyIcon from "@mui/icons-material/Reply";
-import CloseIcon from "@mui/icons-material/Close";
-import SendIcon from "@mui/icons-material/Send";
 import {FilterParams} from "./VariantCommentList";
 
 const UserCommentList = () => {

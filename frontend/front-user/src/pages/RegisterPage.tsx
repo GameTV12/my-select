@@ -11,7 +11,7 @@ import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs"
 import {MuiFileInput} from "mui-file-input";
-import {findUserByNickname, signUpRequest} from "../serverRequests";
+import {findUserByNickname, signUpRequest} from "../utils/publicRequests";
 
 export interface RegisterType {
     firstName: string,
@@ -23,6 +23,7 @@ export interface RegisterType {
     phone: string,
     photo?: string,
     birthday: number
+    firstVerification?: boolean
 }
 
 
@@ -100,7 +101,12 @@ const RegisterPage = () => {
         if (event != undefined) {
             event.preventDefault()
         }
-        const sendingData: RegisterType = {...methods.getValues(), birthday: 1324324, phone: phoneNumber.replace(/ /g,'')}
+        console.log('Send data')
+        const sendingData: RegisterType = {...methods.getValues(),
+            birthday: 1324324,
+            phone: phoneNumber.replace(/ /g,''),
+            firstVerification: false
+        }
         if (dateTime) {
             sendingData.birthday = dateTime.unix()
         }

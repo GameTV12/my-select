@@ -1,6 +1,6 @@
-import {LikeStatus, PostData} from "../components/post/Post"
+import {LikeStatus} from "../components/post/Post"
 
-export const allPosts: PostData[] = [
+export const allPosts = [
     {
         "id": "f0333d06-9d45-4f9d-b531-5a784406b6e2",
         "userId": "be34c012-7acd-4082-96d5-c0c5b685db6b",
@@ -22,8 +22,7 @@ export const allPosts: PostData[] = [
         "dislikes": 27,
         "status": LikeStatus.NONE,
         "commentsAllowed": false,
-        "createdAt": 1675042354000,
-        "updatedAt": 1680852493000
+        "createdAt": 1675042354000
     },
     {
         "id": "7617856f-2892-47c1-830f-5d65d889742c",
@@ -44,8 +43,7 @@ export const allPosts: PostData[] = [
         "dislikes": 151,
         "status": LikeStatus.LIKED,
         "commentsAllowed": false,
-        "createdAt": 1656780680000,
-        "updatedAt": 1677826381000
+        "createdAt": 1656780680000
     },
     {
         "id": "ff377b48-7964-44a1-a7a5-105a2decae4a",
@@ -63,8 +61,7 @@ export const allPosts: PostData[] = [
         "dislikes": 2,
         "status": LikeStatus.NONE,
         "commentsAllowed": true,
-        "createdAt": 1675546504000,
-        "updatedAt": 1681985980000
+        "createdAt": 1675546504000
     },
 
     {
@@ -81,8 +78,7 @@ export const allPosts: PostData[] = [
         "dislikes": 15,
         "status": LikeStatus.DISLIKED,
         "commentsAllowed": false,
-        "createdAt": 1678841387000,
-        "updatedAt": 1679001812000
+        "createdAt": 1678841387000
     },
     {
         "id": "1954a06b-8ecf-4392-b750-5fb4e0f98a8a",
@@ -96,8 +92,7 @@ export const allPosts: PostData[] = [
         "likes": 15,
         "dislikes": 27,
         "status": LikeStatus.LIKED,
-        "createdAt": 1655235487000,
-        "updatedAt": 1688297669000
+        "createdAt": 1655235487000
     },
     {
         "id": "72a77caf-ae78-4efe-aeaf-e3e4d55773f4",
@@ -128,8 +123,7 @@ export const allPosts: PostData[] = [
             {title: "Option 13", votes: 46, id: '13'},
         ],
         isVoted: false,
-        "createdAt": 1670833298000,
-        "updatedAt": 1686869079000
+        "createdAt": 1670833298000
     },
     {
         "id": "816a899a-2ab5-49c3-a778-7a63723be358",
@@ -143,8 +137,7 @@ export const allPosts: PostData[] = [
         "likes": 908,
         "dislikes": 513,
         "status": LikeStatus.NONE,
-        "createdAt": 1661168744000,
-        "updatedAt": 1687487171000
+        "createdAt": 1661168744000
     },
     {
         "id": "11f721f4-5be6-489c-880f-03d0ee88b741",
@@ -164,8 +157,7 @@ export const allPosts: PostData[] = [
             {title: "Option 2", votes: 65, id: '2'},
         ],
         isVoted: true,
-        "createdAt": 1660851437000,
-        "updatedAt": 1661449851000
+        "createdAt": 1660851437000
     },
     {
         "id": "5098e548-0d59-41fa-9653-80b9498ff248",
@@ -180,7 +172,6 @@ export const allPosts: PostData[] = [
         "status": LikeStatus.LIKED,
         "commentsAllowed": true,
         "createdAt": 1661827999000,
-        "updatedAt": 1682804924000
     },
     {
         "id": "c57276f6-5315-4ab7-aeda-e856fd58abe9",
@@ -195,7 +186,6 @@ export const allPosts: PostData[] = [
         "dislikes": 27,
         "status": LikeStatus.NONE,
         "createdAt": 1655583846000,
-        "updatedAt": 1688657426000
     },
     {
         "id": "030127af-6c5e-4e08-a5c1-079c5cd05dd9",
@@ -210,7 +200,6 @@ export const allPosts: PostData[] = [
         "dislikes": 297,
         "status": LikeStatus.NONE,
         "createdAt": 1668105907000,
-        "updatedAt": 1684983160000
     },
     {
         "id": "3303de69-8619-4f19-be80-00a88c83960f",
@@ -230,7 +219,6 @@ export const allPosts: PostData[] = [
         "dislikes": 2,
         "status": LikeStatus.NONE,
         "createdAt": 1677768287000,
-        "updatedAt": 1687268118000
     },
     {
         "id": "c4ce154d-b798-4963-83a3-a34cc2eed375",
@@ -264,6 +252,5 @@ export const allPosts: PostData[] = [
         ],
         isVoted: false,
         "createdAt": 1666024252000,
-        "updatedAt": 1685739209000
     }
 ]

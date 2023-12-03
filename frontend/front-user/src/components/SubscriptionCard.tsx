@@ -5,7 +5,6 @@ import {
     ListItemAvatar,
     ListItemText
 } from "@mui/material";
-import {Image} from "@mui/icons-material";
 
 interface SubscriptionCard {
     id: string
