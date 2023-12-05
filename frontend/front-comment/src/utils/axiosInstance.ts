@@ -43,8 +43,8 @@ const refreshTokenFn = async () => {
             const current = new Date()
             const accessTime = new Date(current.getTime() + 30 * 1000)
             const refreshTime = new Date(current.getTime() + 90 * 24 * 3600 * 1000)
-            cookies.set('myselect_access', access_token, {expires: accessTime})
-            cookies.set('myselect_refresh', refresh_token, {expires: refreshTime})
+            cookies.set('myselect_access', access_token, {expires: accessTime, domain: 'localhost', path: '/'})
+            cookies.set('myselect_refresh', refresh_token, {expires: refreshTime, domain: 'localhost', path: '/'})
         }
 
         return {access_token, refresh_token}
@@ -67,12 +67,14 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     async (config) => {
         let cookies = new Cookies()
+        // cookies.remove('myselect_refresh')//
+        // cookies.remove('myselect_access')//
         const token = cookies.get('myselect_access')
-        console.log(cookies.get('myselect_refresh'))
+        console.log('First token from comment - ' + cookies.get('myselect_refresh'))
 
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`
-            console.log(token)
+            console.log('Token from comment - ' + token)
         }
 
         return config

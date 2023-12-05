@@ -9,7 +9,6 @@ import {
     TableBody,
     TableCell,
     TableContainer,
-    TableHead,
     TableRow,
     Toolbar,
     Typography
@@ -20,7 +19,6 @@ import DeleteModal from "../components/DeleteModal";
 import LogoutModal from "../components/LogoutModal";
 import {Line} from "react-chartjs-2"
 import {Chart as ChartJS, ChartEvent, registerables} from 'chart.js';
-import {Chart} from 'react-chartjs-2'
 
 ChartJS.register(...registerables)
 import 'chartjs-plugin-annotation'
@@ -32,6 +30,8 @@ import UserCommentList from "../components/UserCommentList";
 import {Navigate, useNavigate, useParams} from "react-router-dom";
 import {findUserByNickname} from "../utils/publicRequests";
 import {useCookies} from "react-cookie";
+import {jwtDecode} from "jwt-decode";
+import {Role, UserI} from "../utils/axiosInstance";
 
 export interface User {
     firstName: string
@@ -76,7 +76,7 @@ const UserInfoPage = () => {
     useEffect(() => {
         let response;
         if (id != undefined) {
-            findUserByNickname(id).then(r => {setUserInfo(r), console.log(r)}).catch(r => {
+            findUserByNickname(id).then(r => {setUserInfo(r)}).catch(r => {
                 return <Navigate replace to={'/'} />
             })
         }
@@ -112,6 +112,12 @@ const UserInfoPage = () => {
         // @ts-ignore
         return <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
     }, [mockSubscribers, mockRealSubscribers])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     // // @ts-ignore
     // const chart = <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
@@ -191,7 +197,7 @@ const UserInfoPage = () => {
                                 <Box component={"img"} src={userInfo.photo} sx={{objectFit: 'cover'}} minWidth={'100%'}
                                      minHeight={'100%'}/>
                             </Avatar>
-                            <Typography sx={{px: 2}}>{userInfo.nickname} (<i><Link target={"_blank"} to={`/users/${userInfo.linkNickname}`} style={{ textDecoration: 'none' }}>{userInfo.linkNickname}</Link></i>)</Typography>
+                            <Typography sx={{px: 2}}>{userInfo.nickname} (<i><Link to={`/users/${userInfo.linkNickname}`} style={{ textDecoration: 'none' }}>{userInfo.linkNickname}</Link></i>)</Typography>
                         </Box>
                         <IconButton aria-label="settings"
                                     ref={anchorRef}
@@ -230,13 +236,12 @@ const UserInfoPage = () => {
                                                 aria-labelledby="composition-button"
                                                 onKeyDown={handleListKeyDown}
                                             >
-                                                <MenuItem onClick={handleAddMenuClose}>Edit the profile</MenuItem>
-                                                <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator
-                                                    request</MenuItem>
-                                                <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
-                                                    the account</MenuItem>
-                                                <MenuItem onClick={handleOpenModalLogout}
-                                                          sx={{color: 'text.secondary'}}>Logout</MenuItem>
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleAddMenuClose}>Edit the profile</MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && currentUser.role == Role.DEFAULT_USER && <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator request</MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
+                                                    the account</MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleOpenModalLogout}
+                                                          sx={{color: 'text.secondary'}}>Logout</MenuItem>}
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>

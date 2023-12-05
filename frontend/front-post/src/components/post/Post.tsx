@@ -26,6 +26,10 @@ import YouTube from "react-youtube"
 import PollBlock from "./PollBlock"
 import AddNewVariantModal, {VariantMessage} from "./AddNewVariantModal"
 import {Link} from "react-router-dom"
+import {useCookies} from "react-cookie";
+import {UserI} from "../../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {dislikePostRequest, likePostRequest, voteForVariantRequest} from "../../utils/authRequest";
 
 export interface Variant {
     id: string,
@@ -41,9 +45,9 @@ export interface Photo {
 }
 
 export enum Role {
-    ADMIN,
-    MODERATOR,
-    DEFAULT_USER
+    ADMIN = "ADMIN",
+    MODERATOR = "MODERATOR",
+    DEFAULT_USER = "DEFAULT_USER"
 }
 
 export interface PostInterface {
@@ -76,8 +80,8 @@ export interface PostInterface {
 }
 
 export enum LikeStatus {
-    LIKED = 'LIKED',
-    DISLIKED = 'DISLIKED',
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE',
     NONE = 'NONE'
 }
 
@@ -107,11 +111,20 @@ const Post = ({
     const [deleteModal, setDeleteModal] = useState<boolean>(false)
     const [reportModal, setReportModal] = useState<boolean>(false)
     const [variantList, setVariantList] = useState<Variant[]>(Variants ? Variants : [])
-    const [votedStatus, setVotedStatus] = useState<boolean | undefined>(isVoted!=undefined ? isVoted : undefined)
+    const [votedStatus, setVotedStatus] = useState<boolean | undefined>(isVoted)
     const [variantModal, setVariantModal] = useState(false)
     const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
     const anchorRef = useRef<HTMLButtonElement>(null)
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
 
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
+
+
+    console.log(votedStatus)
     const handleAddMenuClose = (event: Event | React.SyntheticEvent) => {
         if (
             anchorRef.current &&
@@ -130,33 +143,35 @@ const Post = ({
 
     // если чел лайкает, и не зареган, то ему дастся модальное окно на вход, которое я импортирую с микрофронта юзера
     function handleLike() {
-        if (auth) {
-            if (currentStatus == LikeStatus.DISLIKED) {
+        if (currentUser) {
+            likePostRequest(id)
+            if (currentStatus == LikeStatus.DISLIKE) {
                 setDislikesNumber((prevState) => prevState - 1)
                 setLikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.LIKED)
-            } else if (currentStatus == LikeStatus.LIKED) {
+                setCurrentStatus(LikeStatus.LIKE)
+            } else if (currentStatus == LikeStatus.LIKE) {
                 setLikesNumber((prevState) => prevState - 1)
                 setCurrentStatus(LikeStatus.NONE)
             } else {
                 setLikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.LIKED)
+                setCurrentStatus(LikeStatus.LIKE)
             }
         }
     }
 
     function handleDislike() {
-        if (auth) {
-            if (currentStatus == LikeStatus.LIKED) {
+        if (currentUser) {
+            dislikePostRequest(id)
+            if (currentStatus == LikeStatus.LIKE) {
                 setDislikesNumber((prevState) => prevState + 1)
                 setLikesNumber((prevState) => prevState - 1)
-                setCurrentStatus(LikeStatus.DISLIKED)
-            } else if (currentStatus == LikeStatus.DISLIKED) {
+                setCurrentStatus(LikeStatus.DISLIKE)
+            } else if (currentStatus == LikeStatus.DISLIKE) {
                 setDislikesNumber((prevState) => prevState - 1)
                 setCurrentStatus(LikeStatus.NONE)
             } else {
                 setDislikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.DISLIKED)
+                setCurrentStatus(LikeStatus.DISLIKE)
             }
         }
     }
@@ -196,13 +211,14 @@ const Post = ({
     }
 
     function voteForVariant(variantId: string) {
-        if (Variants != undefined) {
+        if (currentUser && Variants != undefined && !votedStatus) {
             const newList = variantList.map(variant => {
                 if (variant.id == variantId) {
                     return {text: variant.text, votes: variant.votes+1, id: variant.id, postId: id}
                 }
                 return variant
             })
+            voteForVariantRequest(variantId)
             setVariantList(newList)
             setVotedStatus(true)
         }
@@ -220,12 +236,12 @@ const Post = ({
     return (
         <ListItem alignItems="flex-start" sx={{boxShadow: 5, mb: 4, p: 3, pr: 4, pt: 2}}>
             <ListItemAvatar>
-                <Link to={`/users/${user.linkNickname}/profile`} target={"_blank"} style={{ "textDecoration": "none" }}><Avatar alt="Remy Sharp" src={user.photo}/></Link>
+                <Link to={`/users/${user.linkNickname}/profile`} style={{ "textDecoration": "none" }}><Avatar alt="Remy Sharp" src={user.photo}/></Link>
             </ListItemAvatar>
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
-                        <Link to={`/users/${user.linkNickname}/profile`} target={"_blank"} style={{ "textDecoration": "none" }}>{user.nickname}</Link>
+                        <Link to={`/users/${user.linkNickname}/profile`} style={{ "textDecoration": "none" }}>{user.nickname}</Link>
                         <em>&nbsp;{new Date(createdAt).getDate()}.{new Date(createdAt).getMonth() + 1}.{new Date(createdAt).getFullYear()} {String(new Date(createdAt).getHours()).padStart(2, '0')}:{String(new Date(createdAt).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>
@@ -268,11 +284,11 @@ const Post = ({
                                                 sx={{ z: 10 }}
                                                 onKeyDown={handleListKeyDown}
                                             >
-                                                <MenuItem onClick={handleAddMenuClose}>Edit the post</MenuItem>
-                                                <MenuItem onClick={handleReportModalClickOpen} sx={{color: 'error.main'}}>Report the post</MenuItem>
-                                                <MenuItem onClick={handleDeleteModalClickOpen} sx={{color: 'text.secondary'}}>Delete the post</MenuItem>
+                                                {currentUser && currentUser.id == user.userId && <MenuItem onClick={handleAddMenuClose}>Edit the post</MenuItem>}
+                                                {currentUser && <MenuItem onClick={handleReportModalClickOpen} sx={{color: 'error.main'}}>Report the post</MenuItem>}
+                                                {currentUser && (currentUser.id == user.userId || currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR) && <MenuItem onClick={handleDeleteModalClickOpen} sx={{color: 'text.secondary'}}>Delete the post</MenuItem>}
                                                 {!fullPost && <MenuItem onClick={handleDeleteModalClickOpen}><Link to={`/posts/${id}`} style={{ textDecoration: 'none' }}>Open full post</Link></MenuItem>}
-                                                {Variants != undefined && !votedStatus && variantsAllowed && <MenuItem onClick={handleAddNewVariantModalClickOpen} sx={{color: 'text.primary'}}>Add variant</MenuItem>}
+                                                {currentUser && currentUser.id != user.userId && Variants != undefined && votedStatus!=true && variantsAllowed && <MenuItem onClick={handleAddNewVariantModalClickOpen} sx={{color: 'text.primary'}}>Add variant</MenuItem>}
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>
@@ -349,7 +365,7 @@ const Post = ({
             {deletePost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                             deletePost={deletePost}/>}
             <ReportPostModal open={reportModal} onClose={handleReportModalClose} user={user.userId}/>
-            <AddNewVariantModal open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
+            <AddNewVariantModal postId={id} open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
         </ListItem>
     );
 };

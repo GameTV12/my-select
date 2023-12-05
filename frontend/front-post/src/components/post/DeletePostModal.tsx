@@ -1,5 +1,6 @@
 import React from 'react'
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogProps, DialogTitle} from "@mui/material"
+import {deletePostRequest} from "../../utils/authRequest";
 
 type DeletePostModalProps = {
     deletePost: (commentId: string) => void
@@ -10,6 +11,7 @@ type DeletePostModalProps = {
 const DeletePostModal = ({onClose, open, deletePost, commentId}: DialogProps & DeletePostModalProps) => {
     const handleDelete = (e: React.MouseEvent | React.KeyboardEvent) => {
         deletePost(commentId)
+        deletePostRequest(commentId)
         if (onClose) {
             onClose(e, "backdropClick")
         }

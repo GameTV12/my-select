@@ -124,7 +124,7 @@ export class AppService {
       const reaction = allReactions.find((x) => x.commentId == item.id);
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
       };
@@ -188,6 +188,9 @@ export class AppService {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
     const commentWithDislikes: CommentInterface[] =
       await this.prisma.comment.findMany({
@@ -234,7 +237,7 @@ export class AppService {
       const reaction = allReactions.find((x) => x.commentId == item.id);
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
       };

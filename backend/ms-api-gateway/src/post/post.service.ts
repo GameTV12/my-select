@@ -139,10 +139,9 @@ export class PostService implements OnModuleInit {
   }
 
   async getTrendingPosts(viewerId?: string) {
-    console.log('1');
     const posts = await new Promise((resolve) => {
       this.postClient
-        .send('get_trending_posts', { viewerId })
+        .send('get_trending_posts', viewerId ? { viewerId } : {})
         .subscribe((data) => {
           resolve(data);
         });

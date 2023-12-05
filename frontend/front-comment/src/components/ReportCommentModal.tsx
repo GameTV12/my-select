@@ -1,14 +1,18 @@
 import React, {useState} from 'react'
 import {Box, Button, DialogProps, FormControl, FormLabel, Modal, ModalProps, TextField, Typography} from "@mui/material"
-
-export type ReportMessage = {
-    user: string
-    text: string
-}
+import {reportCommentRequest} from "../utils/authRequests";
 
 type ReportCommentModalProps = {
-    user: string
+    userId: string
+    commentId: string
+    linkNickname: string
 }
+
+export interface CreateReportInterface {
+    text: string
+    reportedUserId: string
+}
+
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -23,14 +27,15 @@ const style = {
     px: 4,
     pb: 3,
 }
-const ReportCommentModal = ({open, onClose, user}: DialogProps & ReportCommentModalProps) => {
-    const [reportMessage, setReportMessage] = useState<ReportMessage>({user: user, text: ''})
+const ReportCommentModal = ({open, onClose, userId, commentId, linkNickname}: DialogProps & ReportCommentModalProps) => {
+    const [reportMessage, setReportMessage] = useState<string>('')
 
-    function handleSubmit(e: SubmitEvent) {
+    function sendReport(e: any) {
         e.preventDefault()
         e.stopPropagation()
-        console.log(reportMessage)
-        setReportMessage((prevState) => ({ user: '', text: ''}))
+        console.log({ reportedUserId: userId, text: "User - " + linkNickname + "\nCommentId - " + commentId + "\nText - " + reportMessage})
+        reportCommentRequest({ reportedUserId: userId, text: "User - " + linkNickname + "\nCommentId - " + commentId + "\nText - " + reportMessage})
+        setReportMessage('')
     }
 
     return (
@@ -45,7 +50,7 @@ const ReportCommentModal = ({open, onClose, user}: DialogProps & ReportCommentMo
                 <Typography sx={{textAlign: 'justify'}} variant={"body1"} id="parent-modal-description">
                     Describe a violation (spam, harassment, etc)
                 </Typography>
-                <form onSubmit={() => handleSubmit}>
+                <form>
                     <FormControl fullWidth>
                         <TextField id={"text"}
                                    name={"text"}
@@ -54,20 +59,17 @@ const ReportCommentModal = ({open, onClose, user}: DialogProps & ReportCommentMo
                                    multiline
                                    rows={6}
                                    required
-                                   value={reportMessage.text}
-                                   onChange={(e) => setReportMessage((prevState) => ({
-                                       ...prevState,
-                                       text: e.target.value
-                                   }))}
+                                   value={reportMessage}
+                                   onChange={(e) => setReportMessage(e.target.value)}
                                    fullWidth
                                    sx={{my: 1}}
                                    inputProps={{maxLength: 200}}
-                                   helperText={`${reportMessage.text.length}/200 symbols used`}
+                                   helperText={`${reportMessage.length}/200 symbols used`}
                         />
 
                     </FormControl>
                     <FormControl fullWidth sx={{my: 1}}>
-                        <Button variant="contained" type={"submit"}>Send a report</Button>
+                        <Button variant="contained" onClick={(e) => sendReport(e)}>Send report</Button>
                     </FormControl>
                 </form>
             </Box>

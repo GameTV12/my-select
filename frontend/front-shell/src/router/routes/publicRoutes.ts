@@ -49,6 +49,6 @@ export const routePublic: IRoute[] = [
     { path: '/posts/:id/comments', element: PostCommentList, auth: false }, // comments of posts +
     { path: '/posts/:id/:variantId/comments', element: VariantCommentList, auth: false }, // comments of option +
     { path: '/admin/utils', element: RequestList, auth: true, roles: [Role.ADMIN] }, // utils for admin +-
-    { path: '/admin/reports', element: ReportList, auth: true, roles: [Role.ADMIN, Role.MODERATOR] }, // reports -
+    { path: '/admin/reports', element: ReportList, auth: true, roles: [Role.ADMIN, Role.MODERATOR, Role.DEFAULT_USER] }, // reports +
     { path: '*', element: App, auth: false }, // 404 found -
 ]

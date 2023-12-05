@@ -402,7 +402,7 @@ export class AppService {
 
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
         voted: vote,
@@ -434,6 +434,7 @@ export class AppService {
         data: {
           type: reaction,
           startTime: new Date(),
+          endTime: null,
           postId,
           userId,
         },
@@ -452,6 +453,7 @@ export class AppService {
           data: {
             type: reaction,
             startTime: new Date(),
+            endTime: null,
             postId,
             userId,
           },
@@ -545,7 +547,7 @@ export class AppService {
     if (existingVote) throw new ForbiddenException('You have already voted');
     await this.prisma.vote.create({
       data: {
-        postId: existingVote.postId,
+        postId: existingVariant.postId,
         userId,
       },
     });
@@ -559,7 +561,7 @@ export class AppService {
     });
     const newPost = await this.prisma.post.findUnique({
       where: {
-        id: existingVote.postId,
+        id: existingVariant.postId,
       },
     });
     return newPost;
@@ -778,7 +780,7 @@ export class AppService {
 
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
         voted: vote,
@@ -788,12 +790,8 @@ export class AppService {
 
   async getTrendingPosts(viewerId?: string) {
     console.log('Lol azaza');
-    const lastDays = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
-        createdAt: {
-          gte: lastDays,
-        },
         visible: true,
       },
       orderBy: {
@@ -835,9 +833,6 @@ export class AppService {
     });
     const postsWithDislikes = await this.prisma.post.findMany({
       where: {
-        createdAt: {
-          gte: lastDays,
-        },
         visible: true,
       },
       orderBy: {
@@ -892,7 +887,7 @@ export class AppService {
 
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
         voted: vote,
@@ -1060,7 +1055,7 @@ export class AppService {
 
       return {
         ...item,
-        status: reaction.type,
+        status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
         voted: vote,

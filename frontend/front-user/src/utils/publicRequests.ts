@@ -28,3 +28,11 @@ export const getAllReports = () => {
 export const getAllRequests = () => {
     return newAxios.get(`/user/requests`).then((res) => res.data)
 }
+
+export const checkUniqueEmailOrLink = (data: {value: string, type: string}) => {
+    return newAxios.post(`/auth/local/check`, JSON.stringify(data)).then((res) => res.data).catch(() => false)
+}
+
+export const getAllFollowers = (link: string) => {
+    return newAxios.get(`/user/${link}/followings`).then((res) => res.data)
+}

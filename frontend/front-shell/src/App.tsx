@@ -7,7 +7,7 @@ import Header from "./router/routerComponents/Header";
 import {Box} from "@mui/material";
 import {Suspense} from "react";
 // @ts-ignore
-const PostList = React.lazy(() => import('front_post/PostList'))
+const PostList = React.lazy(() => import('front_post/ReservedPostList'))
 // @ts-ignore
 // import Hello from "front_registration/Hello"
 

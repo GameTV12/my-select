@@ -25,7 +25,10 @@ import ReplyIcon from "@mui/icons-material/Reply"
 import CloseIcon from '@mui/icons-material/Close'
 import {Link, Navigate, useParams} from "react-router-dom"
 import {getAllCommentsOfPost} from "../utils/publicRequests";
-import {createComment} from "../utils/authRequests";
+import {createPostComment, editCommentRequest, getAllCommentsOfPostAuth} from "../utils/authRequests";
+import {UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {useCookies} from "react-cookie";
 
 
 type FilterParams = {
@@ -64,11 +67,18 @@ export interface CommentInterface {
     likes: number
     dislikes: number
     createdAt: Date;
+    status?: LikeStatus
 }
 
 export interface CreateCommentDto {
     text: string,
     goalId: string,
+    replyTo?: string,
+}
+
+export interface EditCommentDto {
+    id: string,
+    text: string,
     replyTo?: string,
 }
 
@@ -88,7 +98,14 @@ const PostCommentList = () => {
     const [repliedComment, setRepliedComment] = useState<CommentInterface | null>(null)
     const [countOfWrittenComments, setCountOfWrittenComments] = useState<number>(0)
     const [disableWriting, setDisableWriting] = useState(false)
-    const [editableComment, setEditableComment] = useState<CreateCommentDto | null>(null);
+    const [editableComment, setEditableComment] = useState<EditCommentDto | null>(null);
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     useEffect(() => {
         searchByFilters()
@@ -103,48 +120,63 @@ const PostCommentList = () => {
     }, [repliedComment])
 
     useEffect(() => {
-        let response;
         if (id != undefined) {
-            getAllCommentsOfPost(id).then(r => {console.log('data - ' + r); setStartComments(r); setCommentList(r)}).catch(r => {
-                return <Navigate replace to={'/'} />
-            })
+            if (currentUser) {
+                getAllCommentsOfPostAuth(id).then(r => {
+                    setStartComments(r); setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+            else {
+                getAllCommentsOfPost(id).then(r => {setStartComments(r); setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+
         }
-    }, [id, countOfWrittenComments]);
+    }, [countOfWrittenComments, id]);
 
     function editComment (commentId: string) {
-        // setRepliedComment(null)
-        // setCommentText('')
-        // const thisComment: CreateCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, goalId: (id ? id : 'id')})).find(item => item.id == commentId)
-        // if (!thisComment) return
-        // setEditableComment(thisComment)
-        // setCommentText(thisComment.text)
-        // if ("replyTo" in thisComment) {
-        //     const thisReply: CreateCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, goalId: (id ? id : 'id')})).find(item => item.id == thisComment.replyTo)
-        //     if (!thisReply) return
-        //     setRepliedComment(thisReply)
-        // }
+        setRepliedComment(null)
+        setCommentText('')
+        const thisComment: EditCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, replyTo: (item.reply ? item.reply.id : undefined)})).find(item => item.id == commentId)
+        if (!thisComment) return
+        setEditableComment(thisComment)
+        setCommentText(thisComment.text)
+        if ("replyTo" in thisComment) {
+            const thisReply: CommentInterface | undefined = commentList.find(item => item.id == thisComment.replyTo)
+            if (!thisReply) return
+            setRepliedComment(thisReply)
+        }
     }
 
     function updateComment (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent) {
-        // if (!editableComment || commentText.split(' ').join('').length == 0) return
-        // e.preventDefault()
-        // let copyComment = editableComment
-        // copyComment.text = commentText
-        // if (repliedComment) {
-        //     copyComment.repliedTo = repliedComment.id
-        //     copyComment.repliedNickname = repliedComment.nickname
-        //     copyComment.repliedText = repliedComment.text
-        // }
-        // const newList = commentList.map(comment => {
-        //     if (comment.id == copyComment.id) {
-        //         return copyComment
-        //     }
-        //     return comment
-        // })
-        // setCommentList(newList)
-        // setCommentText('')
-        // setRepliedComment(null)
-        // setEditableComment(null)
+        if (!editableComment || commentText.split(' ').join('').length == 0) return
+        e.preventDefault()
+        let copyComment = editableComment
+        copyComment.text = commentText
+        if (repliedComment) {
+            copyComment.replyTo = repliedComment.id
+            copyComment.id = editableComment.id
+        }
+        const newList = commentList.map(comment => {
+            if (comment.id == copyComment.id) {
+                return {
+                    ...comment,
+                    text: copyComment.text,
+                    replyTo: copyComment.replyTo
+                }
+            }
+            return comment
+        })
+        setCommentList(newList)
+        setCommentText('')
+        setRepliedComment(null)
+        setEditableComment(null)
+        if (id) {
+            if (repliedComment) editCommentRequest({id: copyComment.id, text: copyComment.text, replyTo: repliedComment.id}).then(r => console.log('request ' + r))
+            else editCommentRequest({id: copyComment.id, text: copyComment.text}).then(r => console.log('request ' + r))
+        }
     }
 
     function clearUpdate() {
@@ -164,9 +196,9 @@ const PostCommentList = () => {
     }
 
     function replyComment(commentId: string) {
-        // const thisComment: CommentInterface | undefined = commentList.find(item => item.id == commentId)
-        // if (!thisComment) return
-        // setRepliedComment(thisComment)
+        const thisComment: CommentInterface | undefined = commentList.find(item => item.id == commentId)
+        if (!thisComment) return
+        setRepliedComment(thisComment)
     }
 
     function clearReply(){
@@ -177,21 +209,18 @@ const PostCommentList = () => {
         e.preventDefault()
         if (commentText.split(' ').join('').length == 0) return
         newComment.text = commentText
-        // if (repliedComment != null) {
-        //     console.log(repliedComment)
-        //     newComment.repliedTo = repliedComment.id
-        //     newComment.repliedNickname = repliedComment.nickname
-        //     newComment.repliedText = repliedComment.text
-        // }
-        // setCommentList(prevState => [...prevState, newComment])
+        if (repliedComment != null) {
+            newComment.replyTo = repliedComment.id
+        }
         setCommentText('')
         setRepliedComment(null)
         setCountOfWrittenComments((prev) => prev+1)
 
         setDisableWriting(true)
         if (id) {
-            console.log('Id for sending')
-            createComment({text: commentText, goalId: id}).then(r => console.log('request ' + r))
+            if (repliedComment) createPostComment({text: commentText, goalId: id, replyTo: repliedComment.id}).then(r => console.log('request ' + r))
+            else createPostComment({text: commentText, goalId: id}).then(r => console.log('request ' + r))
+
         }
 
         setTimeout(() => {
@@ -308,7 +337,7 @@ const PostCommentList = () => {
                             return <Comment key={comment.id} id={comment.id} nickname={comment.user.nickname}
                                             linkNickname={comment.user.linkNickname}
                                             image={comment.user.photo} text={comment.text} time={new Date(comment.createdAt).getTime()}
-                                            status={LikeStatus.NONE}// for unauthorized users
+                                            status={currentUser && comment.status ? comment.status : LikeStatus.NONE}
                                             userId={comment.user.id}
                                             repliedTo={comment.reply?.id} repliedText={comment.reply?.text}
                                             repliedNickname={comment.reply?.user.nickname} deleteComment={deleteComment}

@@ -1,17 +1,18 @@
-import {Box, FormControlLabel, FormGroup, FormHelperText, Grid, Typography,} from '@mui/material'
+import {Box, Button, FormControlLabel, FormGroup, FormHelperText, Grid, Typography,} from '@mui/material'
 import {FormProvider, SubmitHandler, useForm} from 'react-hook-form'
-import {literal, object, string, TypeOf} from 'zod'
+import {literal} from 'zod'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {useEffect, useState} from 'react'
 import {LoadingButton} from '@mui/lab'
 import Checkbox from '@mui/material/Checkbox'
 import FormInput from '../components/FormInput'
 import {MuiTelInput} from "mui-tel-input";
+import { z } from 'zod'
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs"
 import {MuiFileInput} from "mui-file-input";
-import {findUserByNickname, signUpRequest} from "../utils/publicRequests";
+import {checkUniqueEmailOrLink, findUserByNickname, signUpRequest} from "../utils/publicRequests";
 
 export interface RegisterType {
     firstName: string,
@@ -26,41 +27,49 @@ export interface RegisterType {
     firstVerification?: boolean
 }
 
-
-const registerSchema = object({
-    firstName: string()
-        .nonempty('First name is required')
-        .min(2, 'Password must be more than 4 characters')
-        .max(32, 'Name must be less than 32 characters'),
-    lastName: string()
-        .max(80, 'Last name must be less than 80 characters'),
-    nickname: string()
-        .nonempty('Name is required')
-        .min(2, 'Name must be more than 2 characters')
-        .max(80, 'Name must be less than 80 characters'),
-    linkNickname: string()
-        .nonempty('Link nickname is required')
-        .min(2, 'Link nickname must be more than 2 characters')
-        .max(30, 'Link nickname must be less than 30 characters'),
-    email: string().nonempty('Email is required').email('Email is invalid')
-        .max(100, "Email must be less than 100 characters"),
-    password: string()
-        .nonempty('Password is required')
-        .regex(/[A-Za-z0-9]/, 'Password can use only numbers and letters')
-        .min(6, 'Password must be more than 6 characters')
-        .max(40, 'Password must be less than 40 characters'),
-    passwordConfirm: string().nonempty('Please confirm your password'),
-    terms: literal(true, {
-        invalid_type_error: 'Accept Terms is required',
-    }),
-}).refine((data) => data.password === data.passwordConfirm, {
-    path: ['passwordConfirm'],
-    message: 'Passwords do not match',
-});
-
-type RegisterInput = TypeOf<typeof registerSchema>;
-
 const RegisterPage = () => {
+    const registerSchema = z.object({
+        firstName: z.string()
+            .nonempty('First name is required')
+            .min(2, 'Password must be more than 4 characters')
+            .max(32, 'Name must be less than 32 characters'),
+        lastName: z.string()
+            .max(80, 'Last name must be less than 80 characters'),
+        nickname: z.string()
+            .nonempty('Name is required')
+            .min(2, 'Name must be more than 2 characters')
+            .max(80, 'Name must be less than 80 characters'),
+        linkNickname: z.string()
+            .nonempty('Link nickname is required')
+            .min(2, 'Link nickname must be more than 2 characters')
+            .max(30, 'Link nickname must be less than 30 characters'),
+        email: z.string().nonempty('Email is required').email('Email is invalid')
+            .max(100, "Email must be less than 100 characters"),
+        password: z.string()
+            .nonempty('Password is required')
+            .regex(/[A-Za-z0-9]/, 'Password can use only numbers and letters')
+            .min(6, 'Password must be more than 6 characters')
+            .max(40, 'Password must be less than 40 characters'),
+        passwordConfirm: z.string().nonempty('Please confirm your password'),
+        terms: literal(true, {
+            invalid_type_error: 'Accept Terms is required',
+        }),
+    }).refine((data) => data.password === data.passwordConfirm, {
+        path: ['passwordConfirm'],
+        message: 'Passwords do not match',
+    }).refine((data) => (checkUnique(data.email, data.linkNickname)), {
+        path: ['terms'],
+        message: 'Your email or linkNickname is not unique',
+    });
+
+    const checkUnique = async (email: string, link: string) => {
+        const firstBool = await checkUniqueEmailOrLink({value: email, type: 'email'})
+        const secondBool = await checkUniqueEmailOrLink({value: link, type: 'linkNickname'})
+        return firstBool && secondBool
+    }
+
+    type RegisterInput = z.infer<typeof registerSchema>;
+
     const [loading, setLoading] = useState(false);
 
     const methods = useForm<RegisterInput>({
@@ -73,12 +82,6 @@ const RegisterPage = () => {
         setPhoneNumber(newValue)
     }
 
-    const handlePhotoChange = (newValue: File | null) => {
-        // uploading
-        console.log(newValue?.name)
-        setPhoto(newValue)
-    }
-
     const {
         reset,
         handleSubmit,
@@ -86,23 +89,24 @@ const RegisterPage = () => {
         formState: {isSubmitSuccessful, errors},
     } = methods;
 
-    // useEffect(() => {
-    //     if (isSubmitSuccessful) {
-    //         reset();
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [isSubmitSuccessful]);
-
     useEffect(() => {
-        findUserByNickname(methods.getValues().linkNickname)
-    }, [phoneNumber]);
-
-    const onSubmitHandler: SubmitHandler<RegisterInput> = (data, event) => {
-        if (event != undefined) {
-            event.preventDefault()
+        if (isSubmitSuccessful) {
+            reset();
         }
-        console.log('Send data')
-        const sendingData: RegisterType = {...methods.getValues(),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSubmitSuccessful]);
+
+    const handlePhotoChange = (newValue: File | null) => {
+        // uploading
+        console.log(newValue?.name)
+        setPhoto(newValue)
+    }
+
+
+
+    const onSubmitHandler: SubmitHandler<RegisterInput> = (data) => {
+        console.log('Send data ' + data)
+        const sendingData: RegisterType = {...data,
             birthday: 1324324,
             phone: phoneNumber.replace(/ /g,''),
             firstVerification: false
@@ -110,12 +114,11 @@ const RegisterPage = () => {
         if (dateTime) {
             sendingData.birthday = dateTime.unix()
         }
-        console.log(sendingData)
+        console.log('Send data 2 - ' + sendingData)
         signUpRequest(sendingData).then(r => {
             console.log(r)
         })
     };
-    console.log(errors);
 
     return (
         <Grid container justifyContent="center" sx={{mt: '20px', mb: '10px'}}>
@@ -125,10 +128,10 @@ const RegisterPage = () => {
                 </Typography>
                 <FormProvider {...methods}>
                     <Box
-                        component='form'
                         noValidate
+                        component='form'
                         autoComplete='off'
-                        onSubmit={(e) => onSubmitHandler}
+                        onSubmit={handleSubmit(onSubmitHandler)}
                     >
                         <Grid container spacing={2} direction={"row"}>
                             <Grid item xs={6}>
@@ -244,15 +247,14 @@ const RegisterPage = () => {
                             </FormHelperText>
                         </FormGroup>
 
-                        <LoadingButton
+                        <Button
                             variant='contained'
                             fullWidth
                             type='submit'
-                            loading={loading}
                             sx={{py: '0.8rem', mt: '1rem'}}
                         >
                             Register
-                        </LoadingButton>
+                        </Button>
                     </Box>
                 </FormProvider>
             </Grid>

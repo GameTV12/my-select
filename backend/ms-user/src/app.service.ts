@@ -199,6 +199,17 @@ export class AppService {
       where: {
         AND: [{ follower: userId }, { end: null }],
       },
+      select: {
+        followingUser: {
+          select: {
+            linkNickname: true,
+            nickname: true,
+            photo: true,
+            id: true,
+            _count: { select: { Followers: { where: { end: null } } } },
+          },
+        },
+      },
     });
     return followers;
   }

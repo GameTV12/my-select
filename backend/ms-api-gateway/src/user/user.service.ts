@@ -60,7 +60,6 @@ export class UserService {
   }
 
   async followToUser(from: string, to: string) {
-    console.log(from);
     const userTo = await this.prisma.authUser.findUnique({
       where: {
         userId: to,

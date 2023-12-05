@@ -36,7 +36,7 @@ model Reaction {
   userId    String
   type      String
   startTime DateTime  @default(now())
-  endTime   DateTime? @updatedAt
+  endTime   DateTime?
   post      Post      @relation(fields: [postId], references: [id])
   postId    String
 }

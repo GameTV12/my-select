@@ -4,6 +4,10 @@ import {Grid, List, ListItem, Button, Avatar, ListItemAvatar, Box, ListItemText}
 import {Navigate, useParams} from "react-router-dom";
 import {getUserInfo, getUserPosts} from "../utils/publicRequests";
 import { Link } from "react-router-dom";
+import {useCookies} from "react-cookie";
+import {UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {getUserInfoAuth, getUserPostsAuth, subscribeRequest} from "../utils/authRequest";
 
 interface UserInfo {
     createdAt: Date
@@ -22,19 +26,44 @@ interface UserInfo {
 
 const UserPostList = () => {
     const { id } = useParams();
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+    const [postList, setPostList] = useState<PostInterface[]>([]);
+    const [userInfo, setUserInfo] = useState<UserInfo>({} as UserInfo);
+    const [subscribeStatus, setSubscribeStatus] = useState(userInfo.subscribed);
+    const [followers, setFollowers] = useState(0);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     useEffect(() => {
         if (id != undefined) {
-            console.log('id - ' + id)
-            getUserPosts(id).then(r => {setPostList(r); console.log(r)}).catch(() => {
-                return <Navigate replace to={'/'} />
-            })
-            getUserInfo(id).then(r => setUserInfo(r));
+            if (currentUser) {
+                getUserPostsAuth(id).then(r => {setPostList(r)}).catch(() => {
+                    return <Navigate replace to={'/'} />
+                })
+                getUserInfoAuth(id).then(r => {setUserInfo(r); setFollowers(r._count.Followers), setSubscribeStatus(r.subscribed)});
+            } else {
+                getUserPosts(id).then(r => {setPostList(r)}).catch(() => {
+                    return <Navigate replace to={'/'} />
+                })
+                getUserInfo(id).then(r => {setUserInfo(r), setFollowers(r._count.Followers)});
+            }
+
         }
     }, [id]);
 
-    const [postList, setPostList] = useState<PostInterface[]>([]);
-    const [userInfo, setUserInfo] = useState<UserInfo>({} as UserInfo);
+    const handleSubscribe = () => {
+        if (currentUser) {
+            setSubscribeStatus((prev) => !prev)
+            if (subscribeStatus) setFollowers(prev => prev - 1)
+            else setFollowers(prev => prev + 1)
+            subscribeRequest(userInfo.id)
+        }
+    }
+
 
     function deletePost(postId: string) {
         setPostList(postList.filter((post) => post.id != postId))
@@ -55,8 +84,12 @@ const UserPostList = () => {
                             secondary={<Link to={`/users/${userInfo.linkNickname}/profile`}>{userInfo.linkNickname}</Link>}
                         />
                         <Grid item xs={6} sm={6} md={6} lg={6} xl={6} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div><strong>Followers: </strong><i>{userInfo._count?.Followers}</i></div>
-                            {userInfo.subscribed ? <Button variant="contained" color={"error"}>Unsubscribe</Button> : <Button variant="contained" color={"success"}>Subscribe</Button>}
+                            <div><strong>Followers: </strong><i>{followers}</i></div>
+                            {subscribeStatus ?
+                                <Button variant="contained" color={"error"} onClick={handleSubscribe}>Unsubscribe</Button> :
+                                currentUser && currentUser.id == userInfo.id ? <></> :
+                                <Button variant="contained" color={"success"} onClick={handleSubscribe}>Subscribe</Button>
+                            }
                         </Grid>
                     </ListItem>
                     {postList

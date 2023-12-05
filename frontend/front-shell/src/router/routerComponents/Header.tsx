@@ -14,13 +14,12 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {Grid} from "@mui/material";
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 import LoginModal from "../../components/login/LoginModal"
 import {Cookies, useCookies} from "react-cookie";
 import {UserI} from "../../utils/authRequests";
 import {jwtDecode} from "jwt-decode";
 import {Role} from "../routes/publicRoutes";
-import {Cookie} from "@mui/icons-material";
 
 const mainTheme = createTheme({
     palette: {
@@ -72,6 +71,7 @@ const StyledInputBase = styled(InputBase)(({theme}) => ({
 }));
 
 export default function Header() {
+    const navigate = useNavigate()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
@@ -81,6 +81,7 @@ export default function Header() {
     const [loginOpen, setLoginOpen] = useState(false);
     const [cookies, setCookie, removeCookie] = useCookies(['myselect_access', 'myselect_refresh'])
     const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+    const [searchArgs, setSearchArgs] = useState('');
 
     useEffect(() => {
         if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
@@ -114,10 +115,12 @@ export default function Header() {
 
     const handleLogout = () => {
         const rigthCookie = new Cookies();
-        removeCookie('myselect_refresh')
-        removeCookie('myselect_access')
-        rigthCookie.remove('myselect_refresh')
-        rigthCookie.remove('myselect_access')
+        console.log('Logout')
+        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        setCurrentUser(null)
+        setCookie('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        setCookie('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
     }
 
 
@@ -148,6 +151,13 @@ export default function Header() {
             }
         </Menu>
     );
+
+    const handleSearchPosts = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            setTimeout(() => {location.reload()}, 0)
+            return navigate(`/?args=${searchArgs}`)
+        }
+    }
 
     const mobileMenuId = 'primary-search-account-menu-mobile';
     const renderMobileMenu = (
@@ -197,7 +207,7 @@ export default function Header() {
                                 component="div"
                                 sx={{display: {xs: 'none', sm: 'inline-block', fontWeight: 'bold'}}}
                             >
-                                <Link to={'/'} style={{ textDecoration: 'none', color: '#000' }}>MYSELECT</Link>
+                                <a href={'/'} style={{ textDecoration: 'none', color: '#000' }}>MYSELECT</a>
                             </Typography>
 
 
@@ -211,7 +221,10 @@ export default function Header() {
                                 </SearchIconWrapper>
                                 <StyledInputBase
                                     placeholder="Search..."
+                                    onKeyDown={handleSearchPosts}
                                     inputProps={{'aria-label': 'search'}}
+                                    value={searchArgs}
+                                    onChange={(e) => setSearchArgs(e.target.value)}
                                 />
                             </Search>
                         </Grid>

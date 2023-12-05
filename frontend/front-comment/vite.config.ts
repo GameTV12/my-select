@@ -14,7 +14,6 @@ export default defineConfig({
         './PostCommentList': './src/pages/PostCommentList',
         './VariantCommentList': './src/pages/VariantCommentList',
         './Comment': './src/components/Comment',
-        './UserCommentList': './src/pages/UserCommentList'
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })

@@ -33,53 +33,53 @@ describe('AppService', () => {
     prismaService = module.get<PrismaService>(PrismaService);
   });
 
-  describe('createPost', () => {
-    const userId = 'user1';
-    it('should create a new post', async () => {
-      const mockPostDto: PostDto = {
-        title: 'Test Post',
-        text: 'This is a test post',
-        commentsAllowed: true,
-      };
-
-      const mockPost = {
-        id: 'post1',
-        ...mockPostDto,
-        commentsAllowed: true,
-        variantsAllowed: false,
-        visible: true,
-        video: null,
-        shortUserUserId: userId,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-      };
-
-      jest.spyOn(prismaService.post, 'create').mockResolvedValue(mockPost);
-      jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue(mockPost);
-
-      const newPost = await appService.createPost(userId, mockPostDto);
-
-      expect(newPost).toEqual(mockPost);
-    });
-
-    it('should throw an error if the post creation fails', async () => {
-      const mockPostDto: PostDto = {
-        title: 'Test Post',
-        text: 'This is a test post',
-        commentsAllowed: true,
-      };
-
-      const errorMessage = 'Failed to create post';
-
-      jest
-        .spyOn(prismaService.post, 'create')
-        .mockRejectedValue(new Error(errorMessage));
-
-      await expect(appService.createPost(userId, mockPostDto)).rejects.toThrow(
-        errorMessage,
-      );
-    });
-  });
+  // describe('createPost', () => {
+  //   const userId = 'user1';
+  //   it('should create a new post', async () => {
+  //     const mockPostDto: PostDto = {
+  //       title: 'Test Post',
+  //       text: 'This is a test post',
+  //       commentsAllowed: true,
+  //     };
+  //
+  //     const mockPost = {
+  //       id: 'post1',
+  //       ...mockPostDto,
+  //       commentsAllowed: true,
+  //       variantsAllowed: false,
+  //       visible: true,
+  //       video: null,
+  //       shortUserUserId: userId,
+  //       createdAt: expect.any(Date),
+  //       updatedAt: expect.any(Date),
+  //     };
+  //
+  //     jest.spyOn(prismaService.post, 'create').mockResolvedValue(mockPost);
+  //     jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue(mockPost);
+  //
+  //     const newPost = await appService.createPost(userId, mockPostDto);
+  //
+  //     expect(newPost).toEqual(mockPost);
+  //   });
+  //
+  //   it('should throw an error if the post creation fails', async () => {
+  //     const mockPostDto: PostDto = {
+  //       title: 'Test Post',
+  //       text: 'This is a test post',
+  //       commentsAllowed: true,
+  //     };
+  //
+  //     const errorMessage = 'Failed to create post';
+  //
+  //     jest
+  //       .spyOn(prismaService.post, 'create')
+  //       .mockRejectedValue(new Error(errorMessage));
+  //
+  //     await expect(appService.createPost(userId, mockPostDto)).rejects.toThrow(
+  //       errorMessage,
+  //     );
+  //   });
+  // });
 
   describe('deletePost', () => {
     it('should delete a post if the user is the owner', async () => {

@@ -15,8 +15,8 @@ type ReactionType = {
 }
 const ReactionComponent: FC<ReactionType> = ({numberOfReaction, handleReaction, status, type}: ReactionType) => {
     return <>
-        {type == "like" && <>{status == LikeStatus.LIKED ? <><ThumbUpIcon onClick={handleReaction} sx={{ cursor: 'pointer' }}/>&nbsp;&nbsp;<Tooltip title={"dsafsdf"}><strong>{millify(numberOfReaction)}</strong></Tooltip></> : <><ThumbUpOffAltOutlinedIcon sx={{ cursor: 'pointer' }} onClick={handleReaction}/>&nbsp;&nbsp;{millify(numberOfReaction)}</>}</>}
-        {type == "dislike" && <>{status == LikeStatus.DISLIKED ? <><ThumbDownIcon onClick={handleReaction} sx={{ cursor: 'pointer' }}/>&nbsp;&nbsp;<strong>{millify(numberOfReaction)}</strong></> : <><ThumbDownOffAltOutlinedIcon sx={{ cursor: 'pointer' }} onClick={handleReaction}/>&nbsp;&nbsp;{millify(numberOfReaction)}</>}</>}
+        {type == "like" && <>{status == LikeStatus.LIKE ? <><ThumbUpIcon onClick={handleReaction} sx={{ cursor: 'pointer' }}/>&nbsp;&nbsp;<Tooltip title={"dsafsdf"}><strong>{millify(numberOfReaction)}</strong></Tooltip></> : <><ThumbUpOffAltOutlinedIcon sx={{ cursor: 'pointer' }} onClick={handleReaction}/>&nbsp;&nbsp;{millify(numberOfReaction)}</>}</>}
+        {type == "dislike" && <>{status == LikeStatus.DISLIKE ? <><ThumbDownIcon onClick={handleReaction} sx={{ cursor: 'pointer' }}/>&nbsp;&nbsp;<strong>{millify(numberOfReaction)}</strong></> : <><ThumbDownOffAltOutlinedIcon sx={{ cursor: 'pointer' }} onClick={handleReaction}/>&nbsp;&nbsp;{millify(numberOfReaction)}</>}</>}
     </>
 };
 

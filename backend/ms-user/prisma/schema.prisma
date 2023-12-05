@@ -18,7 +18,7 @@ model User {
   email              String      @unique
   firstName          String
   lastName           String?
-  phone              String?     @unique
+  phone              String?
   firstVerification  Boolean     @default(false)
   role               UserRole    @default(DEFAULT_USER)
   secondVerification Boolean     @default(false)

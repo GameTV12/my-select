@@ -41,8 +41,6 @@ function generateData() {
     return {allSubscribers: data, verifiedSubscribers: realData};
 }
 
-console.log(1)
-
 export const mockSubscribers: SubscriberStatistics[] = Array(...generateData().allSubscribers)
 export const mockRealSubscribers: SubscriberStatistics[] = Array(...generateData().verifiedSubscribers)
 //

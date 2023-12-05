@@ -41,7 +41,7 @@ export const allPosts = [
         ],
         "likes": 1605,
         "dislikes": 151,
-        "status": LikeStatus.LIKED,
+        "status": LikeStatus.LIKE,
         "commentsAllowed": false,
         "createdAt": 1656780680000
     },
@@ -76,7 +76,7 @@ export const allPosts = [
         "photos": ["https://d25-a.sdn.cz/d_25/c_img_gS_BD/QJuBjdE.png"],
         "likes": 9,
         "dislikes": 15,
-        "status": LikeStatus.DISLIKED,
+        "status": LikeStatus.DISLIKE,
         "commentsAllowed": false,
         "createdAt": 1678841387000
     },
@@ -91,7 +91,7 @@ export const allPosts = [
         "commentsAllowed": false,
         "likes": 15,
         "dislikes": 27,
-        "status": LikeStatus.LIKED,
+        "status": LikeStatus.LIKE,
         "createdAt": 1655235487000
     },
     {
@@ -105,7 +105,7 @@ export const allPosts = [
         "commentsAllowed": true,
         "likes": 32958,
         "dislikes": 23679,
-        "status": LikeStatus.LIKED,
+        "status": LikeStatus.LIKE,
         "variantsAllowed": true,
         "variants": [
             {title: "Option 1", votes: 150, id: '1'},
@@ -150,7 +150,7 @@ export const allPosts = [
         "commentsAllowed": true,
         "likes": 89,
         "dislikes": 77,
-        "status": LikeStatus.DISLIKED,
+        "status": LikeStatus.DISLIKE,
         "variantsAllowed": true,
         "variants": [
             {title: "Option 1", votes: 39, id: '1'},
@@ -169,7 +169,7 @@ export const allPosts = [
         "text": "In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.",
         "likes": 59071,
         "dislikes": 1535,
-        "status": LikeStatus.LIKED,
+        "status": LikeStatus.LIKE,
         "commentsAllowed": true,
         "createdAt": 1661827999000,
     },
@@ -244,7 +244,7 @@ export const allPosts = [
         "commentsAllowed": true,
         "likes": 9358,
         "dislikes": 890,
-        "status": LikeStatus.LIKED,
+        "status": LikeStatus.LIKE,
         "variantsAllowed": true,
         "variants": [
             {title: "Option 1", votes: 0, id: '1'},

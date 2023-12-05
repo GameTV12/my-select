@@ -31,6 +31,16 @@ export interface CreatePostData {
     variants?: string[]
 }
 
+export interface CreatePostDto {
+    title: string
+    text: string
+    photos?: string[]
+    video?: string
+    commentsAllowed: boolean
+    variantsAllowed: boolean
+    variants?: string[]
+}
+
 const CustomFormControl = styled(FormControl)(() => ({
     marginTop: '10px',
     marginBottom: '10px',

@@ -5,19 +5,35 @@ import {Navigate, useParams} from 'react-router-dom'
 import {getSinglePost} from "../utils/publicRequests";
 import { useEffect } from "react";
 import {useCookies} from "react-cookie"
+import {UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {getSinglePostAuth} from "../utils/authRequest";
 
 const SinglePost = () => {
     const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
     const { id } = useParams()
     useEffect(() => {
         let response;
         if (id != undefined) {
-            getSinglePost(id).then(r => {setPost(r)}).catch(r => {
-                return <Navigate replace to={'/'} />
-            })
+            if (currentUser) {
+                getSinglePostAuth(id).then(r => {setPost(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+            else {
+                getSinglePost(id).then(r => {setPost(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
         }
     }, [id]);
     const [post, setPost] = useState<PostInterface>();
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     return <>
             {post != undefined && id != undefined ? <Grid container justifyContent="center" sx={{ mt: 5 }}>

@@ -32,7 +32,6 @@ const LoginModal = ({open, onClose}: ModalProps) => {
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
         e.preventDefault()
-        console.log(data)
     }
 
 

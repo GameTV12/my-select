@@ -21,6 +21,7 @@
     "axios": "^1.6.2",
     "dayjs": "^1.11.9",
     "human-readable-numbers": "^0.9.5",
+    "jwt-decode": "^4.0.0",
     "millify": "^6.1.0",
     "react": "^18.2.0",
     "react-cookie": "^6.1.1",

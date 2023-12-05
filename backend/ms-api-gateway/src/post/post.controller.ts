@@ -22,6 +22,17 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   @Public()
+  @Get('trends')
+  getTrendingPosts() {
+    return this.postService.getTrendingPosts();
+  }
+
+  @Get('followings')
+  getPostOfFollowings(@GetCurrentUserId() viewerId: string) {
+    return this.postService.getPostOfFollowings(viewerId);
+  }
+
+  @Public()
   @Get(':id')
   getPostById(@Param('id') postId: string) {
     return this.postService.getPostById(postId);
@@ -105,21 +116,9 @@ export class PostController {
     return this.postService.addVariant(dto.variant, userId, postId);
   }
 
-  @Get('followings')
-  getPostOfFollowings(@GetCurrentUserId() viewerId: string) {
-    return this.postService.getPostOfFollowings(viewerId);
-  }
-
   @Get('auth/trends')
   getTrendingPostsAuth(@GetCurrentUserId() viewerId: string) {
     return this.postService.getTrendingPosts(viewerId);
-  }
-
-  @Public()
-  @Get('trends')
-  getTrendingPosts() {
-    console.log('9');
-    return { id: '1' };
   }
 
   @Get('auth/search/:args')

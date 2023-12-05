@@ -103,7 +103,6 @@ export class AuthService implements OnModuleInit {
   }
 
   async googleLogin(req) {
-    console.log(req.session);
     if (!req.user) {
       throw new NotFoundException("User doesn't exist");
     }
@@ -213,7 +212,7 @@ export class AuthService implements OnModuleInit {
         },
       });
     }
-    return !!user;
+    return !!!user;
   }
   async signinLocal(dto: LogInDto): Promise<Tokens> {
     const user = await this.prisma.authUser.findUnique({
@@ -294,7 +293,6 @@ export class AuthService implements OnModuleInit {
   }
 
   async updateUser(userId: string, dto: EditUserDto) {
-    console.log(dto);
     const user = await this.prisma.authUser.findUnique({
       where: {
         userId: userId,

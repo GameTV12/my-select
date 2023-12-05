@@ -64,7 +64,7 @@ const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, makeDe
                     </IconButton>
                 }
                 title={nickname}
-                subheader={<Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{linkNickname}</Link>}
+                subheader={<Link href={"https://leetcode.com/"} underline="none">{linkNickname}</Link>}
             />
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>

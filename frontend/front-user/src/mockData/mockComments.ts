@@ -1,6 +1,6 @@
 enum LikeStatus {
-    LIKED = 'LIKED',
-    DISLIKED = 'DISLIKED',
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE',
     NONE = 'NONE'
 }
 

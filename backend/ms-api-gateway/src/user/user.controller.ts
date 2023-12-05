@@ -49,13 +49,13 @@ export class UserController {
   //@Roles(['ADMIN'])
   //@UseGuards(RolesGuard)
   @Public()
-  @Get('/utils')
+  @Get('/moderator')
   @HttpCode(HttpStatus.OK)
   showWaitingRequests() {
     return this.userService.showWaitingRequests();
   }
 
-  @Post('/utils/create')
+  @Post('/moderator/create')
   @Roles(['DEFAULT_USER'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -66,7 +66,7 @@ export class UserController {
     return this.userService.createModeratorRequest(userId, dto.text);
   }
 
-  @Get('/utils/:link')
+  @Get('/moderator/:link')
   @HttpCode(HttpStatus.OK)
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
@@ -74,7 +74,7 @@ export class UserController {
     return this.userService.showModeratorRequestsById(linkNickname);
   }
 
-  @Get('/utils/:id/accept')
+  @Get('/moderator/:id/accept')
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
@@ -82,7 +82,7 @@ export class UserController {
     return this.userService.decideRequest(adminId, id, Decision.ACCEPTED);
   }
 
-  @Get('/utils/:id/deny')
+  @Get('/moderator/:id/deny')
   @Roles(['ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)

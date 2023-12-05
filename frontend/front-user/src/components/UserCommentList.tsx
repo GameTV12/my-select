@@ -2,6 +2,10 @@ import React, {Suspense, useEffect, useState} from 'react';
 import {List} from "@mui/material"
 import {Navigate, useParams} from "react-router-dom";
 import { getAllCommentsOfUser } from "../utils/publicRequests";
+import {useCookies} from "react-cookie";
+import {UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {getAllCommentsOfUserAuth} from "../utils/authRequests";
 // @ts-ignore
 const Comment = React.lazy(() => import('front_comment/Comment'))
 
@@ -12,8 +16,8 @@ export enum UserRole {
 }
 
 export enum LikeStatus {
-    LIKED = 'LIKED',
-    DISLIKED = 'DISLIKED',
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE',
     NONE = 'NONE'
 }
 
@@ -40,17 +44,33 @@ export interface CommentInterface {
     };
     likes: number
     dislikes: number
-    createdAt: Date;
+    createdAt: Date
+    status?: LikeStatus
 }
 
 export const UserCommentList = () => {
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
+
     const { id } = useParams()
 
     useEffect(() => {
         if (id != undefined) {
-            getAllCommentsOfUser(id).then(r => {setCommentList(r)}).catch(r => {
-                return <Navigate replace to={'/'} />
-            })
+            if (currentUser) {
+                getAllCommentsOfUserAuth(id).then(r => {setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+            else {
+                getAllCommentsOfUser(id).then(r => {setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
         }
     }, [id]);
 
@@ -67,7 +87,7 @@ export const UserCommentList = () => {
                     <Comment key={comment.id} id={comment.id} nickname={comment.user.nickname}
                              linkNickname={comment.user.linkNickname}
                              image={comment.user.photo} text={comment.text} time={new Date(comment.createdAt).getTime()}
-                             status={LikeStatus.NONE}// for unauthorized users
+                             status={currentUser && comment.status ? comment.status : LikeStatus.NONE}
                              userId={comment.user.id}
                              repliedTo={comment.reply?.id} repliedText={comment.reply?.text}
                              repliedNickname={comment.reply?.user.nickname} deleteComment={deleteComment}

@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
     AppBar, Box,
     Button,
-    FormControl, FormGroup,
+    FormGroup,
     Grid,
     IconButton,
     List,
@@ -14,8 +14,7 @@ import {
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
 import SouthIcon from '@mui/icons-material/South'
-import {allComments} from "../mockData/mockComments"
-import Comment, {CommentType, LikeStatus} from "../components/Comment"
+import Comment, {LikeStatus} from "../components/Comment"
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
 import NorthIcon from '@mui/icons-material/North'
 import dayjs from "dayjs"
@@ -24,6 +23,16 @@ import ReplyIcon from "@mui/icons-material/Reply"
 import CloseIcon from '@mui/icons-material/Close'
 import {Navigate, useParams} from "react-router-dom"
 import {Link} from "react-router-dom"
+import {useCookies} from "react-cookie";
+import {UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
+import {
+    createVariantComment,
+    editCommentRequest,
+    getAllCommentsOfVariantAuth
+} from "../utils/authRequests";
+import {getAllCommentsOfVariant} from "../utils/publicRequests";
+import {CommentInterface, CreateCommentDto, EditCommentDto} from "./PostCommentList";
 
 export type FilterParams = {
     sortingArgs: number[]
@@ -33,30 +42,28 @@ export type FilterParams = {
 
 const VariantCommentList = () => {
     const { id, variantId } = useParams()
-    console.log('variantId - ' + variantId)
 
 
-    const newComment: CommentType = {
-        id: "HELL-OWOR-LD12",
-        nickname: "David 999",
-        linkNickname: "fortnite_david",
-        userId: "USER-9018",
-        image: "poimzcvu",
+    const newComment: CreateCommentDto = {
         text: "",
-        time: (new Date()).getTime(),
-        likes: 0,
-        dislikes: 0,
-        status: LikeStatus.NONE
+        goalId: (variantId ? variantId : '1'),
     }
     const [commentText, setCommentText] = useState<string>("")
+    const [startComments, setStartComments] = useState<CommentInterface[]>([]);
     const [filterData, setFilterData] = useState<FilterParams>({sortingArgs: [2, 0, 0], endDate: dayjs(new Date())});
-    const [commentList, setCommentList] = useState(allComments)
+    const [commentList, setCommentList] = useState<CommentInterface[]>(startComments)
     const scrollRef = useRef<null | HTMLDivElement>(null)
-    const [repliedComment, setRepliedComment] = useState<CommentType | null>(null)
+    const [repliedComment, setRepliedComment] = useState<CommentInterface | null>(null)
     const [countOfWrittenComments, setCountOfWrittenComments] = useState<number>(0)
     const [disableWriting, setDisableWriting] = useState(false)
-    const [editableComment, setEditableComment] = useState<CommentType | null>(null);
+    const [editableComment, setEditableComment] = useState<EditCommentDto | null>(null);
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
 
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     useEffect(() => {
         searchByFilters()
@@ -70,15 +77,31 @@ const VariantCommentList = () => {
         clearReply()
     }, [repliedComment])
 
+    useEffect(() => {
+        if (variantId != undefined) {
+            if (currentUser) {
+                getAllCommentsOfVariantAuth(variantId).then(r => {
+                    setStartComments(r); setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+            else {
+                getAllCommentsOfVariant(variantId).then(r => {setStartComments(r); setCommentList(r)}).catch(r => {
+                    return <Navigate replace to={'/'} />
+                })
+            }
+        }
+    }, [countOfWrittenComments, variantId]);
+
     function editComment (commentId: string) {
         setRepliedComment(null)
         setCommentText('')
-        const thisComment: CommentType | undefined = commentList.find(item => item.id == commentId)
+        const thisComment: EditCommentDto | undefined = commentList.map((item) => ({id: item.id, text: item.text, replyTo: (item.reply ? item.reply.id : undefined)})).find(item => item.id == commentId)
         if (!thisComment) return
         setEditableComment(thisComment)
         setCommentText(thisComment.text)
-        if ("repliedTo" in thisComment) {
-            const thisReply: CommentType | undefined = commentList.find(item => item.id == thisComment.repliedTo)
+        if ("replyTo" in thisComment) {
+            const thisReply: CommentInterface | undefined = commentList.find(item => item.id == thisComment.replyTo)
             if (!thisReply) return
             setRepliedComment(thisReply)
         }
@@ -90,13 +113,16 @@ const VariantCommentList = () => {
         let copyComment = editableComment
         copyComment.text = commentText
         if (repliedComment) {
-            copyComment.repliedTo = repliedComment.id
-            copyComment.repliedNickname = repliedComment.nickname
-            copyComment.repliedText = repliedComment.text
+            copyComment.replyTo = repliedComment.id
+            copyComment.id = editableComment.id
         }
         const newList = commentList.map(comment => {
             if (comment.id == copyComment.id) {
-                return copyComment
+                return {
+                    ...comment,
+                    text: copyComment.text,
+                    replyTo: copyComment.replyTo
+                }
             }
             return comment
         })
@@ -104,6 +130,11 @@ const VariantCommentList = () => {
         setCommentText('')
         setRepliedComment(null)
         setEditableComment(null)
+        if (variantId) {
+            console.log('Id for sending')
+            if (repliedComment) editCommentRequest({id: copyComment.id, text: copyComment.text, replyTo: repliedComment.id}).then(r => console.log('request ' + r))
+            else editCommentRequest({id: copyComment.id, text: copyComment.text}).then(r => console.log('request ' + r))
+        }
     }
 
     function clearUpdate() {
@@ -123,34 +154,33 @@ const VariantCommentList = () => {
     }
 
     function replyComment(commentId: string) {
-        const thisComment: CommentType | undefined = commentList.find(item => item.id == commentId)
+        const thisComment: CommentInterface | undefined = commentList.find(item => item.id == commentId)
         if (!thisComment) return
         setRepliedComment(thisComment)
     }
 
     function clearReply(){
-        delete newComment.repliedTo
-        delete newComment.repliedText
-        delete newComment.repliedNickname
+        delete newComment.replyTo
     }
 
     function sendComment(e: React.MouseEvent<HTMLElement> | React.KeyboardEvent) {
         e.preventDefault()
         if (commentText.split(' ').join('').length == 0) return
-        newComment.time = (new Date()).getTime()
         newComment.text = commentText
         if (repliedComment != null) {
-            console.log(repliedComment)
-            newComment.repliedTo = repliedComment.id
-            newComment.repliedNickname = repliedComment.nickname
-            newComment.repliedText = repliedComment.text
+            newComment.replyTo = repliedComment.id
         }
-        setCommentList(prevState => [...prevState, newComment])
         setCommentText('')
         setRepliedComment(null)
         setCountOfWrittenComments((prev) => prev+1)
 
         setDisableWriting(true)
+        if (variantId) {
+            console.log('Id for sending')
+            if (repliedComment) createVariantComment({text: commentText, goalId: variantId, replyTo: repliedComment.id}).then(r => console.log('request ' + r))
+            else createVariantComment({text: commentText, goalId: variantId}).then(r => console.log('request ' + r))
+
+        }
 
         setTimeout(() => {
             setDisableWriting(false)
@@ -168,11 +198,10 @@ const VariantCommentList = () => {
     }
 
     function searchByFilters() {
-        const filteredArray = allComments.filter(item => {
-            // @ts-ignore
-            if (filterData.endDate != undefined && filterData.endDate.unix() * 1000 >= item.time && filterData.startDate != undefined && filterData.startDate.unix() * 1000 <= item.time) return true
-            else if (filterData.startDate == undefined && filterData.endDate != undefined && filterData.endDate.unix() * 1000 >= item.time) return true
-            else if (filterData.endDate == undefined && filterData.startDate != undefined && filterData.startDate.unix() * 1000 <= item.time) return true
+        const filteredArray = startComments.filter(item => {
+            if (filterData.endDate && filterData.endDate.unix() * 1000 >= new Date(item.createdAt).getTime() && filterData.startDate && filterData.startDate.unix() * 1000 <= new Date(item.createdAt).getTime()) return true
+            else if (filterData.startDate == undefined && filterData.endDate && filterData.endDate.unix() * 1000 >= new Date(item.createdAt).getTime()) return true
+            else if (filterData.endDate == undefined && filterData.startDate && filterData.startDate.unix() * 1000 <= new Date(item.createdAt).getTime()) return true
             else if (filterData.endDate == undefined && filterData.startDate == undefined) return true
             return false
         })
@@ -185,9 +214,9 @@ const VariantCommentList = () => {
         } else if (filterData.sortingArgs[2] == 2) {
             filteredArray.sort((item1, item2) => item1.dislikes - item2.dislikes)
         } else if (filterData.sortingArgs[0] == 2) {
-            filteredArray.sort((item1, item2) => item1.time - item2.time)
+            filteredArray.sort((item1, item2) => new Date(item1.createdAt).getTime() - new Date(item2.createdAt).getTime())
         } else if (filterData.sortingArgs[0] == 1) {
-            filteredArray.sort((item1, item2) => item2.time - item1.time)
+            filteredArray.sort((item1, item2) => new Date(item2.createdAt).getTime()  - new Date(item1.createdAt).getTime())
         }
         setCommentList(filteredArray)
     }
@@ -204,6 +233,7 @@ const VariantCommentList = () => {
                                     <KeyboardBackspaceIcon/>
                                 </IconButton>
                             </Link>
+
                         </Grid>
                         <Grid item xs={12} sm={10} md={4} lg={4} xl={4}
                               sx={{display: "flex", justifyContent: "center", alignItems: "center", p: 1}}>
@@ -227,7 +257,7 @@ const VariantCommentList = () => {
                               sx={{display: "flex", justifyContent: "center", alignItems: "center", p: 1}}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 From&nbsp;
-                                <DatePicker value={filterData.startDate} onChange={(newValue) => {
+                                <DatePicker value={filterData.startDate} disableFuture onChange={(newValue) => {
                                     setFilterData({
                                         sortingArgs: filterData.sortingArgs,
                                         endDate: filterData.endDate,
@@ -235,7 +265,7 @@ const VariantCommentList = () => {
                                     })
                                 }}/>&nbsp;
                                 To&nbsp;
-                                <DatePicker value={filterData.endDate} onChange={(newValue) => {
+                                <DatePicker value={filterData.endDate} disableFuture onChange={(newValue) => {
                                     setFilterData({
                                         sortingArgs: filterData.sortingArgs,
                                         startDate: filterData.startDate,
@@ -263,13 +293,13 @@ const VariantCommentList = () => {
                 <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
                     <List sx={{bgcolor: 'background.paper'}}>
                         {commentList.map((comment) => {
-                            return <Comment key={comment.id} id={comment.id} nickname={comment.nickname}
-                                            linkNickname={comment.linkNickname}
-                                            image={comment.image} text={comment.text} time={comment.time}
-                                            status={comment.status}
-                                            userId={comment.userId}
-                                            repliedTo={comment.repliedTo} repliedText={comment.repliedText}
-                                            repliedNickname={comment.repliedNickname} deleteComment={deleteComment}
+                            return <Comment key={comment.id} id={comment.id} nickname={comment.user.nickname}
+                                            linkNickname={comment.user.linkNickname}
+                                            image={comment.user.photo} text={comment.text} time={new Date(comment.createdAt).getTime()}
+                                            status={currentUser && comment.status ? comment.status : LikeStatus.NONE}// for unauthorized users
+                                            userId={comment.user.id}
+                                            repliedTo={comment.reply?.id} repliedText={comment.reply?.text}
+                                            repliedNickname={comment.reply?.user.nickname} deleteComment={deleteComment}
                                             likes={comment.likes} dislikes={comment.dislikes} editComment={editComment}
                                             replyComment={replyComment}/>
                         })}
@@ -289,7 +319,7 @@ const VariantCommentList = () => {
                                     align="justify"
                                     sx={{display: "flex", alignItems: "center", mt: 1}}
                                 >
-                                    <ReplyIcon/>&nbsp;{repliedComment.nickname}
+                                    <ReplyIcon/>&nbsp;{repliedComment.user.nickname}
                                 </Typography>
                                 <Typography
                                     component="div"
@@ -332,7 +362,7 @@ const VariantCommentList = () => {
                                     {editableComment && <IconButton color={"primary"} onClick={clearUpdate}><CloseIcon /></IconButton>}
                                     <IconButton type={"submit"} color={"primary"} onClick={editableComment ? (e)=> updateComment(e) : (e) => sendComment(e)} disabled={disableWriting && editableComment==null}><SendIcon /></IconButton>
                                 </FormGroup>
-                                </Paper>
+                            </Paper>
                         </Grid>
                     </Grid>
                 </Toolbar>

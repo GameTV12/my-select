@@ -23,6 +23,7 @@
     "chartjs-plugin-annotation": "^3.0.1",
     "chartjs-plugin-lineheight-annotation": "^0.3.5",
     "dayjs": "^1.11.9",
+    "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "mui-file-input": "^4.0.2",
     "mui-tel-input": "^4.0.1",

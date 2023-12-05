@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {Box, Button, FormControl, FormLabel, Modal, ModalProps, TextField, Typography} from "@mui/material"
+import {createModeratorRequest} from "../utils/authRequests";
 
 export type ModeratorRequest = {
     user: string
@@ -26,6 +27,7 @@ const ModeratorRequestModal = ({open, onClose}: ModalProps) => {
     function handleSubmit(e: SubmitEvent) {
         e.preventDefault()
         console.log(moderatorRequest)
+        createModeratorRequest({ text: moderatorRequest.text })
         setModeratorRequest((prevState) => ({...prevState, text: ''}))
     }
 
