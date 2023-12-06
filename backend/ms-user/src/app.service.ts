@@ -137,7 +137,7 @@ export class AppService {
   async followToUser(from: string, to: string) {
     const checkSubscription = await this.prisma.followers.findMany({
       where: {
-        AND: { follower: from, following: to },
+        AND: [{ follower: from }, { following: to }],
       },
       orderBy: {
         start: 'desc',
@@ -240,6 +240,7 @@ export class AppService {
         status: 'WAITING',
         user: {
           visible: true,
+          role: 'DEFAULT_USER',
         },
       },
       select: {
@@ -279,6 +280,7 @@ export class AppService {
         },
         data: {
           role: 'MODERATOR',
+          secondVerification: true,
         },
       });
     } else {

@@ -3,6 +3,7 @@ import {Grid} from "@mui/material"
 import RequestCard from "../components/RequestCard";
 import {getAllRequests} from "../utils/publicRequests";
 import {Navigate} from "react-router-dom";
+import {acceptRequest, denyRequest} from "../utils/authRequests";
 
 type Request = {
     id: string
@@ -26,13 +27,14 @@ const RequestList = () => {
 
     function decideToRequest(id: string, decision: boolean): void {
         if (requests) setRequests(requests.filter((item) => item.id !== id))
-        console.log(decision)
+        if (decision) acceptRequest(id)
+        else denyRequest(id)
     }
 
     return (
         <Grid container justifyContent="center" sx={{mt: '20px', mb: '10px'}}>
             <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
-                {requests ? requests.map(item =>
+                {requests && requests.length > 0 ? requests.map(item =>
                     <RequestCard
                         id={item.id}
                         nickname={item.user?.nickname}

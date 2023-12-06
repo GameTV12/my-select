@@ -14,7 +14,8 @@ export default defineConfig({
         './PostList': './src/pages/PostList',
         './UserPostList': './src/pages/UserPostList',
         './SinglePost': './src/pages/SinglePost',
-        './WritePost': './src/components/createPost/WritePost'
+        './WritePost': './src/components/createPost/WritePost',
+        './EditPost': './src/components/createPost/EditPost'
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })

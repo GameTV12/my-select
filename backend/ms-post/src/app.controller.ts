@@ -36,6 +36,11 @@ export class AppController {
     return this.appService.getPost(data.id, data.viewerId);
   }
 
+  @MessagePattern('get_short_post')
+  getShortPost(@Payload(ValidationPipe) data) {
+    return this.appService.getShortPost(data.postId);
+  }
+
   @MessagePattern('delete_variant')
   deleteVariant(@Payload(ValidationPipe) variantId) {
     return this.appService.deleteVariant(variantId);
@@ -66,7 +71,10 @@ export class AppController {
 
   @MessagePattern('get_post_list_of_user')
   getPostListOfUser(@Payload(ValidationPipe) data) {
-    return this.appService.getPostListOfUser(data.linkNickname, data.viewerId);
+    return this.appService.getPostListOfUser(
+      data.linkNickname,
+      data.viewerId ? data.viewerId : null,
+    );
   }
 
   @MessagePattern('react_on_post')

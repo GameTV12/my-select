@@ -13,21 +13,21 @@ import {
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
-import {ChangeEvent, useRef, useState} from "react"
-import UploadFileIcon from '@mui/icons-material/UploadFile'
+import {useRef, useState} from "react"
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import ModalDelete from "./ModalDelete"
+import {Cloudinary} from "@cloudinary/url-gen"
+import {createPostRequest} from "../../utils/authRequest";
+import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 export interface CreatePostData {
-    userId: string
-    nickname: string
-    linkNickname: string
     title: string
     text: string
     photos?: File[]
-    video?: File
+    video?: string
     commentsAllowed: boolean
-    variantsAllowed?: boolean
+    variantsAllowed: boolean
     variants?: string[]
 }
 
@@ -64,29 +64,49 @@ const CustomFormGroup = styled(FormGroup)(() => ({
 }))
 
 export const WritePost = () => {
+    const navigate = useNavigate()
     const [variants, setVariants] = useState<string[]>(["", ""])
     const [photos, setPhotos] = useState<File[]>([])
     const photosRef = useRef<HTMLInputElement>(null)
     const [photoModal, setPhotoModal] = useState<boolean>(false)
     const [photoForDeleting, setPhotoForDeleting] = useState<File | null>(null)
     const [draggablePhoto, setDraggablePhoto] = useState<File | null>(null)
-    const [formData, setFormData] = useState<CreatePostData>({userId: 'DOTA-2TRA-DEGG', nickname: 'Langer', linkNickname: 'langerpro11', title: '', text: '', commentsAllowed: true, variantsAllowed: true});
+    const [formData, setFormData] = useState<CreatePostData>({title: '', text: '', commentsAllowed: true, variantsAllowed: true});
 
-    const [video, setVideo] = useState<File | null>(null)
-    const videoRef = useRef<HTMLInputElement>(null)
-
+    const fileUpload = async (file: File) => {
+        const photoData = new FormData()
+        photoData.append("file", file)
+        photoData.append("upload_preset", "myselectpostphotos")
+        photoData.append("cloud_name", "doheyc7ux")
+        let answer = ""
+        await axios.post(`https://api.cloudinary.com/v1_1/doheyc7ux/image/upload`,
+            photoData).then((response) => {
+            answer = response.data["secure_url"]
+        })
+        console.log(answer)
+        return answer
+    }
 
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
         e.preventDefault()
-        if (variants.filter(x => x != '').length > 0) {
-            formData.variants = variants.filter(x => x != '')
-            formData.variantsAllowed = true
+        const links: string[] = []
+        const sendingData: CreatePostDto = { title: formData.title,
+            text: formData.text,
+            commentsAllowed: formData.commentsAllowed,
+            variantsAllowed: formData.variantsAllowed,
+            video: (!formData.video || formData.video == '' ? undefined : formData.video.trim().substring(32)),
+            variants: variants.filter(x => x != '')
         }
-        if (photos.length > 0) formData.photos = photos
-        if (video) formData.video = video
-
-        console.log(formData)
+        if (photos.length == 0) createPostRequest(sendingData).then((response) => {return navigate(`/posts/${response.id}`)})
+        else {
+            const promises = photos.map((item) => fileUpload(item))
+            Promise.all(promises).then(responses => {
+                responses.forEach(response => links.push(response))
+                sendingData.photos = links
+                createPostRequest(sendingData).then((response) => {return navigate(`/posts/${response.id}`)})
+            })
+        }
     }
 
     const handleDragOverFiles = (e: React.DragEvent): void => {
@@ -147,21 +167,11 @@ export const WritePost = () => {
             })
             setPhotos([...photos.slice(0, dropIndex+1), ...dropFiles, ...photos.slice(dropIndex+1)])
         }
-
-
-
-        console.log('drop', thisPhoto)
     }
 
     const openPhotoExplorer = (e: React.SyntheticEvent): void => {
         if (photosRef.current != null) {
             photosRef.current.click()
-        }
-    }
-
-    const openVideoExplorer = (e: React.SyntheticEvent): void => {
-        if (videoRef.current != null) {
-            videoRef.current.click()
         }
     }
 
@@ -180,11 +190,6 @@ export const WritePost = () => {
         }
     }
 
-    const handleExplorerVideo = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        e.preventDefault()
-        if (e.target.files != null) setVideo(e.target.files[0])
-    }
-
     const handleDropPhotos = (e: React.DragEvent): void => {
         if (!draggablePhoto) {
             e.preventDefault()
@@ -197,24 +202,14 @@ export const WritePost = () => {
         }
     }
 
-    const handleDropVideos = (e: React.DragEvent): void => {
-        e.preventDefault()
-        e.stopPropagation()
-        setVideo(e.dataTransfer.files[0])
-    }
-
     const clearPhotosHandler = (): void => {
         setPhotos([])
-    }
-
-    const clearVideosHandler = (): void => {
-        setVideo(null)
     }
 
     const deletePhoto = (file: File): void => {
         setPhotos(photos.filter(x => x.name != file.name))
     }
-    
+
     const callModalWindow = (file: File) => {
         setPhotoForDeleting(file)
         setPhotoModal(true)
@@ -237,16 +232,27 @@ export const WritePost = () => {
                             type={"text"}
                             placeholder={"Enter a title"}
                             required
+                            inputProps={{maxLength: 160}}
+                            helperText={`${formData.title.length}/160 symbols used`}
                             fullWidth
+                            value={formData.title}
+                            onChange={(e) => setFormData({...formData, title: e.target.value})}
                         />
                     </CustomFormControl>
                     <CustomFormControl fullWidth required>
                         <FormLabel htmlFor={"text"}>
                             Text
                         </FormLabel>
-                        <TextField id={"text"} name={"text"} type={"text"} placeholder={"Enter a text"} multiline
+                        <TextField id={"text"} name={"text"} type={"text"} placeholder={"Enter a text"}
+                                   multiline
                                    rows={3}
-                                   maxRows={50} required fullWidth/>
+                                   maxRows={50}
+                                   required
+                                   inputProps={{maxLength: 10000}}
+                                   helperText={`${formData.text.length}/10000 symbols used`}
+                                   value={formData.text}
+                                   onChange={(e) => setFormData({...formData, text: e.target.value})}
+                                   fullWidth/>
                     </CustomFormControl>
                     <CustomFormGroup>
                         <FormLabel>
@@ -288,18 +294,18 @@ export const WritePost = () => {
                                     justifyContent: 'start',
                                     px: 1,
                                 }}
-                                    xs={12} sm={12} md={12} lg={12} xl={12}
+                                      xs={12} sm={12} md={12} lg={12} xl={12}
                                 >{photos.map((item) =>
                                     (<Grid onClick={() => callModalWindow(item)}
-                                              sx={{ py: 1, pr: 2, cursor: 'grab' }}
-                                              key={item.name} item xs={6} sm={6} md={4} lg={2} xl={2}
-                                              draggable={true}
-                                              onDragStart={(e: any) => dragStartHandlerPhoto(e, item)} // we've taken the photo
-                                              onDragLeave={dragEndHandlerFile} // we've leaved this photo and gone to another photo
-                                              onDragEnd={dragEndHandlerFile} // we've released the photo
-                                              onDragOver={dragOverHandlerFile} // we are over another object
-                                              onDrop={(e: any) => dropHandlerPhoto(e, item)}
-                                        >
+                                           sx={{ py: 1, pr: 2, cursor: 'grab' }}
+                                           key={item.name} item xs={6} sm={6} md={4} lg={2} xl={2}
+                                           draggable={true}
+                                           onDragStart={(e: any) => dragStartHandlerPhoto(e, item)} // we've taken the photo
+                                           onDragLeave={dragEndHandlerFile} // we've leaved this photo and gone to another photo
+                                           onDragEnd={dragEndHandlerFile} // we've released the photo
+                                           onDragOver={dragOverHandlerFile} // we are over another object
+                                           onDrop={(e: any) => dropHandlerPhoto(e, item)}
+                                    >
                                         <Box component={"img"} src={item.name} sx={{ aspectRatio: '4/3', objectFit: 'cover' }} width={'100%'} alt={item.name}/>
                                     </Grid>))}
                                 </Grid>
@@ -312,56 +318,6 @@ export const WritePost = () => {
                             </ButtonGroup>
                         </FormControl>
                     </CustomFormGroup>
-                    {/*<CustomFormGroup>*/}
-                    {/*    <FormLabel>*/}
-                    {/*        Video*/}
-                    {/*    </FormLabel>*/}
-                    {/*    <Box*/}
-                    {/*        sx={{*/}
-                    {/*            border: '2px rgba(0, 0, 0, 0.25) dashed',*/}
-                    {/*            borderRadius: '10px',*/}
-                    {/*            minHeight: '50px',*/}
-                    {/*            textAlign: 'center',*/}
-                    {/*            display: 'flex',*/}
-                    {/*            justifyContent: 'center',*/}
-                    {/*            fontSize: '24px',*/}
-                    {/*            color: "rgba(0, 0, 0, 0.5)",*/}
-                    {/*            mb: '10px',*/}
-                    {/*        }}*/}
-                    {/*        onDrop={handleDropVideos}*/}
-                    {/*        onDragOver={handleDragOverFiles}*/}
-                    {/*    >*/}
-                    {/*        <input type="file"*/}
-                    {/*               hidden*/}
-                    {/*               accept="video/*"*/}
-                    {/*               ref={videoRef}*/}
-                    {/*               onChange={handleExplorerVideo}*/}
-                    {/*        />*/}
-
-                    {/*            <Grid container sx={{*/}
-                    {/*                display: 'flex',*/}
-                    {/*                alignItems: 'center',*/}
-                    {/*                justifyContent: 'center',*/}
-                    {/*                px: 1,*/}
-                    {/*            }}>*/}
-                    {/*                {!video ?*/}
-                    {/*                <>Upload a video&nbsp;<UploadFileIcon/></>*/}
-                    {/*                :*/}
-                    {/*                <Grid onClick={() => callModalWindow(video)}*/}
-                    {/*                       sx={{ py: 1, pr: 2, cursor: 'grab' }}*/}
-                    {/*                >*/}
-                    {/*                </Grid>*/}
-                    {/*                }*/}
-                    {/*            </Grid>*/}
-
-                    {/*    </Box>*/}
-                    {/*    <FormControl fullWidth>*/}
-                    {/*        <ButtonGroup variant="contained" fullWidth>*/}
-                    {/*            <Button color={"error"} onClick={clearVideosHandler}>Clear the video</Button>*/}
-                    {/*            <Button color={"info"} onClick={openVideoExplorer}>Change a video</Button>*/}
-                    {/*        </ButtonGroup>*/}
-                    {/*    </FormControl>*/}
-                    {/*</CustomFormGroup>*/}
                     <CustomFormControl fullWidth>
                         <FormLabel htmlFor={"video"}>
                             Video from YouTube
@@ -370,7 +326,9 @@ export const WritePost = () => {
                             id={"video"}
                             name={"video"}
                             type={"text"}
-                            placeholder={"Enter a video from YouTube"}
+                            placeholder={"Enter a video from YouTube (with https://...)"}
+                            value={formData.video}
+                            onChange={(e) => setFormData({...formData, video: e.target.value})}
                             fullWidth
                         />
                     </CustomFormControl>

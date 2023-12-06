@@ -12,6 +12,7 @@ export default defineConfig({
       // Modules to expose
       exposes: {
         './RegisterPage': './src/pages/RegisterPage',
+        './UpdatePage': './src/pages/UpdatePage',
         './UserInfoPage': './src/pages/UserInfoPage',
         './RequestList': './src/pages/RequestList',
         './ReportList': './src/pages/ReportList',

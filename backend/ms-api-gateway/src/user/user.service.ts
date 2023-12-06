@@ -167,6 +167,7 @@ export class UserService {
         },
         data: {
           role: 'MODERATOR',
+          secondVerification: true,
         },
       });
       await new Promise((resolve) => {

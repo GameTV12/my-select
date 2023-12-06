@@ -116,7 +116,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     return commentWithLikes.map((item) => {
@@ -147,10 +147,14 @@ export class AppService {
     const commentWithLikes: CommentInterface[] =
       await this.prisma.comment.findMany({
         where: {
-          visible: true,
-          user: {
-            linkNickname,
-          },
+          AND: [
+            { visible: true },
+            {
+              user: {
+                linkNickname,
+              },
+            },
+          ],
         },
         select: {
           id: true,
@@ -195,10 +199,14 @@ export class AppService {
     const commentWithDislikes: CommentInterface[] =
       await this.prisma.comment.findMany({
         where: {
-          visible: true,
-          user: {
-            linkNickname,
-          },
+          AND: [
+            { visible: true },
+            {
+              user: {
+                linkNickname,
+              },
+            },
+          ],
         },
         select: {
           id: true,
@@ -229,7 +237,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     return commentWithLikes.map((item) => {
@@ -290,7 +298,7 @@ export class AppService {
 
     const checkReaction = await this.prisma.reaction.findMany({
       where: {
-        AND: { commentId: commentId, userId: userId },
+        AND: [{ commentId: commentId }, { userId: userId }],
       },
       orderBy: {
         startTime: 'desc',
@@ -378,6 +386,7 @@ export class AppService {
       },
       data: {
         role: 'MODERATOR',
+        secondVerification: true,
       },
     });
 

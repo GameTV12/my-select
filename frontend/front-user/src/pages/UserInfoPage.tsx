@@ -236,7 +236,7 @@ const UserInfoPage = () => {
                                                 aria-labelledby="composition-button"
                                                 onKeyDown={handleListKeyDown}
                                             >
-                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleAddMenuClose}>Edit the profile</MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleAddMenuClose}><Link to={`/users/update`} style={{ textDecoration: 'none', color: "inherit" }}>Edit the profile</Link></MenuItem>}
                                                 {currentUser && currentUser.linkNickname==userInfo.linkNickname && currentUser.role == Role.DEFAULT_USER && <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator request</MenuItem>}
                                                 {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
                                                     the account</MenuItem>}

@@ -24,11 +24,14 @@ const ModeratorRequestModal = ({open, onClose}: ModalProps) => {
     const userID = '2113-7810-IDSL-1238'
     const [moderatorRequest, setModeratorRequest] = useState<ModeratorRequest>({user: userID, text: ''})
 
-    function handleSubmit(e: SubmitEvent) {
-        e.preventDefault()
+    function handleSubmit(e: React.MouseEvent) {
         console.log(moderatorRequest)
-        createModeratorRequest({ text: moderatorRequest.text })
-        setModeratorRequest((prevState) => ({...prevState, text: ''}))
+        createModeratorRequest({ text: moderatorRequest.text }).then(() => {
+            setModeratorRequest((prevState) => ({...prevState, text: ''}))
+            if (onClose) {
+                onClose(e, "backdropClick")
+            }
+        })
     }
 
     return (
@@ -43,7 +46,7 @@ const ModeratorRequestModal = ({open, onClose}: ModalProps) => {
                 <Typography sx={{ textAlign: 'justify' }} variant={"body1"} id="parent-modal-description">
                     Describe a reason of why you want to become a moderator
                 </Typography>
-                <form onSubmit={(e) => handleSubmit}>
+                <form>
                     <FormControl fullWidth>
                         <TextField id={"text"}
                                name={"text"}
@@ -62,7 +65,7 @@ const ModeratorRequestModal = ({open, onClose}: ModalProps) => {
 
                     </FormControl>
                     <FormControl fullWidth sx={{ my: 1 }}>
-                        <Button variant="contained" type={"submit"}>Send a request</Button>
+                        <Button variant="contained" onClick={(e) => handleSubmit(e)}>Send a request</Button>
                     </FormControl>
                 </form>
             </Box>

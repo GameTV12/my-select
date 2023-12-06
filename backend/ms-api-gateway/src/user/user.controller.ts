@@ -79,7 +79,7 @@ export class UserController {
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   acceptRequest(@GetCurrentUserId() adminId: string, @Param('id') id: string) {
-    return this.userService.decideRequest(adminId, id, Decision.ACCEPTED);
+    return this.userService.decideRequest(id, adminId, Decision.ACCEPTED);
   }
 
   @Get('/moderator/:id/deny')
@@ -87,7 +87,7 @@ export class UserController {
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   denyRequest(@GetCurrentUserId() adminId: string, @Param('id') id: string) {
-    return this.userService.decideRequest(adminId, id, Decision.DENIED);
+    return this.userService.decideRequest(id, adminId, Decision.DENIED);
   }
 
   @Post('/reports/create')

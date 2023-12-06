@@ -29,7 +29,7 @@ export interface RegisterType {
     firstVerification?: boolean
 }
 
-const RegisterPage = () => {
+const UpdatePage = () => {
     const registerSchema = z.object({
         firstName: z.string()
             .nonempty('First name is required')
@@ -145,7 +145,7 @@ const RegisterPage = () => {
         <Grid container justifyContent="center" sx={{mt: '20px', mb: '10px'}}>
             <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
                 <Typography variant='h4' component='h1' sx={{mb: '2rem', alignItems: 'center'}}>
-                    Register
+                    Edit the profile
                 </Typography>
                 <FormProvider {...methods}>
                     <Box
@@ -284,4 +284,4 @@ const RegisterPage = () => {
     );
 };
 
-export default RegisterPage
+export default UpdatePage

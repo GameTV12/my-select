@@ -284,7 +284,7 @@ const Post = ({
                                                 sx={{ z: 10 }}
                                                 onKeyDown={handleListKeyDown}
                                             >
-                                                {currentUser && currentUser.id == user.userId && <MenuItem onClick={handleAddMenuClose}>Edit the post</MenuItem>}
+                                                {currentUser && currentUser.id == user.userId && <MenuItem onClick={handleAddMenuClose}><Link to={`/posts/edit/${id}`} style={{ textDecoration: 'none' }}>Edit the post</Link></MenuItem>}
                                                 {currentUser && <MenuItem onClick={handleReportModalClickOpen} sx={{color: 'error.main'}}>Report the post</MenuItem>}
                                                 {currentUser && (currentUser.id == user.userId || currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR) && <MenuItem onClick={handleDeleteModalClickOpen} sx={{color: 'text.secondary'}}>Delete the post</MenuItem>}
                                                 {!fullPost && <MenuItem onClick={handleDeleteModalClickOpen}><Link to={`/posts/${id}`} style={{ textDecoration: 'none' }}>Open full post</Link></MenuItem>}

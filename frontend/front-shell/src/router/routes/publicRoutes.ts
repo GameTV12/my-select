@@ -10,11 +10,15 @@ const SinglePost = React.lazy(() => import('front_post/SinglePost'))
 // @ts-ignore
 const WritePost = React.lazy(() => import('front_post/WritePost'))
 // @ts-ignore
+const EditPost = React.lazy(() => import('front_post/EditPost'))
+// @ts-ignore
 const PostCommentList = React.lazy(() => import('front_comment/PostCommentList'))
 // @ts-ignore
 const VariantCommentList = React.lazy(() => import('front_comment/VariantCommentList'))
 // @ts-ignore
 const RegisterPage = React.lazy(() => import('front_user/RegisterPage'))
+// @ts-ignore
+const UpdatePage = React.lazy(() => import('front_user/UpdatePage'))
 // @ts-ignore
 const UserInfoPage = React.lazy(() => import('front_user/UserInfoPage'))
 // @ts-ignore
@@ -42,13 +46,15 @@ export const routePublic: IRoute[] = [
     { path: '/', element: PostList, auth: false }, // all posts +
     { path: '/users/:id', element: UserPostList, auth: false }, // all posts of user +
     { path: '/signup', element: RegisterPage, auth: false }, // register page +
+    { path: '/users/update', element: UpdatePage, auth: false }, // register page +
     { path: '/users/subscriptions', element: SubscriptionList, auth: true }, // subscriptions of current user (you) +
     { path: '/users/:id/profile', element: UserInfoPage, auth: false }, // profile page +
     { path: '/posts/create', element: WritePost, auth: true }, // write a post +
+    { path: '/posts/edit/:id', element: EditPost, auth: true }, // write a post +
     { path: '/posts/:id', element: SinglePost, auth: false }, // single post +
     { path: '/posts/:id/comments', element: PostCommentList, auth: false }, // comments of posts +
     { path: '/posts/:id/:variantId/comments', element: VariantCommentList, auth: false }, // comments of option +
-    { path: '/admin/utils', element: RequestList, auth: true, roles: [Role.ADMIN] }, // utils for admin +-
-    { path: '/admin/reports', element: ReportList, auth: true, roles: [Role.ADMIN, Role.MODERATOR, Role.DEFAULT_USER] }, // reports +
+    { path: '/admin/requests', element: RequestList, auth: true, roles: [Role.ADMIN] }, // requests for admin +-
+    { path: '/admin/reports', element: ReportList, auth: true, roles: [Role.ADMIN, Role.MODERATOR] }, // reports +
     { path: '*', element: App, auth: false }, // 404 found -
 ]

@@ -147,7 +147,10 @@ export default function Header() {
             {currentUser && <Link to={`/users/subscriptions`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Subscriptions</MenuItem></Link>}
             {currentUser ?
                 <MenuItem onClick={handleLogout} sx={{fontStyle: 'italic'}}>Logout&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem> :
-                <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
+                <>
+                    <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
+                    <MenuItem><Link to={`/signup`} style={{ textDecoration: 'none', color: 'inherit' }}>Register</Link></MenuItem>
+                </>
             }
         </Menu>
     );

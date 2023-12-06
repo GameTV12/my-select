@@ -1,6 +1,8 @@
 import axiosInstance from "./axiosInstance"
+import {CreatePostDto} from "../components/createPost/WritePost";
+import {EditPostDto} from "../components/createPost/EditPost";
 
-export const createPostRequest = (data: any) => {
+export const createPostRequest = (data: CreatePostDto) => {
     return axiosInstance.post(`/posts`, JSON.stringify(data)).then((res) => res.data)
 }
 
@@ -8,7 +10,7 @@ export const deletePostRequest = (id: string) => {
     return axiosInstance.delete(`/posts/${id}`).then((res) => res.data)
 }
 
-export const editPostRequest = (id: string, data: any) => {
+export const updatePostRequest = (id: string, data: EditPostDto) => {
     return axiosInstance.patch(`/posts/${id}`, JSON.stringify(data)).then((res) => res.data)
 }
 
@@ -49,7 +51,7 @@ export const getUserInfoAuth = (linkNickname: string) => {
 }
 
 export const getTrendingPostsAuth = () => {
-    return axiosInstance.get(`/posts/trends`).then((res) => res.data)
+    return axiosInstance.get(`/posts/auth/trends`).then((res) => res.data)
 }
 
 export const searchPostsAuth = (args: string) => {

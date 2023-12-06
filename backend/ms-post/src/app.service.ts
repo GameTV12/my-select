@@ -68,23 +68,8 @@ export class AppService {
       data: {
         title: dto.title,
         text: dto.text,
-        commentsAllowed: dto.commentsAllowed,
-        variantsAllowed: dto.variantsAllowed,
-        video: dto.video,
       },
     });
-    if (dto.photos) {
-      await this.prisma.photo.deleteMany({
-        where: {
-          postId,
-        },
-      });
-      await this.prisma.photo.createMany({
-        data: dto.photos.map((item) => {
-          return { link: item, postId: postId };
-        }),
-      });
-    }
 
     const postInfo: PostInterface = await this.prisma.post.findUnique({
       where: {
@@ -143,11 +128,7 @@ export class AppService {
 
     const userReaction = await this.prisma.reaction.findMany({
       where: {
-        AND: {
-          userId,
-          endTime: null,
-          postId,
-        },
+        AND: [{ userId }, { endTime: null }, { postId }],
       },
     });
     const userVoted = await this.prisma.vote.findUnique({
@@ -181,22 +162,23 @@ export class AppService {
     if (authorOfPost == null) {
       throw new Error();
     }
-    const isModerator: boolean = user.role == 'MODERATOR';
-    const isAdmin: boolean = user.role == 'ADMIN';
-    const newPost = await this.prisma.post.update({
-      where: {
-        id: postId,
-        ...((isAdmin && authorOfPost.user.role != 'ADMIN') ||
-        (isModerator && authorOfPost.user.role == 'DEFAULT_USER')
-          ? {}
-          : { userId: userId }),
-      },
-      data: {
-        visible: false,
-      },
-    });
+    if (
+      authorOfPost.user.userId == userId ||
+      (user.role == 'ADMIN' && authorOfPost.user.role != 'ADMIN') ||
+      (user.role == 'MODERATOR' && authorOfPost.user.role == 'DEFAULT_USER')
+    ) {
+      const newPost = await this.prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          visible: false,
+        },
+      });
 
-    return newPost;
+      return newPost;
+    }
+    return authorOfPost;
   }
 
   async getPost(id: string, viewerId?: string) {
@@ -246,8 +228,7 @@ export class AppService {
           select: {
             Reaction: {
               where: {
-                endTime: null,
-                type: ReactionType.DISLIKE,
+                AND: [{ endTime: null }, { type: ReactionType.DISLIKE }],
               },
             },
           },
@@ -264,11 +245,13 @@ export class AppService {
 
     const userReaction = await this.prisma.reaction.findMany({
       where: {
-        AND: {
-          userId: viewerId,
-          endTime: null,
-          postId: id,
-        },
+        AND: [
+          {
+            userId: viewerId,
+          },
+          { endTime: null },
+          { postId: id },
+        ],
       },
     });
     const userVoted = await this.prisma.vote.findUnique({
@@ -285,6 +268,19 @@ export class AppService {
     };
   }
 
+  async getShortPost(postId: string) {
+    const postInfo = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        title: true,
+        text: true,
+      },
+    });
+    return postInfo;
+  }
+
   async deleteVariant(variantId: string) {
     const variant = await this.prisma.variant.delete({
       where: {
@@ -296,22 +292,34 @@ export class AppService {
   async getNumberPostsOfUser(linkNickname: string) {
     const numberOfPosts: number = await this.prisma.post.count({
       where: {
-        visible: true,
-        user: {
-          linkNickname: linkNickname,
-        },
+        AND: [
+          {
+            visible: true,
+          },
+          {
+            user: {
+              linkNickname: linkNickname,
+            },
+          },
+        ],
       },
     });
     return numberOfPosts;
   }
 
   async getPostListOfUser(linkNickname: string, viewerId?: string) {
+    console.log('Check');
+    console.log(linkNickname);
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
-        user: {
-          linkNickname,
-        },
-        visible: true,
+        AND: [
+          {
+            user: {
+              linkNickname: linkNickname,
+            },
+          },
+          { visible: true },
+        ],
       },
       select: {
         id: true,
@@ -350,10 +358,14 @@ export class AppService {
     });
     const postsWithDislikes = await this.prisma.post.findMany({
       where: {
-        user: {
-          linkNickname,
-        },
-        visible: true,
+        AND: [
+          {
+            user: {
+              linkNickname,
+            },
+          },
+          { visible: true },
+        ],
       },
       select: {
         id: true,
@@ -372,7 +384,7 @@ export class AppService {
 
     if (!viewerId) {
       return postList.map((item) => {
-        const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+        const dislikes = postsWithDislikes.find((x) => x.id == item.id);
         return {
           ...item,
           likes: item._count.Reaction,
@@ -383,7 +395,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     const allVotes = await this.prisma.vote.findMany({
@@ -393,7 +405,7 @@ export class AppService {
     });
 
     return postList.map((item) => {
-      const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+      const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
       const vote: boolean = allVotes.includes({
         postId: item.id,
@@ -420,7 +432,7 @@ export class AppService {
 
     const checkReaction = await this.prisma.reaction.findMany({
       where: {
-        AND: { postId, userId },
+        AND: [{ postId }, { userId }],
       },
       orderBy: {
         startTime: 'desc',
@@ -656,11 +668,7 @@ export class AppService {
 
     const userReaction = await this.prisma.reaction.findMany({
       where: {
-        AND: {
-          userId,
-          endTime: null,
-          postId,
-        },
+        AND: [{ userId }, { endTime: null }, { postId }],
       },
     });
     const userVoted = await this.prisma.vote.findUnique({
@@ -689,8 +697,7 @@ export class AppService {
   async getPostOfFollowings(viewerId: string, followings: string[]) {
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
-        id: { in: followings },
-        visible: true,
+        AND: [{ id: { in: followings } }, { visible: true }],
       },
       select: {
         id: true,
@@ -750,7 +757,7 @@ export class AppService {
 
     if (!viewerId) {
       return postList.map((item) => {
-        const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+        const dislikes = postsWithDislikes.find((x) => x.id == item.id);
         return {
           ...item,
           likes: item._count.Reaction,
@@ -761,7 +768,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     const allVotes = await this.prisma.vote.findMany({
@@ -771,7 +778,7 @@ export class AppService {
     });
 
     return postList.map((item) => {
-      const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+      const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
       const vote: boolean = allVotes.includes({
         postId: item.id,
@@ -789,15 +796,9 @@ export class AppService {
   }
 
   async getTrendingPosts(viewerId?: string) {
-    console.log('Lol azaza');
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
         visible: true,
-      },
-      orderBy: {
-        Reaction: {
-          _count: 'desc',
-        },
       },
       select: {
         id: true,
@@ -830,15 +831,13 @@ export class AppService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     const postsWithDislikes = await this.prisma.post.findMany({
       where: {
         visible: true,
-      },
-      orderBy: {
-        Reaction: {
-          _count: 'desc',
-        },
       },
       select: {
         id: true,
@@ -853,11 +852,14 @@ export class AppService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     if (!viewerId) {
       return postList.map((item) => {
-        const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+        const dislikes = postsWithDislikes.find((x) => x.id == item.id);
         return {
           ...item,
           likes: item._count.Reaction,
@@ -868,7 +870,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     const allVotes = await this.prisma.vote.findMany({
@@ -878,7 +880,7 @@ export class AppService {
     });
 
     return postList.map((item) => {
-      const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+      const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
       const vote: boolean = allVotes.includes({
         postId: item.id,
@@ -1021,11 +1023,14 @@ export class AppService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     if (!viewerId) {
       return postList.map((item) => {
-        const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+        const dislikes = postsWithDislikes.find((x) => x.id == item.id);
         return {
           ...item,
           likes: item._count.Reaction,
@@ -1036,7 +1041,7 @@ export class AppService {
 
     const allReactions = await this.prisma.reaction.findMany({
       where: {
-        AND: { userId: viewerId, endTime: null },
+        AND: [{ userId: viewerId }, { endTime: null }],
       },
     });
     const allVotes = await this.prisma.vote.findMany({
@@ -1046,7 +1051,7 @@ export class AppService {
     });
 
     return postList.map((item) => {
-      const dislikes = postsWithDislikes.find((x) => (x.id = item.id));
+      const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
       const vote: boolean = allVotes.includes({
         postId: item.id,
@@ -1109,6 +1114,7 @@ export class AppService {
       },
       data: {
         role: 'MODERATOR',
+        secondVerification: true,
       },
     });
 

@@ -26,7 +26,7 @@ export const getAllReports = () => {
 }
 
 export const getAllRequests = () => {
-    return newAxios.get(`/user/requests`).then((res) => res.data)
+    return newAxios.get(`/user/moderator`).then((res) => res.data)
 }
 
 export const checkUniqueEmailOrLink = (data: {value: string, type: string}) => {

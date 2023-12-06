@@ -11,7 +11,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import { CreatePostDto } from '../dtos';
+import { CreatePostDto, EditPostDto } from '../dtos';
 import { GetCurrentUserId, Public } from '../auth/common/decorators';
 import { ApiTags } from '@nestjs/swagger';
 import { ReactionType } from '../comment/comment.service';
@@ -30,6 +30,12 @@ export class PostController {
   @Get('followings')
   getPostOfFollowings(@GetCurrentUserId() viewerId: string) {
     return this.postService.getPostOfFollowings(viewerId);
+  }
+
+  @Public()
+  @Get('short/:id')
+  getShortPostInfoById(@Param('id') postId: string) {
+    return this.postService.getShortPostInfoById(postId);
   }
 
   @Public()
@@ -57,7 +63,7 @@ export class PostController {
   @Patch(':id')
   updatePost(
     @Param('id') postId: string,
-    @Body() dto: CreatePostDto,
+    @Body() dto: EditPostDto,
     @GetCurrentUserId() userId: string,
   ) {
     return this.postService.updatePost(userId, postId, dto);
@@ -85,7 +91,7 @@ export class PostController {
 
   @Public()
   @Get(':link/user')
-  getPostListOfUser(@Param('id') link: string) {
+  getPostListOfUser(@Param('link') link: string) {
     return this.postService.getPostListOfUser(link);
   }
 

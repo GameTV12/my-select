@@ -28,3 +28,7 @@ export const getTrendingPosts = () => {
 export const searchPosts = (args: string) => {
     return newAxios.get(`/posts/search/${args}`).then((res) => res.data)
 }
+
+export const getShortPostInfo = (postId: string) => {
+    return newAxios.get(`/posts/short/${postId}`).then((res) => res.data)
+}

@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { CreatePostDto } from '../dtos';
+import { CreatePostDto, EditPostDto } from '../dtos';
 import { ReactionType } from '../comment/comment.service';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class PostService implements OnModuleInit {
     return post;
   }
 
-  async updatePost(userId: string, postId: string, dto: CreatePostDto) {
+  async updatePost(userId: string, postId: string, dto: EditPostDto) {
     const post = await new Promise((resolve) => {
       this.postClient
         .send('update_post', {
@@ -45,6 +45,15 @@ export class PostService implements OnModuleInit {
         .subscribe((data) => {
           resolve(data);
         });
+    });
+    return post;
+  }
+
+  async getShortPostInfoById(postId: string) {
+    const post = await new Promise((resolve) => {
+      this.postClient.send('get_short_post', { postId }).subscribe((data) => {
+        resolve(data);
+      });
     });
     return post;
   }
@@ -69,12 +78,12 @@ export class PostService implements OnModuleInit {
     return true;
   }
 
-  async getPostListOfUser(link, viewerId?) {
+  async getPostListOfUser(link: string, viewerId?: string) {
     const posts = await new Promise((resolve) => {
       this.postClient
         .send('get_post_list_of_user', {
           linkNickname: link,
-          viewerId: viewerId,
+          viewerId: viewerId ? viewerId : {},
         })
         .subscribe((data) => {
           resolve(data);
@@ -141,7 +150,10 @@ export class PostService implements OnModuleInit {
   async getTrendingPosts(viewerId?: string) {
     const posts = await new Promise((resolve) => {
       this.postClient
-        .send('get_trending_posts', viewerId ? { viewerId } : {})
+        .send(
+          'get_trending_posts',
+          viewerId ? { viewerId } : { viewerId: null },
+        )
         .subscribe((data) => {
           resolve(data);
         });
@@ -170,6 +182,7 @@ export class PostService implements OnModuleInit {
     this.postClient.subscribeToResponseOf('update_post');
     this.postClient.subscribeToResponseOf('delete_post');
     this.postClient.subscribeToResponseOf('get_post');
+    this.postClient.subscribeToResponseOf('get_short_post');
     this.postClient.subscribeToResponseOf('delete_variant');
     this.postClient.subscribeToResponseOf('get_number_posts_of_user');
     this.postClient.subscribeToResponseOf('get_post_list_of_user');

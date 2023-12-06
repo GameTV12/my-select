@@ -17,7 +17,7 @@ export class CreatePostDto {
   })
   @IsNotEmpty()
   @IsString()
-  @Length(2, 160)
+  @Length(1, 160)
   title: string;
 
   @ApiProperty({
