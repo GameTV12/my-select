@@ -172,6 +172,26 @@ export class PostService implements OnModuleInit {
     return posts;
   }
 
+  async getReactionInfo(postId: string, reaction: ReactionType) {
+    const posts = await new Promise((resolve) => {
+      this.postClient
+        .send('get_reaction_info', { postId, reaction })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return posts;
+  }
+
+  async getPollInfo(postId: string) {
+    const posts = await new Promise((resolve) => {
+      this.postClient.send('get_poll_info', { postId }).subscribe((data) => {
+        resolve(data);
+      });
+    });
+    return posts;
+  }
+
   async onModuleInit() {
     this.postClient.subscribeToResponseOf('create_post');
     this.postClient.subscribeToResponseOf('post_create_user');
@@ -194,6 +214,7 @@ export class PostService implements OnModuleInit {
     this.postClient.subscribeToResponseOf('get_post_of_followings');
     this.postClient.subscribeToResponseOf('get_trending_posts');
     this.postClient.subscribeToResponseOf('search_posts');
+    this.postClient.subscribeToResponseOf('post_verify_user');
     await this.postClient.connect();
   }
 }

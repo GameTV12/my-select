@@ -288,7 +288,7 @@ const Post = ({
                                                 {currentUser && <MenuItem onClick={handleReportModalClickOpen} sx={{color: 'error.main'}}>Report the post</MenuItem>}
                                                 {currentUser && (currentUser.id == user.userId || currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR) && <MenuItem onClick={handleDeleteModalClickOpen} sx={{color: 'text.secondary'}}>Delete the post</MenuItem>}
                                                 {!fullPost && <MenuItem onClick={handleDeleteModalClickOpen}><Link to={`/posts/${id}`} style={{ textDecoration: 'none' }}>Open full post</Link></MenuItem>}
-                                                {currentUser && currentUser.id != user.userId && Variants != undefined && votedStatus!=true && variantsAllowed && <MenuItem onClick={handleAddNewVariantModalClickOpen} sx={{color: 'text.primary'}}>Add variant</MenuItem>}
+                                                {currentUser && currentUser.id != user.userId && Variants != undefined && Variants.length > 0 && votedStatus!=true && variantsAllowed && <MenuItem onClick={handleAddNewVariantModalClickOpen} sx={{color: 'text.primary'}}>Add variant</MenuItem>}
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>
@@ -364,7 +364,7 @@ const Post = ({
             />
             {deletePost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                             deletePost={deletePost}/>}
-            <ReportPostModal open={reportModal} onClose={handleReportModalClose} user={user.userId}/>
+            <ReportPostModal open={reportModal} onClose={handleReportModalClose} userId={user.userId} postId={id} linkNickname={user.linkNickname}/>
             <AddNewVariantModal postId={id} open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
         </ListItem>
     );

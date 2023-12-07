@@ -13,7 +13,3 @@ export interface UserI {
     iat: number
     exp: number
 }
-
-export const getCurrentAccount = () => {
-    return axiosInstance.get(`auth/me`).then((res) => res.data)
-}

@@ -93,13 +93,13 @@ export class AppController {
   }
 
   @MessagePattern('get_reaction_info')
-  getReactionInfo(@Payload(ValidationPipe) postId: string) {
-    return this.appService.getReactionInfo(postId);
+  getReactionInfo(@Payload(ValidationPipe) dto) {
+    return this.appService.getReactionInfo(dto.postId, dto.reaction);
   }
 
   @MessagePattern('get_poll_info')
-  getPollInfo(@Payload(ValidationPipe) postId: string) {
-    return this.appService.getPollInfo(postId);
+  getPollInfo(@Payload(ValidationPipe) dto) {
+    return this.appService.getPollInfo(dto.postId);
   }
 
   @MessagePattern('get_post_of_followings')
@@ -115,5 +115,10 @@ export class AppController {
   @MessagePattern('search_posts')
   searchPosts(@Payload(ValidationPipe) dto) {
     return this.appService.searchPosts(dto.args, dto.viewerId);
+  }
+
+  @MessagePattern('post_verify_user')
+  postVerifyUser(@Payload(ValidationPipe) dto) {
+    return this.appService.postVerifyUser(dto.id);
   }
 }

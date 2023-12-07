@@ -13,7 +13,7 @@ export class CreateUserDto {
 
   @IsOptional()
   photo =
-    'https://i.pinimg.com/564x/46/72/f8/4672f876389036583190d93a71aa6cb2.jpg';
+    'https://i.pinimg.com/564x/16/3e/39/163e39beaa36d1f9a061b0f0c5669750.jpg';
 
   firstName: string;
 

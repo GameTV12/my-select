@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -21,6 +22,7 @@ export class AuthService implements OnModuleInit {
     @Inject('USER_SERVICE') private readonly authClient: ClientKafka,
     @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
     @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
+    private readonly mailerService: MailerService,
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
@@ -99,6 +101,7 @@ export class AuthService implements OnModuleInit {
       newUser.unlockTime,
     );
     await this.updateRtHash(newUser.userId, tokens.refresh_token);
+    await this.sendFirstLetter(newUser.email, newUser.linkNickname);
     return tokens;
   }
 
@@ -197,6 +200,83 @@ export class AuthService implements OnModuleInit {
     };
   }
 
+  async firstVerify(linkNickname: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        linkNickname,
+      },
+    });
+    if (!user) throw new ForbiddenException('Access Denied');
+    const newUser = await this.prisma.authUser.update({
+      where: {
+        linkNickname,
+      },
+      data: {
+        firstVerification: true,
+      },
+    });
+    const remoteUser: string = await new Promise((resolve) => {
+      this.authClient
+        .send('first_verify_user', {
+          linkNickname,
+        })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return newUser;
+  }
+
+  async secondVerify(id: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        userId: id,
+      },
+    });
+    if (!user) throw new ForbiddenException('Access Denied');
+    const newUser = await this.prisma.authUser.update({
+      where: {
+        userId: id,
+      },
+      data: {
+        firstVerification: true,
+        secondVerification: true,
+      },
+    });
+
+    const remoteUser: string = await new Promise((resolve) => {
+      this.authClient
+        .send('second_verify_user', {
+          id,
+        })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    const postUser: string = await new Promise((resolve) => {
+      this.postClient
+        .send('post_verify_user', {
+          id,
+        })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    const commentUser: string = await new Promise((resolve) => {
+      this.commentClient
+        .send('comment_verify_user', {
+          id,
+        })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+
+    return newUser;
+  }
+
   async checkUniqueEmailOrLink(value: string, type: string) {
     let user;
     if (type == 'email') {
@@ -222,8 +302,16 @@ export class AuthService implements OnModuleInit {
     });
 
     if (!user) throw new ForbiddenException('Access Denied');
-    // if (!user.firstVerification)
-    //   throw new ForbiddenException("Email isn't verified");
+    if (!user.firstVerification)
+      throw new ForbiddenException("Email isn't verified");
+    if (user.role == 'BANNED_USER')
+      throw new ForbiddenException('You were banned');
+    if (
+      !user.secondVerification &&
+      user.createdAt &&
+      user.createdAt.getTime() + 90 * 24 * 3600 * 1000 < Date.now()
+    )
+      throw new ForbiddenException('You were banned for inactivity');
 
     const passwordMatches = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatches) throw new ForbiddenException('Access Denied');
@@ -239,6 +327,21 @@ export class AuthService implements OnModuleInit {
       user.unlockTime,
     );
     await this.updateRtHash(user.userId, tokens.refresh_token);
+    if (
+      !user.secondVerification &&
+      user.emailSent == false &&
+      user.createdAt.getTime() + 15 * 60 * 1000 < Date.now()
+    ) {
+      await this.sendSecondLetter(user.email, user.userId);
+      await this.prisma.authUser.update({
+        where: {
+          userId: user.userId,
+        },
+        data: {
+          emailSent: true,
+        },
+      });
+    }
     return tokens;
   }
   async logout(userId: string) {
@@ -262,7 +365,16 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    if (!user || !user.hashedRt) throw new ForbiddenException('Access Denied');
+    if (!user) throw new ForbiddenException('Access Denied');
+
+    if (
+      user.role == 'BANNED_USER' ||
+      (!user.secondVerification &&
+        user.createdAt &&
+        user.createdAt.getTime() + 90 * 24 * 3600 * 1000 < Date.now())
+    ) {
+      return { access_token: null, refresh_token: null };
+    }
 
     const rtMatches = await bcrypt.compare(rt, user.hashedRt);
     if (!rtMatches) throw new ForbiddenException('Access Denied');
@@ -278,6 +390,23 @@ export class AuthService implements OnModuleInit {
       user.unlockTime,
     );
     await this.updateRtHash(user.userId, tokens.refresh_token);
+
+    if (
+      !user.secondVerification &&
+      user.emailSent == false &&
+      user.createdAt.getTime() + 15 * 60 * 1000 < Date.now()
+    ) {
+      await this.sendSecondLetter(user.email, user.userId);
+      await this.prisma.authUser.update({
+        where: {
+          userId: user.userId,
+        },
+        data: {
+          emailSent: true,
+        },
+      });
+    }
+
     return tokens;
   }
   async updateRtHash(userId: string, rt: string) {
@@ -299,23 +428,13 @@ export class AuthService implements OnModuleInit {
       },
     });
     if (!user) throw new ForbiddenException('Access Denied');
-    let hash;
-    if (dto.password) {
-      hash = await this.hashData(dto.password);
-    } else {
-      hash = user.password;
-    }
     const newUser = await this.prisma.authUser.update({
       where: {
         userId: userId,
       },
       data: {
-        userId: userId,
         nickname: dto.nickname,
         photo: dto.photo,
-        linkNickname: dto.linkNickname,
-        password: hash,
-        email: dto.email,
       },
     });
 
@@ -334,7 +453,6 @@ export class AuthService implements OnModuleInit {
       userId: userId,
       nickname: dto.nickname,
       photo: dto.photo,
-      linkNickname: dto.linkNickname,
     };
 
     await new Promise((resolve) => {
@@ -404,7 +522,7 @@ export class AuthService implements OnModuleInit {
 
     const [at, rt] = await Promise.all([
       this.jwt.signAsync(payload, {
-        expiresIn: 45 * 3600,
+        expiresIn: 45,
         secret: 'at-' + secret,
       }),
       this.jwt.signAsync(payload, {
@@ -414,6 +532,24 @@ export class AuthService implements OnModuleInit {
     ]);
 
     return { access_token: at, refresh_token: rt };
+  }
+
+  async sendFirstLetter(email: string, link: string) {
+    this.mailerService.sendMail({
+      to: email,
+      from: 'myselect-company',
+      subject: 'First verification',
+      html: `<p>For first verification, click this link <a href="http://localhost:3000/verification/first/${link}">http://localhost:3000/verification/first/${link}</a></p>`,
+    });
+  }
+
+  async sendSecondLetter(email: string, id: string) {
+    this.mailerService.sendMail({
+      to: email,
+      from: 'myselect-company',
+      subject: 'Second verification',
+      html: `<p>For the second and final verification, click this link <a href="http://localhost:3000/verification/second/${id}">http://localhost:3000/verification/second/${id}</a></p>`,
+    });
   }
 
   async onModuleInit() {
@@ -427,11 +563,15 @@ export class AuthService implements OnModuleInit {
     this.authClient.subscribeToResponseOf('get_full_followings');
     this.authClient.subscribeToResponseOf('create_moderator_request');
     this.authClient.subscribeToResponseOf('show_moderator_request_id');
+    this.authClient.subscribeToResponseOf('user_cancel_moderator');
     this.authClient.subscribeToResponseOf('show_waiting_requests');
     this.authClient.subscribeToResponseOf('decide_request');
     this.authClient.subscribeToResponseOf('create_report');
     this.authClient.subscribeToResponseOf('show_reports');
     this.authClient.subscribeToResponseOf('ban_user');
+    this.authClient.subscribeToResponseOf('first_verify_user');
+    this.authClient.subscribeToResponseOf('second_verify_user');
+    this.authClient.subscribeToResponseOf('get_followers_statistics');
     await this.authClient.connect();
   }
 }

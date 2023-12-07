@@ -21,6 +21,8 @@ model AuthUser {
   role               UserRole      @default(DEFAULT_USER)
   secondVerification Boolean       @default(false)
   visible            Boolean       @default(true)
+  createdAt          DateTime?     @default(now())
+  emailSent          Boolean       @default(false)
   unlockTime         DateTime?
   hashedRt           String?
   AuthSession        AuthSession[]

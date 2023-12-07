@@ -105,6 +105,24 @@ export class PostController {
     return this.postService.reactOnPost(postId, userId, ReactionType.DISLIKE);
   }
 
+  @Public()
+  @Get('/:id/info/likes')
+  getLikeInfo(@Param('id') postId: string) {
+    return this.postService.getReactionInfo(postId, ReactionType.LIKE);
+  }
+
+  @Public()
+  @Get('/:id/info/dislikes')
+  getDislikeInfo(@Param('id') postId: string) {
+    return this.postService.getReactionInfo(postId, ReactionType.DISLIKE);
+  }
+
+  @Public()
+  @Get('/:id/info/poll')
+  getPollInfo(@Param('id') postId: string) {
+    return this.postService.getPollInfo(postId);
+  }
+
   @Patch('/variant/:id/vote')
   voteForPost(
     @Param('id') variant: string,

@@ -1,13 +1,18 @@
 import React, {useState} from 'react'
 import {Box, Button, DialogProps, Modal, Paper, TextField, Typography} from "@mui/material"
+import {reportPostRequest} from "../../utils/authRequest";
+
+
 
 export type ReportMessage = {
     user: string
     text: string
 }
 
-type ReportCommentModalProps = {
-    user: string
+type ReportPostModalProps = {
+    userId: string
+    postId: string
+    linkNickname: string
 }
 
 const style = {
@@ -23,22 +28,14 @@ const style = {
     px: 4,
     pb: 3,
 }
-const ReportPostModal = ({open, onClose, user}: DialogProps & ReportCommentModalProps) => {
-    const [reportMessage, setReportMessage] = useState<ReportMessage>({user: user, text: ''})
+const ReportPostModal = ({open, onClose, userId, postId, linkNickname}: DialogProps & ReportPostModalProps) => {
+    const [reportMessage, setReportMessage] = useState<string>('')
 
-    function sendReport(e: React.MouseEvent | React.KeyboardEvent) {
+    function sendReport(e: any) {
         e.preventDefault()
-        console.log(reportMessage)
-        setReportMessage((prevState) => ({...prevState, text: ''}))
-        if (onClose) {
-            onClose(e, "backdropClick")
-        }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey && reportMessage.text.split(' ').join('').length > 0) {
-            sendReport(e)
-        }
+        e.stopPropagation()
+        reportPostRequest({ reportedUserId: userId, text: "User - " + linkNickname + "\nPostId - " + postId + "\nText - " + reportMessage})
+        setReportMessage('')
     }
 
     return (
@@ -62,19 +59,15 @@ const ReportPostModal = ({open, onClose, user}: DialogProps & ReportCommentModal
                                multiline
                                rows={6}
                                required
-                               value={reportMessage.text}
-                               onChange={(e) => setReportMessage((prevState) => ({
-                                   ...prevState,
-                                   text: e.target.value
-                               }))}
+                               value={reportMessage}
+                               onChange={(e) => setReportMessage((prevState) => (e.target.value))}
                                fullWidth
-                               onKeyDown={handleKeyDown}
                                sx={{my: 1}}
                                autoFocus
                                inputProps={{maxLength: 300}}
-                               helperText={`${reportMessage.text.length}/300 symbols used`}
+                               helperText={`${reportMessage.length}/300 symbols used`}
                     />
-                    <Button disabled={reportMessage.text.split(' ').join('').length == 0} fullWidth variant="contained" type={"submit"} onClick={(e) => sendReport(e)}>Send a report</Button>
+                    <Button disabled={reportMessage.split(' ').join('').length == 0} fullWidth variant="contained" type={"submit"} onClick={(e) => sendReport(e)}>Send a report</Button>
                 </Paper>
             </Box>
         </Modal>

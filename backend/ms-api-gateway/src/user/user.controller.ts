@@ -90,6 +90,14 @@ export class UserController {
     return this.userService.decideRequest(id, adminId, Decision.DENIED);
   }
 
+  @Get('/moderator/:id/cancel')
+  @Roles(['ADMIN'])
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  cancelModerator(@Param('id') id: string) {
+    return this.userService.cancelModerator(id);
+  }
+
   @Post('/reports/create')
   @HttpCode(HttpStatus.CREATED)
   createReport(
@@ -112,7 +120,7 @@ export class UserController {
   @Roles(['MODERATOR', 'ADMIN'])
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
-  banUser(@Body() dto: BanUserDto, @GetCurrentUserId() adminId: string) {
+  banUser(@Body() dto: BanUserDto) {
     return this.userService.banUser(dto.userId, dto.unlockTime);
   }
 
@@ -130,6 +138,13 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   getUserInfo(@Param('link') linkNickname: string) {
     return this.userService.getUserInfo(linkNickname);
+  }
+
+  @Public()
+  @Get('/info/:link/statistics')
+  @HttpCode(HttpStatus.OK)
+  getFollowersStatistics(@Param('link') linkNickname: string) {
+    return this.userService.getFollowersStatistics(linkNickname);
   }
 
   @Public()

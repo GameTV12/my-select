@@ -109,4 +109,9 @@ export class AppController {
   cancelModerator(@Payload(ValidationPipe) data) {
     return this.appService.cancelModerator(data);
   }
+
+  @MessagePattern('comment_verify_user')
+  postVerifyUser(@Payload(ValidationPipe) dto) {
+    return this.appService.commentVerifyUser(dto.id);
+  }
 }

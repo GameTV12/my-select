@@ -359,7 +359,6 @@ export class AppService {
       },
       data: {
         nickname: data.nickname,
-        linkNickname: data.linkNickname,
         photo: data.photo,
       },
     });
@@ -396,13 +395,25 @@ export class AppService {
   async cancelModerator(data) {
     const user = await this.prisma.shortUser.update({
       where: {
-        id: data.userId,
+        id: data,
       },
       data: {
         role: 'DEFAULT_USER',
       },
     });
 
+    return user;
+  }
+
+  async commentVerifyUser(id: string) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        id,
+      },
+      data: {
+        secondVerification: true,
+      },
+    });
     return user;
   }
 }

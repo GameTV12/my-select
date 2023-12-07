@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Post,
   Req,
@@ -46,51 +47,18 @@ export class AuthController {
     return this.authService.signinLocal(dto);
   }
 
-  // google
   @Public()
-  @Get('google/signin')
-  @UseGuards(AuthGuard('google'))
+  @Get('local/firstVerification/:link')
   @HttpCode(HttpStatus.OK)
-  signInGoogle() {
-    //
+  firstVerificationRequest(@Param('link') link: string) {
+    return this.authService.firstVerify(link);
   }
 
   @Public()
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req);
-  }
-
-  @Public()
-  @Get('google/logout')
-  googleLogout(@Res() res) {
-    res.redirect('https://mail.google.com/mail/u/0/?logout&hl=en');
-    return { hi: 'guys' };
-  }
-
-  // fb
-  @Public()
-  @Get('fb/signin')
-  @UseGuards(AuthGuard('facebook'))
+  @Get('local/secondVerification/:id')
   @HttpCode(HttpStatus.OK)
-  signInFacebook() {
-    //
-  }
-
-  @Public()
-  @Get('fb/callback')
-  @UseGuards(AuthGuard('facebook'))
-  facebookAuthRedirect(@Req() req) {
-    return {
-      data: req.user,
-    };
-  }
-
-  @Public()
-  @Get('fb/logout')
-  facebookLogout(@Req() req, @Res() res) {
-    //
+  secondVerificationRequest(@Param('id') id: string) {
+    return this.authService.secondVerify(id);
   }
 
   @Patch('edit')

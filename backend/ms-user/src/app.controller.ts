@@ -1,12 +1,7 @@
 import { Controller, Get, ValidationPipe } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import {
-  CreateModeratorRequestDto,
-  CreateUserDto,
-  DecideRequestsDto,
-  CreateReportDto,
-} from './dtos';
+import { CreateUserDto, DecideRequestsDto, CreateReportDto } from './dtos';
 
 @Controller()
 export class AppController {
@@ -73,6 +68,11 @@ export class AppController {
     return this.appService.showModeratorRequestsById(userId);
   }
 
+  @MessagePattern('user_cancel_moderator')
+  cancelModerator(@Payload(ValidationPipe) userId: string) {
+    return this.appService.cancelModerator(userId);
+  }
+
   @MessagePattern('show_waiting_requests')
   showWaitingRequests(@Payload(ValidationPipe) dto) {
     return this.appService.showWaitingRequests();
@@ -91,5 +91,20 @@ export class AppController {
   @MessagePattern('show_reports')
   showReports(@Payload(ValidationPipe) dto) {
     return this.appService.showReports();
+  }
+
+  @MessagePattern('first_verify_user')
+  firstVerify(@Payload(ValidationPipe) dto) {
+    return this.appService.firstVerify(dto.linkNickname);
+  }
+
+  @MessagePattern('second_verify_user')
+  secondVerify(@Payload(ValidationPipe) dto) {
+    return this.appService.secondVerify(dto.id);
+  }
+
+  @MessagePattern('get_followers_statistics')
+  getFollowersStatistics(@Payload(ValidationPipe) dto) {
+    return this.appService.getFullFollowers(dto.linkNickname);
   }
 }

@@ -3,6 +3,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { CreateModeratorRequestDto, CreateUserDto, EditUserDto } from './dtos';
 import { CreateReportDto, DecideRequestsDto } from './dtos';
 
+export type Statistics = {
+  time: number;
+  parameter: number;
+  realParameter: number;
+};
+
 @Injectable()
 export class AppService {
   constructor(private prisma: PrismaService) {}
@@ -26,18 +32,6 @@ export class AppService {
   }
 
   async updateUser(userDto: EditUserDto, userId: string) {
-    let birthday: Date;
-    if (userDto.birthday) {
-      birthday = new Date(Number(userDto.birthday));
-    } else {
-      const newUser = await this.prisma.user.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-      birthday = newUser.birthday;
-    }
-
     await this.prisma.user.update({
       where: {
         id: userId,
@@ -45,12 +39,7 @@ export class AppService {
       data: {
         nickname: userDto.nickname,
         linkNickname: userDto.linkNickname,
-        birthday: birthday,
-        email: userDto.email,
-        firstName: userDto.firstName,
-        lastName: userDto.lastName,
         photo: userDto.photo,
-        phone: userDto.phone,
       },
     });
     return true;
@@ -71,6 +60,7 @@ export class AppService {
         linkNickname: linkNickname,
       },
       select: {
+        id: true,
         nickname: true,
         linkNickname: true,
         photo: true,
@@ -181,20 +171,56 @@ export class AppService {
     return followers;
   }
 
-  // // Your followers
-  // async getFullFollowers(userId: string) {
-  //   //later
-  //   const followers = await this.prisma.followers.findMany({
-  //     where: {
-  //       AND: [{ following: userId }],
-  //     },
-  //   });
-  //   return followers;
-  // }
+  async getFullFollowers(linkNickname: string) {
+    const searchedUser = await this.prisma.user.findUnique({
+      where: {
+        linkNickname,
+      },
+    });
+    if (!searchedUser) return null;
+    const answer: Statistics[] = [];
+    const endDate = new Date().setUTCHours(0, 0, 0, 0);
+    const startDate = searchedUser.createdAt.setUTCHours(0, 0, 0, 0);
+    const rawReactions = await this.prisma.followers.findMany({
+      where: { following: searchedUser.id },
+      orderBy: {
+        start: 'asc',
+      },
+      select: {
+        followerUser: {
+          select: {
+            secondVerification: true,
+          },
+        },
+        start: true,
+        end: true,
+      },
+    });
+    const reactions = rawReactions.map((item) => ({
+      startTime: item.start.getTime(),
+      endTime: item.end ? item.end.getTime() : null,
+      verification: item.followerUser.secondVerification,
+    }));
+    for (let i = startDate; i <= endDate; i += 3600 * 24 * 1000) {
+      const currentDayData = reactions.filter(
+        (item) =>
+          item.startTime <= i && (item.endTime == null || item.endTime >= i),
+      );
+      const overallData = currentDayData.length;
+      const verifiedData = currentDayData.filter(
+        (item) => item.verification,
+      ).length;
+      answer.push({
+        time: i,
+        parameter: overallData,
+        realParameter: verifiedData,
+      });
+    }
 
-  // You follow them
+    return answer;
+  }
+
   async getFullFollowings(userId: string) {
-    //later
     const followers = await this.prisma.followers.findMany({
       where: {
         AND: [{ follower: userId }, { end: null }],
@@ -318,6 +344,43 @@ export class AppService {
         visible: false,
         unlockTime: new Date(Number(unlockTime)),
         role: 'BANNED_USER',
+      },
+    });
+    return user;
+  }
+
+  async firstVerify(linkNickname: string) {
+    const user = await this.prisma.user.update({
+      where: {
+        linkNickname,
+      },
+      data: {
+        firstVerification: true,
+      },
+    });
+    return user;
+  }
+
+  async secondVerify(id: string) {
+    const user = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        firstVerification: true,
+        secondVerification: true,
+      },
+    });
+    return user;
+  }
+
+  async cancelModerator(id: string) {
+    const user = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        role: 'DEFAULT_USER',
       },
     });
     return user;

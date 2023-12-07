@@ -32,3 +32,15 @@ export const searchPosts = (args: string) => {
 export const getShortPostInfo = (postId: string) => {
     return newAxios.get(`/posts/short/${postId}`).then((res) => res.data)
 }
+
+export const getPostLikeStatistics = (id: string) => {
+    return newAxios.get(`/posts/${id}/info/likes`).then((res) => res.data)
+}
+
+export const getPostDislikeStatistics = (id: string) => {
+    return newAxios.get(`/posts/${id}/info/dislikes`).then((res) => res.data)
+}
+
+export const getPostPollStatistics = (id: string) => {
+    return newAxios.get(`/posts/${id}/info/poll`).then((res) => res.data)
+}

@@ -18,35 +18,7 @@ export class EditUserDto {
   linkNickname?: string;
 
   @IsOptional()
-  @IsEmail()
-  @MaxLength(100)
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(6, 40)
-  password?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  phone?: string;
-
-  @IsOptional()
   @IsString()
   @MaxLength(400)
   photo?;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  firstName?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  lastName?: string;
-
-  @IsOptional()
-  birthday: number;
 }

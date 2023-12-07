@@ -1,5 +1,6 @@
 import {RegisterType} from "../pages/RegisterPage";
 import axios, {Axios} from "axios";
+import {EditType} from "../pages/UpdatePage";
 
 const newAxios: Axios = axios.create({
     baseURL: "http://localhost:8000",
@@ -35,4 +36,8 @@ export const checkUniqueEmailOrLink = (data: {value: string, type: string}) => {
 
 export const getAllFollowers = (link: string) => {
     return newAxios.get(`/user/${link}/followings`).then((res) => res.data)
+}
+
+export const getFullStatistics = (link: string) => {
+    return newAxios.get(`/user/info/${link}/statistics`).then((res) => res.data)
 }

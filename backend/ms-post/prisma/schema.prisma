@@ -55,10 +55,11 @@ model Variant {
 }
 
 model Vote {
-  user   ShortUser @relation(fields: [userId], references: [userId])
-  userId String
-  post   Post      @relation(fields: [postId], references: [id])
-  postId String
+  user      ShortUser @relation(fields: [userId], references: [userId])
+  userId    String
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime  @default(now())
 
   @@id([userId, postId])
 }

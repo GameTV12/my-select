@@ -7,6 +7,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { PostDto } from './dtos/post.dto';
 import { PostInterface } from './types/PostInterface';
 
+export type Statistics = {
+  time: number;
+  parameter: number;
+  realParameter: number;
+};
+
 export enum ReactionType {
   LIKE = 'LIKE',
   DISLIKE = 'DISLIKE',
@@ -308,8 +314,6 @@ export class AppService {
   }
 
   async getPostListOfUser(linkNickname: string, viewerId?: string) {
-    console.log('Check');
-    console.log(linkNickname);
     const postList: PostInterface[] = await this.prisma.post.findMany({
       where: {
         AND: [
@@ -402,22 +406,23 @@ export class AppService {
       where: {
         AND: { userId: viewerId },
       },
+      select: {
+        postId: true,
+      },
     });
 
     return postList.map((item) => {
       const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
-      const vote: boolean = allVotes.includes({
-        postId: item.id,
-        userId: viewerId,
-      });
+      const vote: boolean =
+        allVotes.filter((voteItem) => voteItem.postId == item.id).length > 0;
 
       return {
         ...item,
         status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
-        voted: vote,
+        isVoted: vote,
       };
     });
   }
@@ -556,7 +561,7 @@ export class AppService {
         },
       },
     });
-    if (existingVote) throw new ForbiddenException('You have already voted');
+    if (existingVote) return;
     await this.prisma.vote.create({
       data: {
         postId: existingVariant.postId,
@@ -681,16 +686,106 @@ export class AppService {
       likes: postInfo._count.Reaction,
       dislikes: dislikes._count.Reaction,
       status: userReaction.length > 0 ? userReaction[0].type : null,
-      isVoted: true,
+      isVoted: userVoted != undefined,
     };
   }
 
-  async getReactionInfo(postId: string) {
-    // likes and dislikes
+  async getReactionInfo(postId: string, reaction: ReactionType) {
+    const searchedPost = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+    if (!searchedPost) return null;
+    const answer: Statistics[] = [];
+    const endDate = new Date().setUTCHours(0, 0, 0, 0);
+    const startDate = searchedPost.createdAt.setUTCHours(0, 0, 0, 0);
+    const rawReactions = await this.prisma.reaction.findMany({
+      where: { postId, type: reaction },
+      orderBy: {
+        startTime: 'asc',
+      },
+      select: {
+        user: {
+          select: {
+            secondVerification: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+      },
+    });
+    const reactions = rawReactions.map((item) => ({
+      startTime: item.startTime.getTime(),
+      endTime: item.endTime ? item.endTime.getTime() : null,
+      verification: item.user.secondVerification,
+    }));
+    for (let i = startDate; i <= endDate; i += 3600 * 24 * 1000) {
+      const currentDayData = reactions.filter(
+        (item) =>
+          item.startTime <= i && (item.endTime == null || item.endTime >= i),
+      );
+      const overallData = currentDayData.length;
+      const verifiedData = currentDayData.filter(
+        (item) => item.verification,
+      ).length;
+      answer.push({
+        time: i,
+        parameter: overallData,
+        realParameter: verifiedData,
+      });
+    }
+
+    return answer;
   }
 
   async getPollInfo(postId: string) {
-    // all votes
+    const searchedPost = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        createdAt: true,
+        Variants: true,
+      },
+    });
+    if (!searchedPost) return null;
+    if (searchedPost.Variants.length == 0) return [];
+    const answer: Statistics[] = [];
+    const endDate = new Date().setUTCHours(0, 0, 0, 0);
+    const startDate = searchedPost.createdAt.setUTCHours(0, 0, 0, 0);
+    const rawReactions = await this.prisma.vote.findMany({
+      where: { postId },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      select: {
+        user: {
+          select: {
+            secondVerification: true,
+          },
+        },
+        createdAt: true,
+      },
+    });
+    const reactions = rawReactions.map((item) => ({
+      startTime: item.createdAt.getTime(),
+      verification: item.user.secondVerification,
+    }));
+    for (let i = startDate; i <= endDate; i += 3600 * 24 * 1000) {
+      const currentDayData = reactions.filter((item) => item.startTime <= i);
+      const overallData = currentDayData.length;
+      const verifiedData = currentDayData.filter(
+        (item) => item.verification,
+      ).length;
+      answer.push({
+        time: i,
+        parameter: overallData,
+        realParameter: verifiedData,
+      });
+    }
+
+    return answer;
   }
 
   // I must sort this by date up->to
@@ -775,22 +870,23 @@ export class AppService {
       where: {
         AND: { userId: viewerId },
       },
+      select: {
+        postId: true,
+      },
     });
 
     return postList.map((item) => {
       const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
-      const vote: boolean = allVotes.includes({
-        postId: item.id,
-        userId: viewerId,
-      });
+      const vote: boolean =
+        allVotes.filter((voteItem) => voteItem.postId == item.id).length > 0;
 
       return {
         ...item,
         status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
-        voted: vote,
+        isVoted: vote,
       };
     });
   }
@@ -877,22 +973,23 @@ export class AppService {
       where: {
         AND: { userId: viewerId },
       },
+      select: {
+        postId: true,
+      },
     });
 
     return postList.map((item) => {
       const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
-      const vote: boolean = allVotes.includes({
-        postId: item.id,
-        userId: viewerId,
-      });
+      const vote: boolean =
+        allVotes.filter((voteItem) => voteItem.postId == item.id).length > 0;
 
       return {
         ...item,
         status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
-        voted: vote,
+        isVoted: vote,
       };
     });
   }
@@ -1048,22 +1145,23 @@ export class AppService {
       where: {
         AND: { userId: viewerId },
       },
+      select: {
+        postId: true,
+      },
     });
 
     return postList.map((item) => {
       const dislikes = postsWithDislikes.find((x) => x.id == item.id);
       const reaction = allReactions.find((x) => x.postId == item.id);
-      const vote: boolean = allVotes.includes({
-        postId: item.id,
-        userId: viewerId,
-      });
+      const vote: boolean =
+        allVotes.filter((voteItem) => voteItem.postId == item.id).length > 0;
 
       return {
         ...item,
         status: reaction ? reaction.type : 'NONE',
         likes: item._count.Reaction,
         dislikes: dislikes._count.Reaction,
-        voted: vote,
+        isVoted: vote,
       };
     });
   }
@@ -1087,7 +1185,6 @@ export class AppService {
       },
       data: {
         nickname: data.nickname,
-        linkNickname: data.linkNickname,
         photo: data.photo,
       },
     });
@@ -1124,13 +1221,25 @@ export class AppService {
   async cancelModerator(data) {
     const user = await this.prisma.shortUser.update({
       where: {
-        userId: data.userId,
+        userId: data,
       },
       data: {
         role: 'DEFAULT_USER',
       },
     });
 
+    return user;
+  }
+
+  async postVerifyUser(userId: string) {
+    const user = await this.prisma.shortUser.update({
+      where: {
+        userId,
+      },
+      data: {
+        secondVerification: true,
+      },
+    });
     return user;
   }
 }

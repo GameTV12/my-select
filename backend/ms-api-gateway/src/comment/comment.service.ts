@@ -107,6 +107,7 @@ export class CommentService implements OnModuleInit {
     this.commentClient.subscribeToResponseOf('comment_ban_user');
     this.commentClient.subscribeToResponseOf('comment_make_moderator');
     this.commentClient.subscribeToResponseOf('comment_cancel_moderator');
+    this.commentClient.subscribeToResponseOf('comment_verify_user');
     await this.commentClient.connect();
   }
 }

@@ -260,7 +260,7 @@ const RegisterPage = () => {
                                 {...register('terms')}
                                 label={
                                     <Typography color={errors['terms'] ? 'error' : 'inherit'}>
-                                        You must confirm email after registration and in 14 days
+                                        You must confirm email after registration and in 14 days after creating an account (For testing - 15 minutes)
                                     </Typography>
                                 }
                             />

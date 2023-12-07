@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AtStrategy, RtStrategy } from './strategies';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -56,6 +57,15 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     ]),
     JwtModule.register({
       global: true,
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        auth: {
+          user: 'gametvcity.com@gmail.com',
+          pass: 'nehn gluy pagj gbdg',
+        },
+      },
     }),
   ],
   controllers: [AuthController],

@@ -1,5 +1,10 @@
 import React, {useState} from 'react'
 import {Box, Button, FormControl, Modal, ModalProps, TextField, Typography} from "@mui/material";
+import {banUserRequest, createModeratorRequest} from "../utils/authRequests";
+
+interface deleteModalI {
+    userId: string
+}
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -14,13 +19,17 @@ const style = {
     px: 4,
     pb: 3,
 }
-const DeleteModal = ({open, onClose}: ModalProps) => {
+const DeleteModal = ({open, onClose, userId}: ModalProps & deleteModalI) => {
     const [confirmation, setConfirmation] = useState<string>("")
 
-    function handleSubmit(e: SubmitEvent) {
-        e.preventDefault()
-        console.log(confirmation)
-        setConfirmation('')
+    function handleSubmit(e: React.MouseEvent) {
+        console.log('UserId - ' + userId)
+        banUserRequest(userId).then(() => {
+            setConfirmation('')
+            if (onClose) {
+                onClose(e, "backdropClick")
+            }
+        })
     }
 
     return (
@@ -35,7 +44,7 @@ const DeleteModal = ({open, onClose}: ModalProps) => {
                 <Typography sx={{ textAlign: 'justify' }} variant={"body1"} id="parent-modal-description">
                     Are you sure? You cannot recover the account after deleting.
                 </Typography>
-                <form onSubmit={(e) => handleSubmit}>
+                <form>
                     <FormControl fullWidth>
                         <TextField id={"text"}
                                    name={"text"}
@@ -52,7 +61,7 @@ const DeleteModal = ({open, onClose}: ModalProps) => {
 
                     </FormControl>
                     <FormControl fullWidth sx={{ my: 1 }}>
-                        <Button variant="contained" type={"submit"} disabled={confirmation != 'Delete'}>Delete</Button>
+                        <Button variant="contained" onClick={handleSubmit} disabled={confirmation != 'Delete'}>Delete</Button>
                     </FormControl>
                 </form>
             </Box>

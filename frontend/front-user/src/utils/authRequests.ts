@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosInstance";
+import {EditType} from "../pages/UpdatePage";
 
 interface RequestModerator {
     text: string
@@ -20,6 +21,17 @@ export const acceptRequest = (id: string) => {
     return axiosInstance.get(`/user/moderator/${id}/accept`).then((res) => res.data)
 }
 
+export const editRequest = (data: EditType) => {
+    return axiosInstance.patch(`/auth/edit`, JSON.stringify(data)).then((res) => res.data)
+}
 export const denyRequest = (id: string) => {
     return axiosInstance.get(`/user/moderator/${id}/deny`).then((res) => res.data)
+}
+
+export const cancelModerator = (id: string) => {
+    return axiosInstance.get(`/user/moderator/${id}/cancel`).then((res) => res.data)
+}
+
+export const banUserRequest = (userId: string) => {
+    return axiosInstance.post(`/user/ban`, JSON.stringify({userId: userId, unlockTime: new Date('2038-01-01').getTime()})).then((res) => res.data)
 }

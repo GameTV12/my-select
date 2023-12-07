@@ -1,6 +1,8 @@
 import * as React from "react"
 import { FC } from 'react'
 import { App } from '../../App'
+import FirstVerify from "../../views/login/firstVerify";
+import SecondVerify from "../../views/login/secondVerify";
 // @ts-ignore
 const PostList = React.lazy(() => import('front_post/PostList'))
 // @ts-ignore
@@ -56,5 +58,7 @@ export const routePublic: IRoute[] = [
     { path: '/posts/:id/:variantId/comments', element: VariantCommentList, auth: false }, // comments of option +
     { path: '/admin/requests', element: RequestList, auth: true, roles: [Role.ADMIN] }, // requests for admin +-
     { path: '/admin/reports', element: ReportList, auth: true, roles: [Role.ADMIN, Role.MODERATOR] }, // reports +
+    { path: '/verification/first/:link', element: FirstVerify, auth: false },
+    { path: '/verification/second/:id', element: SecondVerify, auth: false },
     { path: '*', element: App, auth: false }, // 404 found -
 ]

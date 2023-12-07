@@ -57,3 +57,5 @@ export const getTrendingPostsAuth = () => {
 export const searchPostsAuth = (args: string) => {
     return axiosInstance.get(`/posts/auth/search/${args}`).then((res) => res.data)
 }
+
+

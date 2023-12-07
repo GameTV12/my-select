@@ -113,6 +113,23 @@ export class UserService {
     return followings;
   }
 
+  async getFollowersStatistics(linkNickname: string) {
+    const user = await this.prisma.authUser.findUnique({
+      where: {
+        linkNickname: linkNickname,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    const statistics = await new Promise((resolve) => {
+      this.userClient
+        .send('get_followers_statistics', { linkNickname })
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return statistics;
+  }
+
   async createModeratorRequest(userId: string, text: string) {
     const newRequest = await new Promise((resolve) => {
       this.userClient
@@ -237,15 +254,48 @@ export class UserService {
         });
     });
     await new Promise((resolve) => {
-      this.userClient.send('post_ban_user', userId).subscribe((data) => {
+      this.postClient.send('post_ban_user', userId).subscribe((data) => {
         resolve(data);
       });
     });
     await new Promise((resolve) => {
-      this.userClient.send('comment_ban_user', userId).subscribe((data) => {
+      this.commentClient.send('comment_ban_user', userId).subscribe((data) => {
         resolve(data);
       });
     });
     return bannedUser;
+  }
+
+  async cancelModerator(userId: string) {
+    const apiUser = await this.prisma.authUser.update({
+      where: {
+        userId,
+      },
+      data: {
+        role: 'DEFAULT_USER',
+      },
+    });
+    await new Promise((resolve) => {
+      this.userClient
+        .send('user_cancel_moderator', userId)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    await new Promise((resolve) => {
+      this.postClient
+        .send('post_cancel_moderator', userId)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    await new Promise((resolve) => {
+      this.commentClient
+        .send('comment_cancel_moderator', userId)
+        .subscribe((data) => {
+          resolve(data);
+        });
+    });
+    return apiUser;
   }
 }
