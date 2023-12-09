@@ -1,13 +1,15 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { CreatePostDto, EditPostDto } from '../dtos';
+
 import { ReactionType } from '../comment/comment.service';
+import { CreatePostDto, EditPostDto } from '../dtos';
+import { KafkaClient } from '../kafka';
 
 @Injectable()
 export class PostService implements OnModuleInit {
   constructor(
-    @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
-    @Inject('USER_SERVICE') private readonly userClient: ClientKafka,
+    @Inject(KafkaClient.PostService) private readonly postClient: ClientKafka,
+    @Inject(KafkaClient.UserService) private readonly userClient: ClientKafka,
   ) {}
 
   async createPost(userId: string, dto: CreatePostDto) {
@@ -20,6 +22,7 @@ export class PostService implements OnModuleInit {
         resolve(data);
       });
     });
+
     return post;
   }
 

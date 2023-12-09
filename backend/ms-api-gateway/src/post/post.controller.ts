@@ -10,10 +10,11 @@ import {
   Post,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
 import { PostService } from './post.service';
 import { CreatePostDto, EditPostDto } from '../dtos';
 import { GetCurrentUserId, Public } from '../auth/common/decorators';
-import { ApiTags } from '@nestjs/swagger';
 import { ReactionType } from '../comment/comment.service';
 
 @ApiTags('Posts')

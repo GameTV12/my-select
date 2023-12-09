@@ -1,27 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { CommentService } from './comment.service';
+import { KafkaModule } from '../kafka';
 import { CommentController } from './comment.controller';
-import process from 'process';
+import { CommentService } from './comment.service';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'COMMENT_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'comment',
-            brokers: [`${process.env['KAFKA_URL']}:9092`],
-          },
-          consumer: {
-            groupId: 'comment-consumer',
-          },
-        },
-      },
-    ]),
-  ],
+  imports: [KafkaModule],
   providers: [CommentService],
   controllers: [CommentController],
 })

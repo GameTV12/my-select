@@ -1,61 +1,17 @@
+import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { JwtModule } from '@nestjs/jwt';
 import { AtStrategy, RtStrategy } from './strategies';
-import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
-import { MailerModule } from '@nestjs-modules/mailer';
-import * as process from 'process';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { KafkaModule } from '../kafka';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'USER_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'user',
-            brokers: [`kafka:9092`],
-          },
-          consumer: {
-            groupId: 'user-consumer',
-          },
-        },
-      },
-    ]),
-    ClientsModule.register([
-      {
-        name: 'COMMENT_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'comment',
-            brokers: [`kafka:9092`],
-          },
-          consumer: {
-            groupId: 'comment-consumer',
-          },
-        },
-      },
-    ]),
-    ClientsModule.register([
-      {
-        name: 'POST_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'post',
-            brokers: [`kafka:9092`],
-          },
-          consumer: {
-            groupId: 'post-consumer',
-          },
-        },
-      },
-    ]),
+    KafkaModule,
     JwtModule.register({
       global: true,
     }),

@@ -1,8 +1,9 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { PrismaService } from '../prisma/prisma.service';
-import { EditCommentDto } from '../dtos/edit-comment.dto';
+
 import { CreateCommentDto } from '../dtos/create-comment.dto';
+import { EditCommentDto } from '../dtos/edit-comment.dto';
+import { KafkaClient } from '../kafka';
 
 export enum ReactionType {
   LIKE = 'LIKE',
@@ -17,8 +18,8 @@ export enum Type {
 @Injectable()
 export class CommentService implements OnModuleInit {
   constructor(
-    @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
-    private prisma: PrismaService,
+    @Inject(KafkaClient.CommentService)
+    private readonly commentClient: ClientKafka,
   ) {}
 
   async createComment(userId: string, type: Type, dto: CreateCommentDto) {

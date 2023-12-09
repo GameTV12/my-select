@@ -1,7 +1,8 @@
-import { Controller, Get, ValidationPipe } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, ValidationPipe } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CreateUserDto, DecideRequestsDto, CreateReportDto } from './dtos';
+
+import { AppService } from './app.service';
+import { CreateReportDto, CreateUserDto, DecideRequestsDto } from './dtos';
 
 @Controller()
 export class AppController {

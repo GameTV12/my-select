@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadGatewayException,
   ForbiddenException,
@@ -6,26 +7,28 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { Tokens } from './types';
-import { EditUserDto, LogInDto, CreateUserDto } from '../dtos';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
-import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { ClientKafka } from '@nestjs/microservices';
+import bcrypt from 'bcrypt';
+import { PrismaService } from 'nestjs-prisma';
+
+import { KafkaClient } from 'src/kafka';
+import { CreateUserDto, EditUserDto, LogInDto } from '../dtos';
+import { Tokens } from './types';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
   constructor(
-    @Inject('USER_SERVICE') private readonly authClient: ClientKafka,
-    @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
-    @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
+    @Inject(KafkaClient.UserService) private readonly userService: ClientKafka,
+    @Inject(KafkaClient.CommentService)
+    private readonly commentClient: ClientKafka,
+    @Inject(KafkaClient.PostService) private readonly postClient: ClientKafka,
     private readonly mailerService: MailerService,
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   hashData(data: string) {
@@ -46,7 +49,7 @@ export class AuthService implements OnModuleInit {
     }
 
     const realUserId: string = await new Promise((resolve) => {
-      this.authClient
+      this.userService
         .send('create_user', {
           dto: dto,
           pass: hash,
@@ -142,7 +145,7 @@ export class AuthService implements OnModuleInit {
       const hash = await this.hashData(dto.password);
 
       const realUserId: string = await new Promise((resolve) => {
-        this.authClient
+        this.userService
           .send('create_user', {
             dto: dto,
             pass: hash,
@@ -215,8 +218,9 @@ export class AuthService implements OnModuleInit {
         firstVerification: true,
       },
     });
-    const remoteUser: string = await new Promise((resolve) => {
-      this.authClient
+
+    await new Promise((resolve) => {
+      this.userService
         .send('first_verify_user', {
           linkNickname,
         })
@@ -244,8 +248,8 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    const remoteUser: string = await new Promise((resolve) => {
-      this.authClient
+    await new Promise((resolve) => {
+      this.userService
         .send('second_verify_user', {
           id,
         })
@@ -254,7 +258,7 @@ export class AuthService implements OnModuleInit {
         });
     });
 
-    const postUser: string = await new Promise((resolve) => {
+    await new Promise((resolve) => {
       this.postClient
         .send('post_verify_user', {
           id,
@@ -264,7 +268,7 @@ export class AuthService implements OnModuleInit {
         });
     });
 
-    const commentUser: string = await new Promise((resolve) => {
+    await new Promise((resolve) => {
       this.commentClient
         .send('comment_verify_user', {
           id,
@@ -439,7 +443,7 @@ export class AuthService implements OnModuleInit {
     });
 
     const answerUserService: boolean = await new Promise((resolve) => {
-      this.authClient
+      this.userService
         .send('update_user', {
           dto: dto,
           userId: userId,
@@ -491,7 +495,7 @@ export class AuthService implements OnModuleInit {
 
   async getCurrentUser(userId: string) {
     const answerUser = await new Promise((resolve) => {
-      this.authClient.send('get_current_user', userId).subscribe((data) => {
+      this.userService.send('get_current_user', userId).subscribe((data) => {
         resolve(data);
       });
     });
@@ -561,25 +565,25 @@ export class AuthService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.authClient.subscribeToResponseOf('create_user');
-    this.authClient.subscribeToResponseOf('update_user');
-    this.authClient.subscribeToResponseOf('get_current_user');
-    this.authClient.subscribeToResponseOf('get_nickname');
-    this.authClient.subscribeToResponseOf('get_user_info');
-    this.authClient.subscribeToResponseOf('follow_to_user');
-    this.authClient.subscribeToResponseOf('get_current_followers');
-    this.authClient.subscribeToResponseOf('get_full_followings');
-    this.authClient.subscribeToResponseOf('create_moderator_request');
-    this.authClient.subscribeToResponseOf('show_moderator_request_id');
-    this.authClient.subscribeToResponseOf('user_cancel_moderator');
-    this.authClient.subscribeToResponseOf('show_waiting_requests');
-    this.authClient.subscribeToResponseOf('decide_request');
-    this.authClient.subscribeToResponseOf('create_report');
-    this.authClient.subscribeToResponseOf('show_reports');
-    this.authClient.subscribeToResponseOf('ban_user');
-    this.authClient.subscribeToResponseOf('first_verify_user');
-    this.authClient.subscribeToResponseOf('second_verify_user');
-    this.authClient.subscribeToResponseOf('get_followers_statistics');
-    await this.authClient.connect();
+    this.userService.subscribeToResponseOf('create_user');
+    this.userService.subscribeToResponseOf('update_user');
+    this.userService.subscribeToResponseOf('get_current_user');
+    this.userService.subscribeToResponseOf('get_nickname');
+    this.userService.subscribeToResponseOf('get_user_info');
+    this.userService.subscribeToResponseOf('follow_to_user');
+    this.userService.subscribeToResponseOf('get_current_followers');
+    this.userService.subscribeToResponseOf('get_full_followings');
+    this.userService.subscribeToResponseOf('create_moderator_request');
+    this.userService.subscribeToResponseOf('show_moderator_request_id');
+    this.userService.subscribeToResponseOf('user_cancel_moderator');
+    this.userService.subscribeToResponseOf('show_waiting_requests');
+    this.userService.subscribeToResponseOf('decide_request');
+    this.userService.subscribeToResponseOf('create_report');
+    this.userService.subscribeToResponseOf('show_reports');
+    this.userService.subscribeToResponseOf('ban_user');
+    this.userService.subscribeToResponseOf('first_verify_user');
+    this.userService.subscribeToResponseOf('second_verify_user');
+    this.userService.subscribeToResponseOf('get_followers_statistics');
+    await this.userService.connect();
   }
 }

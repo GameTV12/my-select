@@ -8,6 +8,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+
 import { UserService } from './user.service';
 import { GetCurrentUserId, Public, Roles } from '../auth/common/decorators';
 import {
@@ -17,7 +19,6 @@ import {
   Decision,
 } from '../dtos';
 import { RolesGuard } from '../auth/common/guards/roles.guard';
-import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')
@@ -128,7 +129,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   getUserInfoAuth(
     @Param('link') linkNickname: string,
-    @GetCurrentUserId() viewerId,
+    @GetCurrentUserId() viewerId: string | undefined,
   ) {
     return this.userService.getUserInfo(linkNickname, viewerId);
   }

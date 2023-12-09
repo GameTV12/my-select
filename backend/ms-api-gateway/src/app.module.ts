@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { PrismaModule } from 'nestjs-prisma';
+
 import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './prisma/prisma.module';
-import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './auth/common/guards';
 import { UserModule } from './user/user.module';
 import { CommentModule } from './comment/comment.module';
@@ -13,11 +14,28 @@ import { CommentModule } from './comment/comment.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    PostModule,
+    PrismaModule.forRootAsync({
+      isGlobal: true,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const url = configService.getOrThrow('DATABASE_URL');
+
+        return {
+          prismaOptions: {
+            datasources: {
+              db: {
+                url,
+              },
+            },
+          },
+          explicitConnect: true,
+        };
+      },
+    }),
     AuthModule,
-    PrismaModule,
-    UserModule,
     CommentModule,
+    PostModule,
+    UserModule,
   ],
   controllers: [],
   providers: [

@@ -1,8 +1,8 @@
 import { Controller, ValidationPipe } from '@nestjs/common';
-import { AppService, Type } from './app.service';
-import { CreateCommentDto, EditCommentDto } from './dtos';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { ReactionType } from './app.service';
+
+import { AppService, ReactionType, Type } from './app.service';
+import { CreateCommentDto, EditCommentDto } from './dtos';
 
 @Controller()
 export class AppController {

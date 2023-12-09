@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
+
 import { CreateCommentDto, EditCommentDto } from './dtos';
 import { CommentInterface } from './types/CommentInterface';
 
@@ -12,6 +13,7 @@ export enum ReactionType {
   LIKE = 'LIKE',
   DISLIKE = 'DISLIKE',
 }
+
 @Injectable()
 export class AppService {
   constructor(private prisma: PrismaService) {}

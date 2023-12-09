@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
-import { CreateModeratorRequestDto, CreateUserDto, EditUserDto } from './dtos';
-import { CreateReportDto, DecideRequestsDto } from './dtos';
+import { PrismaService } from 'nestjs-prisma';
+
+import {
+  CreateModeratorRequestDto,
+  CreateReportDto,
+  CreateUserDto,
+  DecideRequestsDto,
+  EditUserDto,
+} from './dtos';
 
 export type Statistics = {
   time: number;
@@ -11,7 +17,7 @@ export type Statistics = {
 
 @Injectable()
 export class AppService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async createUser(userDto: CreateUserDto) {
     const newUser = await this.prisma.user.create({

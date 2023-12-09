@@ -1,13 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppService } from '../src/app.service';
-import { PrismaService } from '../src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Status, UserRole } from '@prisma/client';
+
 import {
   CreateModeratorRequestDto,
   CreateUserDto,
   EditUserDto,
 } from '../src/dtos';
+
+import { AppService } from '../src/app.service';
+import { PrismaService } from 'nestjs-prisma';
 
 class MockConfigService {
   get(key: string) {

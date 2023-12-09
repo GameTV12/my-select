@@ -7,18 +7,16 @@ import {
   Param,
   Patch,
   Post,
-  Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Tokens } from './types';
-import { LogInDto, CreateUserDto, EditUserDto } from '../dtos';
-import { RtGuard } from './common/guards';
-import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+
+import { CreateUserDto, EditUserDto, LogInDto } from '../dtos';
 import { CheckDto } from '../dtos/check.dto';
+import { AuthService } from './auth.service';
+import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
+import { RtGuard } from './common/guards';
+import { Tokens } from './types';
 
 @ApiTags('Auth')
 @Controller('auth')

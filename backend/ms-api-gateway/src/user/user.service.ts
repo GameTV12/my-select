@@ -5,21 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { PrismaService } from '../prisma/prisma.service';
-import {
-  CreateModeratorRequestDto,
-  CreateReportDto,
-  DecideRequestsDto,
-  Decision,
-} from '../dtos';
+import { PrismaService } from 'nestjs-prisma';
+import { firstValueFrom } from 'rxjs';
+
+import { KafkaClient } from '../kafka';
+import { CreateReportDto, DecideRequestsDto, Decision } from '../dtos';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('USER_SERVICE') private readonly userClient: ClientKafka,
-    @Inject('COMMENT_SERVICE') private readonly commentClient: ClientKafka,
-    @Inject('POST_SERVICE') private readonly postClient: ClientKafka,
-    private prisma: PrismaService,
+    @Inject(KafkaClient.UserService) private readonly userClient: ClientKafka,
+    @Inject(KafkaClient.PostService) private readonly postClient: ClientKafka,
+    @Inject(KafkaClient.CommentService)
+    private readonly commentClient: ClientKafka,
+    private readonly prisma: PrismaService,
   ) {}
 
   async getUserByNickname(linkNickname: string) {
@@ -236,7 +235,7 @@ export class UserService {
   }
 
   async banUser(userId: string, unlockTime: number) {
-    const apiUser = await this.prisma.authUser.update({
+    await this.prisma.authUser.update({
       where: {
         userId,
       },
@@ -246,23 +245,18 @@ export class UserService {
         role: 'BANNED_USER',
       },
     });
-    const bannedUser = await new Promise((resolve) => {
-      this.userClient
-        .send('ban_user', { userId: userId, unlockTime: unlockTime })
-        .subscribe((data) => {
-          resolve(data);
-        });
-    });
-    await new Promise((resolve) => {
-      this.postClient.send('post_ban_user', userId).subscribe((data) => {
-        resolve(data);
-      });
-    });
-    await new Promise((resolve) => {
-      this.commentClient.send('comment_ban_user', userId).subscribe((data) => {
-        resolve(data);
-      });
-    });
+
+    const [bannedUser] = await Promise.all([
+      firstValueFrom(
+        this.userClient.send('ban_user', {
+          userId: userId,
+          unlockTime: unlockTime,
+        }),
+      ),
+      firstValueFrom(this.postClient.send('post_ban_user', userId)),
+      firstValueFrom(this.commentClient.send('comment_ban_user', userId)),
+    ]);
+
     return bannedUser;
   }
 

@@ -3,9 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
+
 import { PostDto } from './dtos/post.dto';
 import { PostInterface } from './types/PostInterface';
+import { PrismaService } from 'nestjs-prisma';
 
 export type Statistics = {
   time: number;

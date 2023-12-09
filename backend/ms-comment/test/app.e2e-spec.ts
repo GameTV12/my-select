@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppService, ReactionType, Type } from '../src/app.service';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { CreateCommentDto, EditCommentDto } from '../src/dtos';
 import { ConfigService } from '@nestjs/config';
 import { CommentType, UserRole } from '@prisma/client';
+import { PrismaService } from 'nestjs-prisma';
+
+import { AppService, ReactionType, Type } from '../src/app.service';
+import { CreateCommentDto, EditCommentDto } from '../src/dtos';
 
 class MockConfigService {
   get(key: string) {
