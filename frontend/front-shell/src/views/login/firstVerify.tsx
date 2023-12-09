@@ -7,7 +7,9 @@ const FirstVerify = () => {
     const { link } = useParams()
     useEffect(() => {
         if (link) {
-            firstVerificationRequest(link)
+            firstVerificationRequest(link).then(() => {
+                return navigate(`/`)
+            })
         }
     }, [link])
     return (

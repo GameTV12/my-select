@@ -27,7 +27,7 @@ const refreshTokenFn = async () => {
     try {
         let cookies = new Cookies()
         const axiosRefresh = axios.create({
-            baseURL: "http://localhost:8000",
+            baseURL: "https://api.myselect.airule.io",
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
@@ -56,7 +56,7 @@ const refreshTokenFn = async () => {
 
 
 const axiosInstance = axios.create({
-    baseURL: "http://localhost:8000",
+    baseURL: "https://api.myselect.airule.io",
     headers: {
         "Content-Type": "application/json",
         "accept": "*/*"

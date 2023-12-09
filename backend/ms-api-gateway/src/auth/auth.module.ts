@@ -20,7 +20,7 @@ import { KafkaModule } from '../kafka';
         host: 'smtp.gmail.com',
         auth: {
           user: 'gametvcity.com@gmail.com',
-          pass: 'nehn gluy pagj gbdg',
+          pass: 'kvub rayx kucr lsoq',
         },
       },
     }),

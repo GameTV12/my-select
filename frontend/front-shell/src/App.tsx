@@ -17,7 +17,7 @@ export const App = () => {
         <Box>
             <Header />
             <Suspense fallback={<div>Loading...</div>}>
-                asf
+                404 not found
             </Suspense>
         </Box>
     )

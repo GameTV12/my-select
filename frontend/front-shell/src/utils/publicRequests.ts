@@ -5,7 +5,7 @@ export const signInRequest = (data: LoginCard) => {
     const requestOptions: AxiosRequestConfig = {
         headers: { "Content-Type": "application/json",
                 "accept": "*/*"},
-        baseURL: "http://localhost:8000"
+        baseURL: "https://api.myselect.airule.io"
     }
     return axios.post(`auth/local/signin`, JSON.stringify(data), requestOptions).then((res) => res.data)
 }
@@ -13,7 +13,7 @@ export const signInRequest = (data: LoginCard) => {
 export const firstVerificationRequest = (link: string) => {
     const requestOptions: AxiosRequestConfig = {
         headers: {"accept": "*/*"},
-        baseURL: "http://localhost:8000"
+        baseURL: "https://api.myselect.airule.io"
     }
     return axios.get(`auth/local/firstVerification/${link}`, requestOptions).then((res) => res.data)
 }
@@ -22,7 +22,7 @@ export const secondVerificationRequest = (id: string) => {
     const requestOptions: AxiosRequestConfig = {
         headers: { "Content-Type": "application/json",
             "accept": "*/*"},
-        baseURL: "http://localhost:8000"
+        baseURL: "https://api.myselect.airule.io"
     }
     return axios.get(`/auth/local/secondVerification/${id}`, requestOptions).then((res) => res.data)
 }

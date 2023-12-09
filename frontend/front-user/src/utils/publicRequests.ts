@@ -3,7 +3,7 @@ import axios, {Axios} from "axios";
 import {EditType} from "../pages/UpdatePage";
 
 const newAxios: Axios = axios.create({
-    baseURL: "http://localhost:8000",
+    baseURL: "https://api.myselect.airule.io",
     headers: {
         "Content-Type": "application/json",
         "accept": "*/*"

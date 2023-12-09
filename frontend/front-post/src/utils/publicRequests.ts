@@ -2,7 +2,7 @@ import axios, {Axios} from "axios";
 import axiosInstance from "./axiosInstance";
 
 const newAxios: Axios = axios.create({
-    baseURL: "http://localhost:8000",
+    baseURL: "https://api.myselect.airule.io",
     headers: {
         "Content-Type": "application/json",
         "accept": "*/*"

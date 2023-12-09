@@ -11,9 +11,9 @@ export default defineConfig({
       federation({
         name: 'front_shell',
         remotes: {
-            front_user: "http://localhost:3005/assets/remoteEntry.js",
-            front_post: "http://localhost:3002/assets/remoteEntry.js",
-            front_comment: "http://localhost:3006/assets/remoteEntry.js"
+            front_user: "https://myselect.airule.io/micro/user/remoteEntry.js",
+            front_post: "https://myselect.airule.io/micro/post/remoteEntry.js",
+            front_comment: "https://myselect.airule.io/micro/comment/remoteEntry.js",
         },
         shared: ['react', 'react-dom', 'react-router-dom']
       })

@@ -17,6 +17,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { KafkaClient } from 'src/kafka';
 import { CreateUserDto, EditUserDto, LogInDto } from '../dtos';
 import { Tokens } from './types';
+import e from 'express';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -539,28 +540,22 @@ export class AuthService implements OnModuleInit {
   }
 
   async sendFirstLetter(email: string, link: string) {
+    const emailLink: string = this.config.get('LINK_SERVER');
     this.mailerService.sendMail({
       to: email,
       from: 'myselect-company',
       subject: 'First verification',
-      html: `<p>For first verification, click this link <a href="${this.config.get(
-        'LINK_SERVER',
-      )}/verification/first/${link}" target="_blank">${this.config.get(
-        'LINK_SERVER',
-      )}/verification/first/${link}</a></p>`,
+      html: `<p>For first verification, click this link <a href="${emailLink}/verification/first/${link}" target="_blank">${emailLink}/verification/first/${link}</a></p>`,
     });
   }
 
   async sendSecondLetter(email: string, id: string) {
+    const emailLink: string = this.config.get('LINK_SERVER');
     this.mailerService.sendMail({
       to: email,
       from: 'myselect-company',
       subject: 'Second verification',
-      html: `<p>For the second and final verification, click this link <a href="${this.config.get(
-        'LINK_SERVER',
-      )}/verification/second/${id}" target="_blank">${this.config.get(
-        'LINK_SERVER',
-      )}/verification/second/${id}</a></p>`,
+      html: `<p>For the second and final verification, click this link <a href="${emailLink}/verification/second/${id}" target="_blank">${emailLink}/verification/second/${id}</a></p>`,
     });
   }
 
