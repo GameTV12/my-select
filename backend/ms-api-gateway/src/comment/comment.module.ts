@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { CommentService } from './comment.service';
 import { CommentController } from './comment.controller';
+import process from 'process';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { CommentController } from './comment.controller';
         options: {
           client: {
             clientId: 'comment',
-            brokers: ['localhost:9092'],
+            brokers: [`${process.env['KAFKA_URL']}:9092`],
           },
           consumer: {
             groupId: 'comment-consumer',

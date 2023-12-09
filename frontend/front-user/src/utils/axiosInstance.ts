@@ -43,8 +43,8 @@ const refreshTokenFn = async () => {
             const current = new Date()
             const accessTime = new Date(current.getTime() + 30 * 1000)
             const refreshTime = new Date(current.getTime() + 90 * 24 * 3600 * 1000)
-            cookies.set('myselect_access', access_token, {expires: accessTime, domain: 'localhost', path: '/'})
-            cookies.set('myselect_refresh', refresh_token, {expires: refreshTime, domain: 'localhost', path: '/'})
+            cookies.set('myselect_access', access_token, {expires: accessTime, domain: 'myselect.airule.io', path: '/'})
+            cookies.set('myselect_refresh', refresh_token, {expires: refreshTime, domain: 'myselect.airule.io', path: '/'})
         }
 
         return {access_token, refresh_token}

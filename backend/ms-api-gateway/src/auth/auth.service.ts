@@ -329,7 +329,7 @@ export class AuthService implements OnModuleInit {
     await this.updateRtHash(user.userId, tokens.refresh_token);
     if (
       !user.secondVerification &&
-      user.emailSent == false &&
+      !user.letter &&
       user.createdAt.getTime() + 15 * 60 * 1000 < Date.now()
     ) {
       await this.sendSecondLetter(user.email, user.userId);
@@ -338,7 +338,7 @@ export class AuthService implements OnModuleInit {
           userId: user.userId,
         },
         data: {
-          emailSent: true,
+          letter: true,
         },
       });
     }
@@ -393,7 +393,7 @@ export class AuthService implements OnModuleInit {
 
     if (
       !user.secondVerification &&
-      user.emailSent == false &&
+      !user.letter &&
       user.createdAt.getTime() + 15 * 60 * 1000 < Date.now()
     ) {
       await this.sendSecondLetter(user.email, user.userId);
@@ -402,7 +402,7 @@ export class AuthService implements OnModuleInit {
           userId: user.userId,
         },
         data: {
-          emailSent: true,
+          letter: true,
         },
       });
     }
@@ -539,7 +539,11 @@ export class AuthService implements OnModuleInit {
       to: email,
       from: 'myselect-company',
       subject: 'First verification',
-      html: `<p>For first verification, click this link <a href="http://localhost:3000/verification/first/${link}">http://localhost:3000/verification/first/${link}</a></p>`,
+      html: `<p>For first verification, click this link <a href="${this.config.get(
+        'LINK_SERVER',
+      )}/verification/first/${link}" target="_blank">${this.config.get(
+        'LINK_SERVER',
+      )}/verification/first/${link}</a></p>`,
     });
   }
 
@@ -548,7 +552,11 @@ export class AuthService implements OnModuleInit {
       to: email,
       from: 'myselect-company',
       subject: 'Second verification',
-      html: `<p>For the second and final verification, click this link <a href="http://localhost:3000/verification/second/${id}">http://localhost:3000/verification/second/${id}</a></p>`,
+      html: `<p>For the second and final verification, click this link <a href="${this.config.get(
+        'LINK_SERVER',
+      )}/verification/second/${id}" target="_blank">${this.config.get(
+        'LINK_SERVER',
+      )}/verification/second/${id}</a></p>`,
     });
   }
 

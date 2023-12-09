@@ -25,6 +25,8 @@ services:
       KAFKA_RESTART_ATTEMPTS: "10"
       KAFKA_RESTART_DELAY: "5"
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: "0"
+    networks:
+      - host
   db-api-gateway:
     image: postgres:12
     ports:
@@ -32,7 +34,9 @@ services:
     environment:
       POSTGRES_USER: myselect
       POSTGRES_PASSWORD: noadminno
-      POSTGRES_DB: apigatewaygr
+      POSTGRES_DB: apigateway
+    networks:
+      - host
   db-post:
     image: postgres:12
     ports:
@@ -41,6 +45,8 @@ services:
       POSTGRES_USER: myselect
       POSTGRES_PASSWORD: noadminno
       POSTGRES_DB: post
+    networks:
+      - host
   db-user:
     image: postgres:12
     ports:
@@ -49,11 +55,75 @@ services:
       POSTGRES_USER: myselect
       POSTGRES_PASSWORD: noadminno
       POSTGRES_DB: user
+    networks:
+      - host
   db-comment:
     image: postgres:12
+    network_mode: "host"
     ports:
       - 5436:5432
     environment:
       POSTGRES_USER: myselect
       POSTGRES_PASSWORD: noadminno
       POSTGRES_DB: comment
+    networks:
+      - host
+#  ms-apigateway:
+#    image: node
+#    ports:
+#      - 8000:8000
+#    build: "./backend/ms-api-gateway"
+#    depends_on:
+#      - "db-api-gateway"
+#      - "ms-user"
+#      - "ms-comment"
+#      - "ms-post"
+#  ms-user:
+#    image: node
+#    ports:
+#      - 8001:8000
+#    build: "./backend/ms-user"
+#    depends_on:
+#      - "db-user"
+#  ms-comment:
+#    image: node
+#    ports:
+#      - 8002:8000
+#    build: "./backend/ms-comment"
+#    depends_on:
+#      - "db-comment"
+#  ms-post:
+#    image: node
+#    ports:
+#      - 8003:8000
+#    build: "./backend/ms-post"
+#    depends_on:
+#      - "db-post"
+#  front-post:
+#    image: node
+#    ports:
+#      - 3002:3000
+#    depends_on:
+#      - "ms-apigateway"
+#  front-comment:
+#    image: node
+#    ports:
+#      - 3006:3000
+#    depends_on:
+#      - "ms-apigateway"
+#  front-user:
+#    image: node
+#    ports:
+#      - 3005:3000
+#    depends_on:
+#      - "ms-apigateway"
+#  front-shell:
+#    image: node
+#    ports:
+#      - 3000:3000
+#    depends_on:
+#      - "ms-apigateway"
+
+networks:
+  host:
+    external: true

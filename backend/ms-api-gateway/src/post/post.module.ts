@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import process from 'process';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         options: {
           client: {
             clientId: 'post',
-            brokers: ['localhost:9092'],
+            brokers: [`${process.env['KAFKA_URL']}:9092`],
           },
           consumer: {
             groupId: 'post-consumer',
@@ -27,7 +28,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         options: {
           client: {
             clientId: 'user',
-            brokers: ['localhost:9092'],
+            brokers: [`${process.env['KAFKA_URL']}:9092`],
           },
           consumer: {
             groupId: 'user-consumer',

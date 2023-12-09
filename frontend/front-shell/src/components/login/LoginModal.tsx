@@ -45,10 +45,10 @@ const LoginModal = ({open, onClose}: ModalProps) => {
                 const current = new Date()
                 const accessTime = new Date(current.getTime() + 30 * 1000)
                 const refreshTime = new Date(current.getTime() + 90 * 24 * 3600 * 1000)
-                setCookie('myselect_access', r.access_token, { expires: accessTime, domain: 'localhost', path: '/' })
-                setCookie('myselect_refresh', r.refresh_token, { expires: refreshTime, domain: 'localhost', path: '/' })
-                rightCookie.set('myselect_access', r.access_token, { expires: accessTime, domain: 'localhost', path: '/' })
-                rightCookie.set('myselect_refresh', r.refresh_token, { expires: refreshTime, domain: 'localhost', path: '/' })
+                setCookie('myselect_access', r.access_token, { expires: accessTime, domain: 'myselect.airule.io', path: '/' })
+                setCookie('myselect_refresh', r.refresh_token, { expires: refreshTime, domain: 'myselect.airule.io', path: '/' })
+                rightCookie.set('myselect_access', r.access_token, { expires: accessTime, domain: 'myselect.airule.io', path: '/' })
+                rightCookie.set('myselect_refresh', r.refresh_token, { expires: refreshTime, domain: 'myselect.airule.io', path: '/' })
                 console.log('access time - ' + accessTime)
             }
         }

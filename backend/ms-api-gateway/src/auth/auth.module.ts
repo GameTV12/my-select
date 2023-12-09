@@ -7,6 +7,7 @@ import { AtStrategy, RtStrategy } from './strategies';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
 import { MailerModule } from '@nestjs-modules/mailer';
+import * as process from 'process';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         options: {
           client: {
             clientId: 'user',
-            brokers: ['localhost:9092'],
+            brokers: [`kafka:9092`],
           },
           consumer: {
             groupId: 'user-consumer',
@@ -32,7 +33,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         options: {
           client: {
             clientId: 'comment',
-            brokers: ['localhost:9092'],
+            brokers: [`kafka:9092`],
           },
           consumer: {
             groupId: 'comment-consumer',
@@ -47,7 +48,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         options: {
           client: {
             clientId: 'post',
-            brokers: ['localhost:9092'],
+            brokers: [`kafka:9092`],
           },
           consumer: {
             groupId: 'post-consumer',

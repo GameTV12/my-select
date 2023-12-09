@@ -22,7 +22,7 @@ model AuthUser {
   secondVerification Boolean       @default(false)
   visible            Boolean       @default(true)
   createdAt          DateTime?     @default(now())
-  emailSent          Boolean       @default(false)
+  letter             Boolean?      @default(false)
   unlockTime         DateTime?
   hashedRt           String?
   AuthSession        AuthSession[]

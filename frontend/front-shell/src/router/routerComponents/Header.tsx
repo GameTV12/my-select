@@ -116,11 +116,11 @@ export default function Header() {
     const handleLogout = () => {
         const rigthCookie = new Cookies();
         console.log('Logout')
-        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
-        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
+        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
         setCurrentUser(null)
-        setCookie('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
-        setCookie('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        setCookie('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
+        setCookie('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
     }
 
 
