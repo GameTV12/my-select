@@ -11,7 +11,7 @@ import { randomStringGenerator } from '@nestjs/common/utils/random-string-genera
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ClientKafka } from '@nestjs/microservices';
-import bcrypt from 'bcrypt';
+import { hash, compare } from 'bcrypt';
 import { PrismaService } from 'nestjs-prisma';
 
 import { KafkaClient } from 'src/kafka';
@@ -32,7 +32,7 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   hashData(data: string) {
-    return bcrypt.hash(data, 10);
+    return hash(data, 10);
   }
 
   async signupLocal(dto: CreateUserDto): Promise<Tokens> {
@@ -317,7 +317,7 @@ export class AuthService implements OnModuleInit {
     )
       throw new ForbiddenException('You were banned for inactivity');
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.password);
+    const passwordMatches = await compare(dto.password, user.password);
     if (!passwordMatches) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.getTokens(
@@ -380,7 +380,7 @@ export class AuthService implements OnModuleInit {
       return { access_token: null, refresh_token: null };
     }
 
-    const rtMatches = await bcrypt.compare(rt, user.hashedRt);
+    const rtMatches = await compare(rt, user.hashedRt);
     if (!rtMatches) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.getTokens(

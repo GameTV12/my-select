@@ -25,7 +25,12 @@ WORKDIR /app
 ### Install production dependencies ###
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/package-lock.json ./
+
 RUN npm ci --omit=dev
+
+### Generate Prisma client ###
+COPY --from=builder /app/prisma ./prisma/
+RUN npm run prisma
 
 ### Copy dist and start ###
 COPY --from=builder /app/dist ./dist/
