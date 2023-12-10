@@ -17,7 +17,6 @@ import { PrismaService } from 'nestjs-prisma';
 import { KafkaClient } from 'src/kafka';
 import { CreateUserDto, EditUserDto, LogInDto } from '../dtos';
 import { Tokens } from './types';
-import e from 'express';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -307,8 +306,8 @@ export class AuthService implements OnModuleInit {
     });
 
     if (!user) throw new ForbiddenException('Access Denied');
-    if (!user.firstVerification)
-      throw new ForbiddenException("Email isn't verified");
+    // if (!user.firstVerification)
+    //   throw new ForbiddenException("Email isn't verified");
     if (user.role == 'BANNED_USER')
       throw new ForbiddenException('You were banned');
     if (
@@ -545,7 +544,7 @@ export class AuthService implements OnModuleInit {
       to: email,
       from: 'myselect-company',
       subject: 'First verification',
-      html: `<p>For first verification, click this link <a href="${emailLink}/verification/first/${link}" target="_blank">${emailLink}/verification/first/${link}</a></p>`,
+      html: `<p>Hello, welcome to Myselect. You can click this link <a href="${emailLink}/verification/first/${link}" target="_blank">${emailLink}/verification/first/${link}</a></p>`,
     });
   }
 
@@ -555,7 +554,7 @@ export class AuthService implements OnModuleInit {
       to: email,
       from: 'myselect-company',
       subject: 'Second verification',
-      html: `<p>For the second and final verification, click this link <a href="${emailLink}/verification/second/${id}" target="_blank">${emailLink}/verification/second/${id}</a></p>`,
+      html: `<p>For the final verification, click this link <a href="${emailLink}/verification/second/${id}" target="_blank">${emailLink}/verification/second/${id}</a></p>`,
     });
   }
 
