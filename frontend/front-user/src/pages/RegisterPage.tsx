@@ -44,13 +44,14 @@ const RegisterPage = () => {
             .max(80, 'Name must be less than 80 characters'),
         linkNickname: z.string()
             .nonempty('Link nickname is required')
+            .regex(/^[A-Za-z0-9]+$/, 'Link nickname can use only numbers and letters')
             .min(2, 'Link nickname must be more than 2 characters')
             .max(30, 'Link nickname must be less than 30 characters'),
         email: z.string().nonempty('Email is required').email('Email is invalid')
             .max(100, "Email must be less than 100 characters"),
         password: z.string()
             .nonempty('Password is required')
-            .regex(/[A-Za-z0-9]/, 'Password can use only numbers and letters')
+            .regex(/^[A-Za-z0-9]+$/, 'Password can use only numbers and letters')
             .min(6, 'Password must be more than 6 characters')
             .max(40, 'Password must be less than 40 characters'),
         passwordConfirm: z.string().nonempty('Please confirm your password'),
