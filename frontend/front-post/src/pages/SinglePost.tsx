@@ -223,10 +223,6 @@ const SinglePost = () => {
     // @ts-ignore
     const chartPoll = <Line data={chartPollData} options={chartPollData.options}/>
 
-    function deletePost(postId: string) {
-        //
-    }
-
     return <>
             {post != undefined && id != undefined ? <Grid container justifyContent="center" sx={{ mt: 5 }}>
                 <Grid item xs={12} sm={10} md={10} lg={8} xl={6}>
@@ -236,7 +232,7 @@ const SinglePost = () => {
                               Photo={post.Photo} video={post.video}
                               likes={post.likes} dislikes={post.dislikes} commentsAllowed={post.commentsAllowed}
                               title={post.title} Variants={post.Variants} isVoted={post.isVoted}
-                              variantsAllowed={post.variantsAllowed} fullPost={true} deletePost={deletePost}/>
+                              variantsAllowed={post.variantsAllowed} fullPost={true}/>
                     </List>
                     <Box sx={{width: '100%', typography: 'body1', mt: 2}}>
                         <TabContext value={tabPosition}>

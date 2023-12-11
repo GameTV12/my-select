@@ -141,7 +141,6 @@ const Post = ({
         else setProgressNumber(50)
     }, [likesNumber, dislikesNumber])
 
-    // если чел лайкает, и не зареган, то ему дастся модальное окно на вход, которое я импортирую с микрофронта юзера
     function handleLike() {
         if (currentUser) {
             likePostRequest(id)
@@ -362,7 +361,7 @@ const Post = ({
                     </>
                 }
             />
-            {deletePost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
+            {deletePost && !fullPost && <DeletePostModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                             deletePost={deletePost}/>}
             <ReportPostModal open={reportModal} onClose={handleReportModalClose} userId={user.userId} postId={id} linkNickname={user.linkNickname}/>
             <AddNewVariantModal postId={id} open={variantModal} onClose={handleAddNewVariantModalClose} addVariant={addNewVariant} />
