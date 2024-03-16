@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const PORT = configService.get('PORT') ?? 3000;
+  const PORT = 8001;
 
   app.connectMicroservice<MicroserviceOptions>(
     {

@@ -21,8 +21,8 @@ const LogoutModal = ({open, onClose}: ModalProps) => {
     const handleLogout = () => {
         const rigthCookie = new Cookies();
         console.log('Logout')
-        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
-        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'myselect.airule.io', path: '/'})
+        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
     }
 
     return (

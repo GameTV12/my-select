@@ -102,12 +102,7 @@ describe('AppService', () => {
       const userDto: EditUserDto = {
         nickname: 'newNickname',
         linkNickname: 'newLinkNickname',
-        birthday: 121412455,
-        email: 'newemail@example.com',
-        firstName: 'New',
-        lastName: 'User',
         photo: 'newphoto.jpg',
-        phone: '1234567890',
       };
 
       const expectedValue = {
@@ -142,12 +137,7 @@ describe('AppService', () => {
         data: {
           nickname: userDto.nickname,
           linkNickname: userDto.linkNickname,
-          birthday: new Date(userDto.birthday),
-          email: userDto.email,
-          firstName: userDto.firstName,
-          lastName: userDto.lastName,
           photo: userDto.photo,
-          phone: userDto.phone,
         },
       });
     });

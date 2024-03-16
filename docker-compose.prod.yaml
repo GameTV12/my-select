@@ -1,0 +1,94 @@
+services:
+  api-gateway:
+    image: registry.airule.io/myselect/api-gateway
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+    networks:
+      - internal
+      - traefik-public
+      - kafka
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:5432/myselect-auth
+      - KAFKA_URL
+      - KAFKA_USER_CLIENT_ID
+      - KAFKA_USER_GROUP_ID
+      - KAFKA_POST_CLIENT_ID
+      - KAFKA_POST_GROUP_ID
+      - KAFKA_COMMENT_CLIENT_ID
+      - KAFKA_COMMENT_GROUP_ID
+      - JWT_SECRET
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
+      - GOOGLE_CLIENT_CALLBACK_URL
+      - FACEBOOK_CLIENT_ID
+      - FACEBOOK_CLIENT_SECRET
+      - FACEBOOK_CLIENT_CALLBACK_URL
+    labels:
+      airule.public: true
+      traefik.enable: true
+      traefik.http.routers.ms-api-gateway.tls: true
+      traefik.http.routers.ms-api-gateway.rule: "Host(`api.myselect.airule.io`)"
+      traefik.http.routers.ms-api-gateway.tls.certresolver: letsencrypt
+      traefik.http.routers.ms-api-gateway.service: ms-api-gateway
+      traefik.http.services.ms-api-gateway.loadbalancer.server.port: 8000
+  user-service:
+    image: registry.airule.io/myselect/user-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+    networks:
+      - internal
+      - kafka
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:5432/myselect-user
+      - KAFKA_URL
+      - KAFKA_CLIENT_ID=${KAFKA_USER_CLIENT_ID}
+      - KAFKA_GROUP_ID=${KAFKA_USER_GROUP_ID}
+  comment-service:
+    image: registry.airule.io/myselect/comment-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+    networks:
+      - internal
+      - kafka
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:5432/myselect-comment
+      - KAFKA_URL
+      - KAFKA_CLIENT_ID=${KAFKA_COMMENT_CLIENT_ID}
+      - KAFKA_GROUP_ID=${KAFKA_COMMENT_GROUP_ID}
+  post-service:
+    image: registry.airule.io/myselect/post-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+    networks:
+      - internal
+      - kafka
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:5432/myselect-post
+      - KAFKA_URL
+      - KAFKA_CLIENT_ID=${KAFKA_POST_CLIENT_ID}
+      - KAFKA_GROUP_ID=${KAFKA_POST_GROUP_ID}
+
+networks:
+  internal:
+  traefik-public:
+    external: true
+  kafka:
+    external: true
+  postgres:
+    external: true

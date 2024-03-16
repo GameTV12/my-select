@@ -20,7 +20,7 @@ export default defineConfig({
         './LoginModal': './src/pages/LoginModal'
       },
       remotes: {
-        front_comment: "https://myselect.airule.io/micro/comment/remoteEntry.js",
+        front_comment: "http://localhost:3006/assets/remoteEntry.js",
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })
