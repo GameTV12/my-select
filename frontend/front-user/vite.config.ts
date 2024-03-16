@@ -12,9 +12,12 @@ export default defineConfig({
       // Modules to expose
       exposes: {
         './RegisterPage': './src/pages/RegisterPage',
+        './UpdatePage': './src/pages/UpdatePage',
         './UserInfoPage': './src/pages/UserInfoPage',
         './RequestList': './src/pages/RequestList',
+        './ReportList': './src/pages/ReportList',
         './SubscriptionList': './src/pages/SubscriptionList',
+        './LoginModal': './src/pages/LoginModal'
       },
       remotes: {
         front_comment: "http://localhost:3006/assets/remoteEntry.js",
@@ -24,17 +27,19 @@ export default defineConfig({
   ],
   server: {
     host: "127.0.0.1",
-    port: 3005
+    port: 3005,
+    cors: true
   },
   preview: {
     host: "127.0.0.1",
     port: 3005,
+    cors: true
   },
   cacheDir: "node_modules/.cacheDir",
   build: {
     modulePreload: false,
     target: 'esnext',
     minify: false,
-    cssCodeSplit: false
+    cssCodeSplit: false,
   }
 })

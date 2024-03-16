@@ -13,7 +13,7 @@ export default defineConfig({
         remotes: {
             front_user: "http://localhost:3005/assets/remoteEntry.js",
             front_post: "http://localhost:3002/assets/remoteEntry.js",
-            front_comment: "http://localhost:3006/assets/remoteEntry.js"
+            front_comment: "http://localhost:3006/assets/remoteEntry.js",
         },
         shared: ['react', 'react-dom', 'react-router-dom']
       })
@@ -21,10 +21,12 @@ export default defineConfig({
     server: {
       host: "127.0.0.1",
       port: 3000,
+      cors: true,
     },
     preview: {
         host: "127.0.0.1",
         port: 3000,
+        cors: true,
     },
     cacheDir: "node_modules/.cacheDir",
     build: {

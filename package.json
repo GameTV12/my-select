@@ -32,7 +32,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "pretest:e2e": "npm run db:test:restart",
     "test:e2e": "dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json",
-    "backend:all": "concurrently \"cd backend && cd ms-post && npm run start:dev\" \"cd backend && cd ms-user && npm run start:dev\" \"cd backend && cd ms-api-gateway && npm run start:dev\""
+    "backend:all": "concurrently \"cd backend && cd ms-post && npm run start:dev\" \"cd backend && cd ms-user && npm run start:dev\" \"cd backend && cd ms-comment && npm run start:dev\" \"cd backend && cd ms-api-gateway && npm run start:dev\"",
+    "frontend:all": "concurrently \"cd frontend/front-comment && npm run watch\" \"cd frontend/front-comment && npm run preview\" \"cd frontend/front-post && npm run watch\" \"cd frontend/front-post && npm run preview\" \"cd frontend/front-user && npm run watch\" \"cd frontend/front-user && npm run preview\" \"cd frontend/front-shell && npm run watch\" \"cd frontend/front-shell && npm run preview\"",
+    "project:all": "concurrently \"npm run backend:all\" \"npm run frontend:all\""
   },
   "dependencies": {
     "concurrently": "^8.2.0"

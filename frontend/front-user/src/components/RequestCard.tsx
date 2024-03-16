@@ -10,10 +10,8 @@ import {
     IconButton, IconButtonProps, Link,
     Typography
 } from "@mui/material";
-import {red} from "@mui/material/colors"
 import { styled } from '@mui/material/styles'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import SubscriptionCard from "./SubscriptionCard";
 
 interface ExpandMoreProps extends IconButtonProps {
     expand: boolean;
@@ -36,10 +34,9 @@ interface RequestCard {
     linkNickname: string
     description: string
     image: string
-    date: string
     makeDecision: (id: string, decision: boolean)=>void
 }
-const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, date, makeDecision, description}: RequestCard) => {
+const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, makeDecision, description}: RequestCard) => {
     const [expanded, setExpanded] = React.useState(false);
 
     const handleExpandClick = () => {
@@ -67,7 +64,7 @@ const RequestCard: FC<RequestCard> = ({id, nickname, linkNickname, image, date, 
                     </IconButton>
                 }
                 title={nickname}
-                subheader={<Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{linkNickname}</Link>}
+                subheader={<Link href={"https://leetcode.com/"} underline="none">{linkNickname}</Link>}
             />
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>

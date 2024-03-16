@@ -12,18 +12,21 @@ export default defineConfig({
       // Modules to expose
       exposes: {
         './PostCommentList': './src/pages/PostCommentList',
-        './VariantCommentList': './src/pages/VariantCommentList'
+        './VariantCommentList': './src/pages/VariantCommentList',
+        './Comment': './src/components/Comment',
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })
   ],
   server: {
     host: "127.0.0.1",
-    port: 3006
+    port: 3006,
+    cors: true,
   },
   preview: {
     host: "127.0.0.1",
     port: 3006,
+    cors: true,
   },
   cacheDir: "node_modules/.cacheDir",
   build: {

@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Box, Button, DialogProps, Modal, Paper, TextField, Typography} from "@mui/material";
+import {addVariantRequest} from "../../utils/authRequest";
 
 export type VariantMessage = {
     id: string
@@ -7,6 +8,7 @@ export type VariantMessage = {
 }
 
 type AddNewVariantModalProps = {
+    postId: string
     addVariant: ({id, text}: VariantMessage) => void
 }
 
@@ -24,13 +26,14 @@ const style = {
     pb: 3,
 }
 
-const AddNewVariantModal = ({open, onClose, addVariant}: DialogProps & AddNewVariantModalProps) => {
+const AddNewVariantModal = ({open, onClose, addVariant, postId}: DialogProps & AddNewVariantModalProps) => {
     const [variantMessage, setVariantMessage] = useState<VariantMessage>({id: '1152', text: ''})
 
     function sendVariantMessage(e: React.MouseEvent | React.KeyboardEvent) {
         e.preventDefault()
         console.log(variantMessage)
         addVariant(variantMessage)
+        addVariantRequest(postId, {variant: variantMessage.text.trim()})
         setVariantMessage((prevState) => ({...prevState, text: ''}))
         if (onClose) onClose(e, "backdropClick")
     }

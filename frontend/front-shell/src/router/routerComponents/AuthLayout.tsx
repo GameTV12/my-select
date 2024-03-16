@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: ReactNode }){
             <Box flex={1} sx={{ paddingBottom: 7 }}>
                 {children}
             </Box>
-            <Footer />
+            {/*<Footer />*/}
         </Box>
     )
 }

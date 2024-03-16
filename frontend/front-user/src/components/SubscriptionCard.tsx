@@ -1,11 +1,11 @@
 import React, {FC} from 'react';
 import {
-    Avatar, Box, Button, Grid, Link,
+    Avatar, Box, Button, Grid,
     ListItem,
     ListItemAvatar,
     ListItemText
 } from "@mui/material";
-import {Image} from "@mui/icons-material";
+import {Link} from "react-router-dom";
 
 interface SubscriptionCard {
     id: string
@@ -26,7 +26,7 @@ const SubscriptionCard: FC<SubscriptionCard> = ({id, nickname, linkNickname, ima
             </ListItemAvatar>
             <ListItemText
                 primary={nickname}
-                secondary={<Link href={"https://leetcode.com/"} target={"_blank"} underline="none">linkNickname</Link>}
+                secondary={<Link to={`/users/${linkNickname}`} style={{ textDecoration: 'none' }}>{linkNickname}</Link>}
             />
             <Grid item xs={6} sm={6} md={6} lg={6} xl={6} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div><strong>Followers: </strong><i>{followers}</i></div>

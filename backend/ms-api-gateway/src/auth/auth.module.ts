@@ -1,26 +1,37 @@
+import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import {ClientsModule, Transport} from "@nestjs/microservices";
+import { AtStrategy, RtStrategy } from './strategies';
+import { FacebookStrategy } from './strategies/facebook.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { KafkaModule } from '../kafka';
 
 @Module({
   imports: [
-    ClientsModule.register([
-          {
-            name: 'USER_SERVICE',
-            transport: Transport.KAFKA,
-            options: {
-              client: {
-                clientId: 'user',
-                brokers: ['localhost:9092'],
-              },
-              consumer: {
-                groupId: 'user-consumer',
-              },
-            },
-          },
-  ])],
+    KafkaModule,
+    JwtModule.register({
+      global: true,
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        auth: {
+          user: 'gametvcity.com@gmail.com',
+          pass: 'kvub rayx kucr lsoq',
+        },
+      },
+    }),
+  ],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [
+    AuthService,
+    AtStrategy,
+    RtStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+  ],
 })
 export class AuthModule {}

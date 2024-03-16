@@ -1,22 +1,7 @@
 import React, {FC, useEffect, useState} from 'react'
-import {
-    Avatar,
-    Box,
-    Grid,
-    IconButton,
-    Link,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    ListSubheader,
-    Typography
-} from "@mui/material"
-import ThumbUpOffAltOutlinedIcon from '@mui/icons-material/ThumbUpOffAltOutlined'
-import ThumbDownOffAltOutlinedIcon from '@mui/icons-material/ThumbDownOffAltOutlined'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
+import {Avatar, Box, Grid, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material"
+import {Link} from 'react-router-dom'
 import LinearProgress from '@mui/material/LinearProgress'
-import millify from "millify"
 import ReactionComponent from "./ReactionComponent";
 import Tooltip from "@mui/material/Tooltip"
 import FlagIcon from '@mui/icons-material/Flag'
@@ -25,6 +10,10 @@ import CancelPresentationIcon from '@mui/icons-material/CancelPresentation'
 import DeleteCommentModal from "./DeleteCommentModal"
 import ReportCommentModal from "./ReportCommentModal"
 import EditIcon from '@mui/icons-material/Edit'
+import {dislikeCommentRequest, likeCommentRequest} from "../utils/authRequests";
+import {useCookies} from "react-cookie";
+import {Role, UserI} from "../utils/axiosInstance";
+import {jwtDecode} from "jwt-decode";
 
 export type CommentType = {
     id: string
@@ -46,10 +35,11 @@ export type CommentType = {
 }
 
 export enum LikeStatus {
-    LIKED = 'LIKED',
-    DISLIKED = 'DISLIKED',
+    LIKE = 'LIKE',
+    DISLIKE = 'DISLIKE',
     NONE = 'NONE'
 }
+
 
 const Comment: FC<CommentType> = ({
                                       id,
@@ -69,48 +59,55 @@ const Comment: FC<CommentType> = ({
                                       replyComment,
                                       editComment
                                   }: CommentType) => {
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
     const [likesNumber, setLikesNumber] = useState<number>(likes)
     const [dislikesNumber, setDislikesNumber] = useState<number>(dislikes)
     const [currentStatus, setCurrentStatus] = useState<LikeStatus>(status)
-    const [auth, setAuth] = useState<boolean>(true)
     const [progressNumber, setProgressNumber] = useState(0)
     const [deleteModal, setDeleteModal] = useState<boolean>(false)
     const [reportModal, setReportModal] = useState<boolean>(false)
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     useEffect(() => {
         if (likesNumber + dislikesNumber) setProgressNumber(100 * likesNumber / (likesNumber + dislikesNumber))
         else setProgressNumber(50)
     }, [likesNumber, dislikesNumber])
 
-    // если чел лайкает, и не зареган, то ему дастся модальное окно на вход, которое я импортирую с микрофронта юзера
     function handleLike() {
-        if (auth) {
-            if (currentStatus == LikeStatus.DISLIKED) {
+        if (currentUser) {
+            likeCommentRequest(id)
+            if (currentStatus == LikeStatus.DISLIKE) {
                 setDislikesNumber((prevState) => prevState - 1)
                 setLikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.LIKED)
-            } else if (currentStatus == LikeStatus.LIKED) {
+                setCurrentStatus(LikeStatus.LIKE)
+            } else if (currentStatus == LikeStatus.LIKE) {
                 setLikesNumber((prevState) => prevState - 1)
                 setCurrentStatus(LikeStatus.NONE)
             } else {
                 setLikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.LIKED)
+                setCurrentStatus(LikeStatus.LIKE)
             }
         }
     }
 
     function handleDislike() {
-        if (auth) {
-            if (currentStatus == LikeStatus.LIKED) {
+        if (currentUser) {
+            dislikeCommentRequest(id)
+            if (currentStatus == LikeStatus.LIKE) {
                 setDislikesNumber((prevState) => prevState + 1)
                 setLikesNumber((prevState) => prevState - 1)
-                setCurrentStatus(LikeStatus.DISLIKED)
-            } else if (currentStatus == LikeStatus.DISLIKED) {
+                setCurrentStatus(LikeStatus.DISLIKE)
+            } else if (currentStatus == LikeStatus.DISLIKE) {
                 setDislikesNumber((prevState) => prevState - 1)
                 setCurrentStatus(LikeStatus.NONE)
             } else {
                 setDislikesNumber((prevState) => prevState + 1)
-                setCurrentStatus(LikeStatus.DISLIKED)
+                setCurrentStatus(LikeStatus.DISLIKE)
             }
         }
     }
@@ -139,13 +136,13 @@ const Comment: FC<CommentType> = ({
             <ListItemText
                 primary={<Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <Box>
-                        <Link href={"https://leetcode.com/"} target={"_blank"} underline="none">{nickname}</Link>
+                        <Link to={`/users/${linkNickname}/profile`} style={{ "textDecoration": "none" }}>{nickname}</Link>
                         <em>&nbsp;{new Date(time).getDate()}.{new Date(time).getMonth() + 1}.{new Date(time).getFullYear()} {String(new Date(time).getHours()).padStart(2, '0')}:{String(new Date(time).getMinutes()).padStart(2, '0')}</em>
                     </Box>
                     <Box>
-                        <Tooltip title={"Report"}><IconButton onClick={handleReportModalClickOpen}><FlagIcon /></IconButton></Tooltip>
-                        <Tooltip title={"Delete"}><IconButton onClick={handleDeleteModalClickOpen}><CancelPresentationIcon/></IconButton></Tooltip>
-                        {editComment && <Tooltip title={"Edit comment"}><IconButton onClick={() => editComment(id)}><EditIcon/></IconButton></Tooltip>}
+                        {currentUser && <Tooltip title={"Report"}><IconButton onClick={handleReportModalClickOpen}><FlagIcon /></IconButton></Tooltip>}
+                        {currentUser && (currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR || currentUser.id == userId) && <Tooltip title={"Delete"}><IconButton onClick={handleDeleteModalClickOpen}><CancelPresentationIcon/></IconButton></Tooltip>}
+                        {editComment && currentUser && currentUser.id == userId && <Tooltip title={"Edit comment"}><IconButton onClick={() => editComment(id)}><EditIcon/></IconButton></Tooltip>}
                     </Box>
                 </Box>}
                 secondary={
@@ -242,7 +239,7 @@ const Comment: FC<CommentType> = ({
             />
             {deleteComment && <DeleteCommentModal open={deleteModal} onClose={handleDeleteModalClose} commentId={id}
                                                   deleteComment={deleteComment}/>}
-            <ReportCommentModal open={reportModal} onClose={handleReportModalClose} user={userId}/>
+            <ReportCommentModal open={reportModal} onClose={handleReportModalClose} userId={userId} commentId={id} linkNickname={linkNickname}/>
         </ListItem>
     );
 };

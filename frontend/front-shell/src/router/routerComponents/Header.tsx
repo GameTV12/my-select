@@ -1,52 +1,25 @@
-// import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material'
-// import MenuIcon from '@mui/icons-material/Menu'
-// import * as React from 'react'
-//
-// export default function Header(){
-//     return (
-//         <>
-//             <AppBar position="fixed">
-//                 <Toolbar>
-//                     <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-//                         <MenuIcon />
-//                     </IconButton>
-//                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-//                         MYSELECT
-//                     </Typography>
-//                     <Button color="inherit">
-//                         Logout
-//                     </Button>
-//                 </Toolbar>
-//             </AppBar>
-//             <Toolbar />
-//
-//         </>
-//     )
-// }
-
 import * as React from 'react';
-import {styled, alpha} from '@mui/material/styles';
+import {useEffect, useState} from 'react';
+import {alpha, createTheme, styled} from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
-import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
-import {createTheme} from "@mui/material/styles";
 import {Grid} from "@mui/material";
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
+import LoginModal from "../../components/login/LoginModal"
+import {Cookies, useCookies} from "react-cookie";
+import {UserI} from "../../utils/authRequests";
+import {jwtDecode} from "jwt-decode";
+import {Role} from "../routes/publicRoutes";
 
 const mainTheme = createTheme({
     palette: {
@@ -98,12 +71,22 @@ const StyledInputBase = styled(InputBase)(({theme}) => ({
 }));
 
 export default function Header() {
+    const navigate = useNavigate()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
 
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [cookies, setCookie, removeCookie] = useCookies(['myselect_access', 'myselect_refresh'])
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
+    const [searchArgs, setSearchArgs] = useState('');
+
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -122,6 +105,25 @@ export default function Header() {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
+    const handleOpenLogin = () => {
+        setLoginOpen(true);
+    }
+
+    const handleCloseLogin = () => {
+        setLoginOpen(false);
+    }
+
+    const handleLogout = () => {
+        const rigthCookie = new Cookies();
+        console.log('Logout')
+        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        setCurrentUser(null)
+        setCookie('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        setCookie('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+    }
+
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
@@ -139,13 +141,26 @@ export default function Header() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <Link to={`/users/fake_id/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>User123</MenuItem></Link>
-            <MenuItem onClick={handleMenuClose}>Business account1</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Business account2</MenuItem>
-            <MenuItem onClick={handleMenuClose} sx={{fontWeight: 'bold'}}>Logout&nbsp;<LogoutIcon
-                fontSize={"small"}/></MenuItem>
+            {currentUser && <Link to={`/users/${currentUser.linkNickname}/profile`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem sx={{fontWeight: 'bold'}}>{currentUser.email}</MenuItem></Link>}
+            {currentUser && (currentUser.role == Role.ADMIN || currentUser.role == Role.MODERATOR) && <Link to={`/admin/reports`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Reports</MenuItem></Link>}
+            {currentUser && currentUser.role == Role.ADMIN && <Link to={`/admin/requests`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Requests</MenuItem></Link>}
+            {currentUser && <Link to={`/users/subscriptions`} style={{ textDecoration: 'none', color: 'inherit' }}><MenuItem>Subscriptions</MenuItem></Link>}
+            {currentUser ?
+                <MenuItem onClick={handleLogout} sx={{fontStyle: 'italic'}}>Logout&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem> :
+                <>
+                    <MenuItem onClick={handleOpenLogin} sx={{fontStyle: 'italic'}}>Login&nbsp;<LogoutIcon fontSize={"small"}/></MenuItem>
+                    <MenuItem><Link to={`/signup`} style={{ textDecoration: 'none', color: 'inherit' }}>Register</Link></MenuItem>
+                </>
+            }
         </Menu>
     );
+
+    const handleSearchPosts = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            setTimeout(() => {location.reload()}, 0)
+            return navigate(`/?args=${searchArgs}`)
+        }
+    }
 
     const mobileMenuId = 'primary-search-account-menu-mobile';
     const renderMobileMenu = (
@@ -164,26 +179,6 @@ export default function Header() {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-            <MenuItem>
-                <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                    <Badge badgeContent={4} color="error">
-                        <ChatBubbleIcon/>
-                    </Badge>
-                </IconButton>
-                <p>Messages</p>
-            </MenuItem>
-            <MenuItem>
-                <IconButton
-                    size="large"
-                    aria-label="show 17 new notifications"
-                    color="inherit"
-                >
-                    <Badge badgeContent={17} color="error">
-                        <NotificationsIcon/>
-                    </Badge>
-                </IconButton>
-                <p>Notifications</p>
-            </MenuItem>
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     size="large"
@@ -215,7 +210,7 @@ export default function Header() {
                                 component="div"
                                 sx={{display: {xs: 'none', sm: 'inline-block', fontWeight: 'bold'}}}
                             >
-                                <Link to={'/'} style={{ textDecoration: 'none', color: '#000' }}>MYSELECT</Link>
+                                <a href={'/'} style={{ textDecoration: 'none', color: '#000' }}>MYSELECT</a>
                             </Typography>
 
 
@@ -229,7 +224,10 @@ export default function Header() {
                                 </SearchIconWrapper>
                                 <StyledInputBase
                                     placeholder="Search..."
+                                    onKeyDown={handleSearchPosts}
                                     inputProps={{'aria-label': 'search'}}
+                                    value={searchArgs}
+                                    onChange={(e) => setSearchArgs(e.target.value)}
                                 />
                             </Search>
                         </Grid>
@@ -246,22 +244,6 @@ export default function Header() {
                                 <Link to={'/posts/create'} style={{ textDecoration: 'none', color: 'inherit' }}>Write a post</Link>
                             </Typography>
                             <Box sx={{display: {xs: 'none', md: 'flex'}}}>
-                                <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                                    <Badge badgeContent={0} color="error">
-                                        {/*<ChatBubbleIcon />*/}
-                                        <ChatBubbleOutlineIcon/>
-                                    </Badge>
-                                </IconButton>
-                                <IconButton
-                                    size="large"
-                                    aria-label="show 17 new notifications"
-                                    color="inherit"
-                                >
-                                    <Badge badgeContent={17} color="error">
-                                        <NotificationsIcon/>
-                                        {/*<NotificationsNoneIcon />*/}
-                                    </Badge>
-                                </IconButton>
                                 <IconButton
                                     size="large"
                                     edge="end"
@@ -291,6 +273,7 @@ export default function Header() {
 
                 </Toolbar>
             </AppBar>
+            <LoginModal open={loginOpen} children={<></>} onClose={handleCloseLogin} />
             <Toolbar/>
             {renderMobileMenu}
             {renderMenu}

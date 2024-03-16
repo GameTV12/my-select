@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "AuthUser" ADD COLUMN     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;

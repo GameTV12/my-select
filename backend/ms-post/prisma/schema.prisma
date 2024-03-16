@@ -11,50 +11,80 @@ datasource db {
 }
 
 model ShortUser {
-  userId       String     @unique
-  linkNickname String     @unique
-  nickname     String
-  Post         Post[]
-  Reaction     Reaction[]
-  Vote         Vote[]
+  userId             String     @unique
+  linkNickname       String     @unique
+  nickname           String
+  photo              String
+  visible            Boolean    @default(true)
+  role               UserRole   @default(DEFAULT_USER)
+  secondVerification Boolean    @default(false)
+  Post               Post[]
+  Reaction           Reaction[]
+  Vote               Vote[]
+}
+
+enum UserRole {
+  DEFAULT_USER
+  ADMIN
+  MODERATOR
+  BANNED_USER
 }
 
 model Reaction {
-  id        String    @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid())
   user      ShortUser @relation(fields: [userId], references: [userId])
   userId    String
   type      String
   startTime DateTime  @default(now())
-  endTime   DateTime  @updatedAt
+  endTime   DateTime?
   post      Post      @relation(fields: [postId], references: [id])
-  postId    String    @db.Uuid
+  postId    String
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
 }
 
 model Variant {
-  id    String @id @default(uuid()) @db.Uuid
-  text  String
-  votes Int
+  id     String @id @default(uuid())
+  text   String
+  votes  Int
+  Post   Post   @relation(fields: [postId], references: [id])
+  postId String
 }
 
 model Vote {
-  user   ShortUser @relation(fields: [userId], references: [userId])
-  userId String
-  post   Post      @relation(fields: [postId], references: [id])
-  postId String    @db.Uuid
+  user      ShortUser @relation(fields: [userId], references: [userId])
+  userId    String
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime  @default(now())
 
   @@id([userId, postId])
 }
 
+model Photo {
+  id     String @id @default(uuid())
+  link   String
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+}
+
 model Post {
-  id              String    @id @default(uuid()) @db.Uuid
-  user            ShortUser @relation(fields: [shortUserUserId], references: [userId])
+  id              String     @id @default(uuid())
+  user            ShortUser  @relation(fields: [shortUserUserId], references: [userId])
   shortUserUserId String
   title           String
   text            String
+  commentsAllowed Boolean
+  variantsAllowed Boolean?   @default(false)
   video           String?
-
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Reaction  Reaction[]
-  Vote      Vote[]
+  visible         Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  Reaction        Reaction[]
+  Vote            Vote[]
+  Photo           Photo[]
+  Variants        Variant[]
 }

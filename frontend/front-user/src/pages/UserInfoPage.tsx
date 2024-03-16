@@ -1,48 +1,54 @@
-import React, {useMemo, useRef, useState} from 'react';
-import {mockRealSubscribers, mockSubscribers} from "../mockData/mockSubscribers";
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Avatar,
     Box, ClickAwayListener,
-    Grid, Grow, IconButton, Link, MenuItem, MenuList,
+    Grid, Grow, IconButton, MenuItem, MenuList,
     Paper, Popper,
     Table,
     TableBody,
     TableCell,
     TableContainer,
-    TableHead,
     TableRow,
     Toolbar,
     Typography
 } from "@mui/material"
+import {Link} from "react-router-dom"
 import ModeratorRequestModal from "../components/ModeratorRequestModal";
 import DeleteModal from "../components/DeleteModal";
 import LogoutModal from "../components/LogoutModal";
 import {Line} from "react-chartjs-2"
 import {Chart as ChartJS, ChartEvent, registerables} from 'chart.js';
-import {Chart} from 'react-chartjs-2'
 
 ChartJS.register(...registerables)
 import 'chartjs-plugin-annotation'
-import LineChart from "../components/LineChart";
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import ListComment from "../components/ListComment";
-import {useParams} from "react-router-dom";
+import UserCommentList from "../components/UserCommentList";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
+import {findUserByNickname, getFullStatistics} from "../utils/publicRequests";
+import {useCookies} from "react-cookie";
+import {jwtDecode} from "jwt-decode";
+import {Role, UserI} from "../utils/axiosInstance";
+import {cancelModerator} from "../utils/authRequests";
 
-interface User {
+export interface User {
     id: string
     firstName: string
     lastName: string
     nickname: string
     linkNickname: string
     photo: string
-    dateOfBirth: Date
-    country: string
+    birthday: Date
     createdAt: Date
-    isActivated: boolean
-    subscribers: number
+    role: Role
+    secondVerification: boolean
+    _count: {
+        Followers: number
+    }
+    commentNumber: number
+    postNumber: number
 }
 
 export type SubscriberStatistics = {
@@ -50,58 +56,119 @@ export type SubscriberStatistics = {
     subscribers: number
 }
 
-const mockUser = {
-    id: '123',
-    firstName: 'Dave',
-    lastName: 'Smith',
-    nickname: 'Davepro999, who loves Fortnite!',
-    linkNickname: 'davepro999official',
-    image: 'https://sun9-34.userapi.com/impf/c622320/v622320607/4e1d6/1a-awkhClos.jpg?size=225x225&quality=96&sign=c175c8c775a36c0b9721b5bd319b0155&type=album',
-    dateOfBirth: new Date('1998-09-03').getTime(),
-    country: "United Kingdom",
-    createdAt: new Date('2020-11-01').getTime(),
-    isActivated: false,
-    subscribers: 90139,
-    posts: 20,
-    comments: 193,
+export type Statistics = {
+    time: number
+    parameter: number
+    realParameter: number
 }
 
+const mockUser = {
+    id: '',
+    firstName: 'Not',
+    lastName: 'Found',
+    nickname: 'notfounduser',
+    linkNickname: 'notfounduser',
+    photo: 'https://i.pinimg.com/originals/b6/b5/99/b6b59960f63c54ef78bf0f10d72c7218.jpg',
+    birthday: new Date('1998-09-03').getTime(),
+    createdAt: new Date('2020-11-01').getTime(),
+    secondVerification: false,
+    role: Role.DEFAULT_USER,
+    _count: {
+        Followers: 999
+    },
+    postNumber: 999,
+    commentNumber: 999,
+}
+
+const fake = [
+    {
+        "time": 1701043200000,
+        "parameter": 0,
+        "realParameter": 0
+    },
+    {
+        "time": 1701129600000,
+        "parameter": 0,
+        "realParameter": 0
+    },
+]
+
 const UserInfoPage = () => {
+    const [cookies, setCookie] = useCookies(['myselect_access', 'myselect_refresh'])
     const { id } = useParams()
-    console.log(id)
+    const [statistics, setStatistics] = useState<Statistics[]>(fake);
+    useEffect(() => {
+        let response;
+        if (id != undefined) {
+            findUserByNickname(id).then(r => {setUserInfo(r); console.log(r)}).catch(r => {
+                return <Navigate replace to={'/'} />
+            })
+            getFullStatistics(id).then(r => setStatistics(r)).catch(r => {
+                return <Navigate replace to={'/'} />
+            })
+        }
+    }, [id])
+
+    useEffect(() => {
+        setChartSubscriberData({
+            labels: statistics.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth() + 1}.${new Date(data.time).getFullYear()}`)),
+            type: "line",
+            datasets: [{
+                label: "Subscribers",
+                data: statistics.map((data) => data.parameter),
+                backgroundColor: 'blue',
+            }, {
+                label: "Verified subscribers",
+                data: statistics.map((data) => data.realParameter),
+                backgroundColor: 'lightgreen',
+            }],
+            options: {
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    mode: "index"
+                },
+            },
+        });
+        console.log(statistics)
+    }, [statistics])
 
     const [openAddMenu, setOpenAddMenu] = useState<boolean>(false)
     const [openModalModeratorRequest, setOpenModalModeratorRequest] = useState<boolean>(false)
     const [openModalDelete, setOpenModalDelete] = useState<boolean>(false)
     const [openModalLogout, setOpenModalLogout] = useState<boolean>(false)
     const [tabPosition, setTabPosition] = useState<string>('1');
-    const [chartSubscriberData, setChartSubscriberData] = useState({
-        labels: mockSubscribers.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth() + 1}.${new Date(data.time).getFullYear()}`)),
-        type: "line",
-        datasets: [{
-            label: "Subscribers",
-            data: mockSubscribers.map((data) => data.subscribers),
-            backgroundColor: 'blue',
-        }, {
-            label: "Verified subscribers",
-            data: mockRealSubscribers.map((data) => data.subscribers),
-            backgroundColor: 'lightgreen',
-        }],
-        options: {
-            responsive: true,
-            interaction: {
-                intersect: false,
-                mode: "index"
+    const [userInfo, setUserInfo] = useState(mockUser);
+    const [chartSubscriberData, setChartSubscriberData] = useState(
+        {
+            labels: statistics.map((data) => (`${new Date(data.time).getDate()}.${new Date(data.time).getMonth() + 1}.${new Date(data.time).getFullYear()}`)),
+            type: "line",
+            datasets: [{
+                label: "Subscribers",
+                data: statistics.map((data) => data.parameter),
+                backgroundColor: 'blue',
+            }, {
+                label: "Verified subscribers",
+                data: statistics.map((data) => data.realParameter),
+                backgroundColor: 'lightgreen',
+            }],
+            options: {
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    mode: "index"
+                },
             },
-        },
-    })
-    const chart = useMemo(() => {
-        // @ts-ignore
-        return <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
-    }, [mockSubscribers, mockRealSubscribers])
+        }
+    )
+    // @ts-ignore
+    const chart = <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
+    const [currentUser, setCurrentUser] = useState<UserI | null>(cookies.myselect_refresh ? jwtDecode(cookies.myselect_refresh) : null);
 
-    // // @ts-ignore
-    // const chart = <Line data={chartSubscriberData} options={chartSubscriberData.options}/>
+    useEffect(() => {
+        if (cookies.myselect_refresh) setCurrentUser(jwtDecode(cookies.myselect_refresh))
+        else setCurrentUser(null)
+    }, [cookies])
 
     const anchorRef = useRef<HTMLButtonElement>(null);
 
@@ -148,6 +215,10 @@ const UserInfoPage = () => {
         setOpenModalLogout(false);
     }
 
+    const handleCancelModerator = () => {
+        if (userInfo.id != '') cancelModerator(userInfo.id)
+    }
+
 
     function handleListKeyDown(event: React.KeyboardEvent) {
         if (event.key === 'Tab') {
@@ -175,11 +246,10 @@ const UserInfoPage = () => {
                     >
                         <Box sx={{display: 'flex', alignItems: 'center'}}>
                             <Avatar>
-                                <Box component={"img"} src={mockUser.image} sx={{objectFit: 'cover'}} minWidth={'100%'}
+                                <Box component={"img"} src={userInfo.photo} sx={{objectFit: 'cover'}} minWidth={'100%'}
                                      minHeight={'100%'}/>
                             </Avatar>
-                            <Typography sx={{px: 2}}>{mockUser.nickname} (<i><Link target={"_blank"} underline="none"
-                                                                                   href={"https://leetcode.com/"}>{mockUser.linkNickname}</Link></i>)</Typography>
+                            <Typography sx={{px: 2}}>{userInfo.nickname} (<i><Link to={`/users/${userInfo.linkNickname}`} style={{ textDecoration: 'none' }}>{userInfo.linkNickname}</Link></i>)</Typography>
                         </Box>
                         <IconButton aria-label="settings"
                                     ref={anchorRef}
@@ -218,20 +288,20 @@ const UserInfoPage = () => {
                                                 aria-labelledby="composition-button"
                                                 onKeyDown={handleListKeyDown}
                                             >
-                                                <MenuItem onClick={handleAddMenuClose}>Edit the profile</MenuItem>
-                                                <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator
-                                                    request</MenuItem>
-                                                <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
-                                                    the account</MenuItem>
-                                                <MenuItem onClick={handleOpenModalLogout}
-                                                          sx={{color: 'text.secondary'}}>Logout</MenuItem>
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleAddMenuClose}><Link to={`/users/update`} style={{ textDecoration: 'none', color: "inherit" }}>Edit the profile</Link></MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && currentUser.role == Role.DEFAULT_USER && <MenuItem onClick={handleOpenModalModeratorRequest}>Send a moderator request</MenuItem>}
+                                                {currentUser && (currentUser.linkNickname==userInfo.linkNickname || (currentUser.role == Role.ADMIN && userInfo.role != Role.ADMIN) || (currentUser.role == Role.MODERATOR && userInfo.role == Role.DEFAULT_USER)) && <MenuItem onClick={handleOpenModalDelete} sx={{color: 'error.main'}}>Delete
+                                                    the account</MenuItem>}
+                                                {currentUser && (currentUser.role == Role.ADMIN && userInfo.role == Role.MODERATOR) && <MenuItem onClick={handleCancelModerator} sx={{color: 'error.main'}}>Cancel moderator rights</MenuItem>}
+                                                {currentUser && currentUser.linkNickname==userInfo.linkNickname && <MenuItem onClick={handleOpenModalLogout}
+                                                          sx={{color: 'text.secondary'}}>Logout</MenuItem>}
                                             </MenuList>
                                         </ClickAwayListener>
                                     </Paper>
                                 </Grow>
                             )}
                         </Popper>
-                        <DeleteModal open={openModalDelete} onClose={handleCloseModalDelete} children={<></>}/>
+                        <DeleteModal open={openModalDelete} onClose={handleCloseModalDelete} userId={userInfo.id} children={<></>}/>
                         <ModeratorRequestModal open={openModalModeratorRequest}
                                                onClose={handleCloseModalModeratorRequest} children={<></>}/>
                         <LogoutModal open={openModalLogout} onClose={handleCloseModalLogout} children={<></>}/>
@@ -242,49 +312,43 @@ const UserInfoPage = () => {
                                 <TableCell component="th" scope="row">
                                     <strong>Full name</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.firstName} {mockUser.lastName}</TableCell>
+                                <TableCell>{userInfo.firstName} {userInfo.lastName}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Subscribers</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.subscribers}</TableCell>
+                                <TableCell>{userInfo._count.Followers}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Posts</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.posts}</TableCell>
+                                <TableCell>{userInfo.postNumber}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Comments</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.comments}</TableCell>
+                                <TableCell>{userInfo.commentNumber}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Birthdate</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.dateOfBirth).getDate()}.{new Date(mockUser.dateOfBirth).getMonth() + 1}.{new Date(mockUser.dateOfBirth).getFullYear()}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th" scope="row">
-                                    <strong>Country</strong>
-                                </TableCell>
-                                <TableCell>{mockUser.country}</TableCell>
+                                <TableCell>{new Date(userInfo.birthday).getDate()}.{new Date(userInfo.birthday).getMonth() + 1}.{new Date(userInfo.birthday).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>User since</strong>
                                 </TableCell>
-                                <TableCell>{new Date(mockUser.createdAt).getDate()}.{new Date(mockUser.createdAt).getMonth() + 1}.{new Date(mockUser.createdAt).getFullYear()}</TableCell>
+                                <TableCell>{new Date(userInfo.createdAt).getDate()}.{new Date(userInfo.createdAt).getMonth() + 1}.{new Date(userInfo.createdAt).getFullYear()}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell component="th" scope="row">
                                     <strong>Activated</strong>
                                 </TableCell>
-                                <TableCell>{mockUser.isActivated ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)'}</TableCell>
+                                <TableCell>{userInfo.secondVerification ? 'User is activated' : 'User isn\'t activated (probably bot or has been created recently)'}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -300,11 +364,11 @@ const UserInfoPage = () => {
                         <TabPanel value="1">
                             <Box>
                                 <Typography variant={"h5"} align={"center"}>Subscribers
-                                    of <em>{mockUser.nickname}</em></Typography>
+                                    of <em>{userInfo.nickname}</em></Typography>
                                 {chart}
                             </Box>
                         </TabPanel>
-                        <TabPanel value="2"><ListComment /></TabPanel>
+                        <TabPanel value="2"><UserCommentList /></TabPanel>
                     </TabContext>
                 </Box>
             </Grid>

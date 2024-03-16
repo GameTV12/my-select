@@ -11,22 +11,20 @@ datasource db {
 }
 
 model User {
-  id                 String      @id @default(uuid()) @db.Uuid
+  id                 String      @id @default(uuid())
   nickname           String
   linkNickname       String      @unique
-  password           String
-  photo              String
+  photo              String      @default("")
   email              String      @unique
   firstName          String
   lastName           String?
-  phone              String      @unique
-  firstVerification  Boolean     @default(true)
-  role               String      @default("USER")
+  phone              String?
+  firstVerification  Boolean     @default(false)
+  role               UserRole    @default(DEFAULT_USER)
   secondVerification Boolean     @default(false)
-  birthday           DateTime
   visible            Boolean     @default(true)
+  birthday           DateTime
   unlockTime         DateTime?
-  hashedRt           String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   Followers          Followers[] @relation("Followers")
@@ -37,27 +35,42 @@ model User {
   Reported           Report[]    @relation("Goals")
 }
 
-model Followers {
-  followingUser User   @relation("Followers", fields: [following], references: [id])
-  following     String
-  followerUser  User   @relation("Following", fields: [follower], references: [id])
-  follower      String
+enum UserRole {
+  DEFAULT_USER
+  ADMIN
+  MODERATOR
+  BANNED_USER
+}
 
-  @@id([follower, following])
+model Followers {
+  followingUser User      @relation("Followers", fields: [following], references: [id])
+  following     String
+  followerUser  User      @relation("Following", fields: [follower], references: [id])
+  follower      String
+  start         DateTime  @default(now())
+  end           DateTime?
+
+  @@id([follower, following, start])
 }
 
 model Request {
-  id      String @id @default(uuid()) @db.Uuid
-  user    User   @relation("Requests", fields: [userId], references: [id])
+  id      String  @id @default(uuid())
+  user    User    @relation("Requests", fields: [userId], references: [id])
   userId  String
   text    String
-  status  String @default("WAITING")
-  court   User   @relation("Decisions", fields: [courtId], references: [id])
-  courtId String
+  status  Status  @default(WAITING)
+  court   User?   @relation("Decisions", fields: [courtId], references: [id])
+  courtId String?
+}
+
+enum Status {
+  WAITING
+  ACCEPTED
+  DENIED
 }
 
 model Report {
-  id             String @id @default(uuid()) @db.Uuid
+  id             String @id @default(uuid())
   sender         User   @relation("Reports", fields: [senderId], references: [id])
   senderId       String
   text           String

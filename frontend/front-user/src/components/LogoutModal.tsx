@@ -1,5 +1,6 @@
 import React from 'react';
 import {Box, Button, ButtonGroup, FormControl, Modal, ModalProps, Typography} from "@mui/material";
+import { Cookies } from 'react-cookie'
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -17,6 +18,12 @@ const style = {
 
 const LogoutModal = ({open, onClose}: ModalProps) => {
 
+    const handleLogout = () => {
+        const rigthCookie = new Cookies();
+        console.log('Logout')
+        rigthCookie.set('myselect_refresh', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+        rigthCookie.set('myselect_access', null, { expires: new Date(new Date().getTime() - 1000), domain: 'localhost', path: '/'})
+    }
 
     return (
         <Modal
@@ -26,7 +33,7 @@ const LogoutModal = ({open, onClose}: ModalProps) => {
             aria-describedby="parent-modal-description"
         >
             <Box sx={{ ...style, width: 400 }}>
-                <Typography variant={"h5"} sx={{ my: 1 }} align={"center"} id="parent-modal-title">Delete the account</Typography>
+                <Typography variant={"h5"} sx={{ my: 1 }} align={"center"} id="parent-modal-title">Logout</Typography>
                 <Typography sx={{ textAlign: 'justify' }} variant={"body1"} id="parent-modal-description">
                     Are you sure? You will be log outed. If you want to use your account again, you must log in and write right data.
                 </Typography>
